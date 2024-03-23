@@ -1,0 +1,43 @@
+{
+  "name": "maitri-socio-doctor-booking-website-backend-",
+  "version": "1.0.0",
+  "description": "The Mental Health Consultation Platform is a comprehensive web application designed to provide users with easy access to mental health professionals for consultation and support. The platform allows users to connect with licensed therapists, psychiatrists, and counselors through secure video conferencing, chat or appointment scheduling",
+  "main": "dist/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx tsc",
+    "start": "node dist/app.js",
+    "lint": "eslint . --ext .ts",
+    "watch": "tsc --watch",
+    "dev": "nodemon ./src/app.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.1",
+    "express-validator": "^7.0.1",
+    "google-auth-library": "^9.7.0",
+    "googleapis": "^134.0.0",
+    "mongodb": "^6.5.0",
+    "mongoose": "^8.2.2",
+    "passport": "^0.7.0",
+    "passport-google-oauth": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "@typescript-eslint/parser": "^7.3.1",
+    "eslint": "^8.57.0",
+    "nodemon": "^3.1.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.3"
+  }
+}
