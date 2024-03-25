@@ -9,6 +9,7 @@ export const SignupValidateUser:RequestHandler[] =[
     body('username').optional().trim().isString().notEmpty().withMessage("Username cannot be empty"),
     body('gender').optional().isIn(['male', 'female', 'other']).withMessage('Invalid gender'),
     body('email').trim().isEmail().withMessage('Invalid email format'),
+    body('dateOfBirth').trim().notEmpty().withMessage('Date of birth must be filled').isDate().withMessage('Date of birth must be in date format'),
     body('password').trim().isString().notEmpty().withMessage('Password is required').isLength({ max: 25 }).withMessage('Password must be at most 25 characters'),
     body('confirmPassword').trim().isString().notEmpty().withMessage('Confrim password not be Empty').custom((value, { req }) => {
         if (value !== req.body.password) {
@@ -17,9 +18,10 @@ export const SignupValidateUser:RequestHandler[] =[
         return true;
     }),
     (req: Request, res: Response, next: NextFunction) => {
+        console.log("Log from Signup Validator")
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          const errorArray = errors.array().map((err) => ({ [err.param]: err.msg }));
+          const errorArray = errors.array().map((err) =>  ({ msg: err.msg }));
           const errorMessage = errorArray.map((err) => Object.values(err)).join("; ");
           throw new CustomError(errorMessage, 400);
         }
@@ -31,6 +33,7 @@ export const loginValidateUser = [
     body('email').trim().notEmpty().withMessage('Email not be Empty').isEmail().withMessage('Invalid Email Format').normalizeEmail(),
     body('password').trim().isString().notEmpty().withMessage('Password is required').isLength({ max: 25 }).withMessage('Password must be at most 25 characters'),
     (req: Request, res: Response, next: NextFunction) => {
+        console.log("Log from Login Validator");
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             console.log(errors)

@@ -1,12 +1,15 @@
 
-import express, { Application } from 'express';
+import express, { Application, NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { userRouter } from './adapters/framework/express/routes/userRoutes';
-import errorHandler from '../utils/ReponseHandler';
-const passport = require('passport');
+import { sendErrorResponse } from '../utils/ReponseHandler';
+import userRouter from './presentation1/routers/userRouter';
+import morgan from 'morgan';
+import { CustomError } from '../utils/CustomError';
+
+// const passport = require('passport');
 dotenv.config();
 mongoose.connect(process.env.MONGODB_URL as string)
   .then(() => console.log('Connected to MongoDB'))
@@ -14,17 +17,29 @@ mongoose.connect(process.env.MONGODB_URL as string)
 
 
 const app: Application = express();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 3000;
 app.use(cors());
 app.disable("x-powered-by"); 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());  
-
+app.use(morgan('combined'))
 
 app.use('/api/users', userRouter);
 
-app.use(errorHandler)
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.log("Error Handler Comes In");
+  if (err instanceof CustomError) {
+    console.log("Custom Error:");
+    console.error(err);
+   return  sendErrorResponse(res, err.message, err.status);
+  } else {
+    console.error("Unhandled error:", err);
+    return sendErrorResponse(res, err.message||"Internal Server Error", 500);
+  }
+});
+
 
 
 

@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.userRouter = void 0;
+const mongodb_user_dataSource_1 = require("../../data1/data-sources/mongodb/mongodb-user-dataSource");
+const user_repository_1 = require("../../domain1/repositories/user-repository");
+const user_login_1 = require("../../domain1/use-cases/authentication/user-login");
+const user_signup_1 = require("../../domain1/use-cases/authentication/user-signup");
+const requestValidation_1 = require("../../middlewares/requestValidation");
+const userController_1 = require("../controllers/userController");
+const express_1 = require("express");
+exports.userRouter = (0, express_1.Router)();
+const userRepositoryImpl = new user_repository_1.UserAuthenticationRepoImpl(new mongodb_user_dataSource_1.MongoDbUserDataSource());
+const loginUseCase = new user_login_1.userLogin(userRepositoryImpl);
+const signupUseCase = new user_signup_1.userSignup(userRepositoryImpl);
+exports.userRouter.post('/login', requestValidation_1.loginValidateUser, (0, userController_1.loginController)(loginUseCase));
+exports.userRouter.post('/register', requestValidation_1.SignupValidateUser, (0, userController_1.signupController)(signupUseCase));
+exports.default = exports.userRouter;

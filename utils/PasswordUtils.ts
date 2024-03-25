@@ -8,7 +8,9 @@ export class PasswordUtil{
     }
 
     static async ComparePasswords(password:string, passwordHash: string): Promise<boolean> {
+        console.log(password,passwordHash)
         const passwordMatches  = await bcrypt.compare(password, passwordHash);
+        console.log(passwordMatches);
         return passwordMatches; 
     }
 }

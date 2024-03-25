@@ -1,16 +1,13 @@
+"use strict";
 // passport
-
 // passport
 // const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
-
 // passport.serializeUser(function(user, done) {
 //     done(null, user);
 // });
-
 // passport.deserializeUser(function(user, done) {
 //     done(null, user);
 // });
-
 // passport.deserializeUser(function(id, done) {
 //     User.findById(id, function(err, user) {
 //       done(err, user);
@@ -28,4 +25,3 @@
 //       });
 //     }
 //   ));
-

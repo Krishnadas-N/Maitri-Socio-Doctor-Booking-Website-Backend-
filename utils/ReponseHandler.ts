@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
 import { CustomError } from "./CustomError";
 
@@ -17,15 +17,17 @@ interface  ErrorResponse{
 }
 
 export  const sendSuccessResponse = <T>(res:Response ,data?: T ,message ?: string):void=>{
+    console.log("Log from success Response",data)
     const responseData : SuccessResponse<T>={
         success:true,
         data:data,
         message:message||"Operation successful."
     };
-    res.status(200).json(responseData);
+     res.status(200).json(responseData);
 }
 
 export const sendErrorResponse =(res:Response,errorMessage:string,errorCode ?:number): void =>{
+    console.log("Log from Error Response",errorMessage)
     const errorResponse:ErrorResponse={
     success:false,
     error: {
@@ -34,14 +36,16 @@ export const sendErrorResponse =(res:Response,errorMessage:string,errorCode ?:nu
       }
     }
 
-    res.status(errorCode || 500).json(errorResponse);
+     res.status(errorCode || 500).json(errorResponse);
 }
 
 
 // Global error handler middleware
-const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+const errorHandler = (err: Error, req: Request, res: Response) => {
+    console.log("Error Handler Comes In")
     if (err instanceof CustomError) {
-        console.log(err)
+        console.log("Custom Error:");
+        console.error(err);
         sendErrorResponse(res, err.message, err.status);
     } else {
         console.error("Unhandled error:", err);
