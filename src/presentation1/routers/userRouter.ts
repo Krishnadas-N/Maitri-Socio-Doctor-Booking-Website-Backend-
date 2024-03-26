@@ -23,4 +23,5 @@ userRouter.post('/login',loginValidateUser,loginController(loginUseCase));
 
 userRouter.post('/register',SignupValidateUser,signupController(signupUseCase));
 
+
 export default userRouter;

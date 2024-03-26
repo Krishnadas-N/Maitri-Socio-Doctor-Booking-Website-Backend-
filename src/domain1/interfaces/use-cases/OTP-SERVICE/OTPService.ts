@@ -1,6 +1,5 @@
 
 export interface OTPService{
-    generateOTP():string;
-    sendOTP(email:string,otp:string):Promise<void>;
+    resendOtp(email:string):Promise<void>;
     verifyOTP(email: string, code: string): Promise<boolean>;
 }

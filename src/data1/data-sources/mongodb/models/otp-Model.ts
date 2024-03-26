@@ -5,6 +5,7 @@ export interface OTP extends Document {
     otp: string;
     status: 'USED' | 'NOTUSED';
     createdAt: Date;
+    validFor:Date;
     expiresAt: Date;
 }
 const otpSchema = new Schema({
@@ -25,10 +26,15 @@ const otpSchema = new Schema({
         type: Date,
         default: Date.now, 
       },
+      validFor: {
+        type: Number,
+        required: true,
+        default: 60 // Default to 60 seconds
+    },
       expiresAt: {
         type: Date,
         expires:60,
-        default:()=>(Date.now()+60 * 1000)
+        default:()=>(Date.now()+5*60 * 1000)
       },
 })
 
