@@ -3,6 +3,7 @@ import { CustomError } from "../../../utils/CustomError";
 import { sendSuccessResponse } from "../../../utils/ReponseHandler";
 import { UserLogin } from "../../domain1/interfaces/use-cases/authentication/user-login";
 import { UserSignup } from "../../domain1/interfaces/use-cases/authentication/user-sigup";
+import { userUseCase } from "../../domain1/interfaces/use-cases/UserService/User-usecase";
 
 export function signupController(userSignup: UserSignup) {
     return async function (req: Request, res: Response, next: NextFunction) {
@@ -31,4 +32,18 @@ export function loginController(userLogin: UserLogin) {
             next(err);
         }
     };
+}
+
+export class UserController{
+    constructor(private userUseCase:userUseCase) {
+    }
+    getUserProfile = async(req: Request, res: Response, next: NextFunction)=>{
+        try{
+         const userId = req.params.userId;
+         const userProfile = await this.userUseCase.profile(userId);
+         return  sendSuccessResponse(res, userProfile,"user profile fetched successfully");
+        }catch(error){
+            next(error)
+        }
+    }
 }

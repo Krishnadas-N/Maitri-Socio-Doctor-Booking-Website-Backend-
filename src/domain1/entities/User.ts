@@ -9,6 +9,7 @@ export class User {
         public gender?: string,
         public dateOfBirth?: Date,
         public _id?: string | null,
-        public profilePic?: string | null
+        public profilePic?: string | null,
+        public isVerified?:boolean
     ) {}
 }

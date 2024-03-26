@@ -16,8 +16,11 @@ export class userSignup implements UserSignup{
             throw new CustomError('User Already Exists',409);                    
         }else{
         const savedUser =  await this.userRepository.save(user);
+        console.log(savedUser)
         const otp = this.otpRepository.generateOTP();
+        console.log(otp);
         await this.otpRepository.sendOTP(savedUser.email,otp);
+        console.log("Otp data Saved in datbase")
         return otp
         }
     }

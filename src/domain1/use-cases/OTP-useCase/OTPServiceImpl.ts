@@ -2,11 +2,12 @@ import { OTPService } from "../../interfaces/use-cases/OTP-SERVICE/OTPService";
 import { OTPRepository } from "../../interfaces/repositories/OTP-Repository";
 import { OTP } from "../../entities/OTP";
 import { CustomError } from "../../../../utils/CustomError";
+import { UserRepository } from "../../interfaces/repositories/user-Authentication";
 
 
 
 export class OTPServiceImpl implements OTPService{
-    constructor( private readonly otpRepository:OTPRepository) {}
+    constructor( private readonly otpRepository:OTPRepository,private readonly userRepository:UserRepository) {}
  
     async verifyOTP(email: string, code: string): Promise<boolean> {
         const otp = await this.otpRepository.findByOwnerAndCode(email, code);
@@ -15,6 +16,9 @@ export class OTPServiceImpl implements OTPService{
         if(!otp){
             throw new CustomError('Invalid Email',404)
         }
+        if(otp.status==='USED'){
+            throw new CustomError('The Otp already Used',409)
+        }
         const currentTime = new Date().getTime();
         const createdAtTime = otp.createdAt.getTime()
         const elapsedTime = currentTime - createdAtTime; 
@@ -22,6 +26,8 @@ export class OTPServiceImpl implements OTPService{
         if (elapsedTime > validForMs) {
             throw new CustomError('OTP has expired', 400);
         }
+        await this.otpRepository.markAsUsed(email);
+        await this.userRepository.markAsVerified(email);
         return otp.otp === code;
     }
     async resendOtp(email: string): Promise<void> {

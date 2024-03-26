@@ -20,18 +20,24 @@ export class OTPRepsositoryImpl implements OTPRepository{
 
     }
 
-    async save(otp: OTP): Promise<OTP> {
-        return await this.save(otp)
+    async save(otp: OTP): Promise<void> {
+         await this.otpDataSource.create(otp)
     }
 
     generateOTP(): string {
-        return Math.floor(10000+Math.random() * 900000).toString();
+        let otp = Math.floor(100000 + Math.random() * 900000).toString();
+        if (otp.length < 6) {
+            otp = otp.padStart(6, '0');
+        }
+        return otp;
     }
 
     async sendOTP(email:string,otp:string):Promise<void>{
         
         try {
             await this.sendOtpTOMail(email,otp);
+            console.log("otp Send SuccessFully");
+            
             const otpDocument: OTP = {
                 email: email,
                 otp: otp,
@@ -41,6 +47,7 @@ export class OTPRepsositoryImpl implements OTPRepository{
                 expiresAt: new Date(Date.now() + 60 * 1000), 
             };
             await this.save(otpDocument);
+            return ;
         } catch (error) {
             console.error('Error sending OTP:', error);
             throw new CustomError('Error sending OTP', 500); 
@@ -48,13 +55,15 @@ export class OTPRepsositoryImpl implements OTPRepository{
     }
     async resendOtp(email: string): Promise<void> {
         const newOTP = this.generateOTP();
+        console.log("\nNew Resend Otp generated",newOTP);
         try {
             const existingOTP = await this.otpDataSource.findByEmail(email);
             if (existingOTP) {
+                
                 existingOTP.otp = newOTP;
                 await this.save(existingOTP);
             } else {
-                // If no existing OTP, create a new one
+              console.log("\nuser Otp Document is expired Creating again...");
                 const otpDocument: OTP = {
                     email: email,
                     otp: newOTP,
@@ -86,5 +95,13 @@ export class OTPRepsositoryImpl implements OTPRepository{
             console.error('Error resending OTP:', error);
             throw new CustomError('Error resending OTP', 500); 
         }
+    }
+    async markAsUsed(email: string): Promise<void> {
+        try{
+      await this.otpDataSource.updateStatus(email)
+    }catch(error:any){
+        console.error('Error in Update the status OTP:', error);
+        throw new CustomError(error.message || 'Error updating OTP status', 500);
+    }
     }
 }

@@ -39,12 +39,10 @@ const verifyEmailTemplate = (otp: string): { html: string } => {
         </div>
         <p>Your One-Time Password (OTP) for verification is:</p>
         <div class="otp">
-            <!-- This is where the OTP value will be dynamically inserted -->
-            {{OTP_VALUE}}
+            ${otp}
         </div>
         <p class="note">Please use this OTP to verify your email.</p>
     </div>
-{% comment %} </disc> {% endcomment %}
 </body>
 </html>
 `;

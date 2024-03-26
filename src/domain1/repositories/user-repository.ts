@@ -11,9 +11,6 @@ export class  UserAuthenticationRepoImpl implements UserRepository{
     async findByEmail(email: string): Promise<User | null> {
             console.log("Log from UserAuth Repo findBy email");
             const user = await this.dataSource.findByEmail(email);
-            if (!user) {
-                throw new CustomError(`User with email ${email} not found`, 404); // Update status to 404 for not found
-            }
             return user;
     }
     async getUser(userId: string): Promise<User> {
@@ -28,5 +25,8 @@ export class  UserAuthenticationRepoImpl implements UserRepository{
     async save(user: User): Promise<User> {
             console.log("Log from UserAuth Repo save");
             return await this.dataSource.create(user);
+    }
+    async markAsVerified(email: string): Promise<void> {
+        await this.dataSource.verifyUser(email);
     }
 }

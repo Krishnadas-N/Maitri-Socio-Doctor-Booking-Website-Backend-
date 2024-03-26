@@ -2,16 +2,16 @@
 
 import { MongoDbOtpDataSource } from "../../data1/data-sources/mongodb/mongodb-otp-dataSource";
 import { OTPRepsositoryImpl } from "../../domain1/repositories/otp-repository";
-import { UserAuthenticationRepoImpl } from "../../domain1/repositories/user-repository";
 import { OTPServiceImpl } from "../../domain1/use-cases/OTP-useCase/OTPServiceImpl";
-import { userLogin } from "../../domain1/use-cases/authentication/user-login";
-import { userSignup } from "../../domain1/use-cases/authentication/user-signup";
 import { Router } from "express";
 import { ResendOtpMiddleware, VerifyOtpMiddleware } from "../controllers/otpController";
+import { UserAuthenticationRepoImpl } from "../../domain1/repositories/user-repository";
+import { MongoDbUserDataSource } from "../../data1/data-sources/mongodb/mongodb-user-dataSource";
 export const otpRouter = Router();
 
+const userRepositoryImpl = new UserAuthenticationRepoImpl(new MongoDbUserDataSource())
 const otpRepositoryImpl =  new OTPRepsositoryImpl(new MongoDbOtpDataSource())
-const otpService = new OTPServiceImpl(otpRepositoryImpl);
+const otpService = new OTPServiceImpl(otpRepositoryImpl,userRepositoryImpl);
 
 const verifyOtpMiddleware = new VerifyOtpMiddleware(otpService);
 const resendOtpMiddleware = new ResendOtpMiddleware(otpService);

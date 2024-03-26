@@ -70,7 +70,6 @@ export default class MailService{
         if (!this.transporter) {
             throw new Error('Mail transporter not initialized');
         }
-
         try {
             await this.transporter.verify();
             console.log('Mail connection verified successfully');

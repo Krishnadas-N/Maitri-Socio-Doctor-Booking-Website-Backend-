@@ -18,6 +18,9 @@ export class userLogin implements UserLogin{
         if (!user) {    
             throw new CustomError('No user Found',404);                    
         }
+        if(!user.isVerified){
+            throw new CustomError("User is Not Verified",403)
+        }
         const isValidPassword = await PasswordUtil.ComparePasswords(password, user.password);
         if (!isValidPassword) {
             throw new CustomError('Invalid password',409);          
