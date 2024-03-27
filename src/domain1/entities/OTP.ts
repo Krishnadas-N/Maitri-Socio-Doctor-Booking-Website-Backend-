@@ -5,6 +5,7 @@ export class OTP{
         public otp:string,
         public status:'USED'|'NOTUSED',
         public createdAt:Date,
+        public validFor:number,
         public expiresAt: Date
     ) {}
 }

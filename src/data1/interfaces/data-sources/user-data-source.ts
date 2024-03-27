@@ -7,4 +7,5 @@ export interface User_Data{
     findById(userId:string):Promise<User | null>;
     updateOne(id:string,data:object):Promise<User | null> ;
     deleteOne(id:string): Promise<boolean>; 
+    verifyUser(email:string):Promise<void>;
 }

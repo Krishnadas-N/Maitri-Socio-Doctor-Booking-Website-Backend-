@@ -65,4 +65,13 @@ export class MongoDbUserDataSource implements User_Data {
             throw new Error(`Error deleting user: ${error}`);
         }
     }
+    async verifyUser(email:string):Promise<void>{
+        try {
+           await UserModel.updateOne({email},{$set:{
+            isVerified:true
+           }});
+        } catch (error) {
+            throw new Error(`Error deleting user: ${error}`);
+        }
+    }
 }
