@@ -10,7 +10,7 @@ export class VerifyOtpMiddleware {
     async handle(req: Request, res: Response, next: NextFunction) {
         try {
             console.log("Log from Controllers Verify otp");
-            const isVerified = await this.otpService.verifyOTP(req.body.email, req.body.otp);
+            const isVerified = await this.otpService.verifyOTP(req.body.email, req.body.otp,req.body.userType);
             if (!isVerified) {
                 throw new CustomError("Otp is incorrect or time Expired", 409);
             }

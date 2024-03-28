@@ -16,8 +16,9 @@ const otpService = new OTPServiceImpl(otpRepositoryImpl,userRepositoryImpl);
 const verifyOtpMiddleware = new VerifyOtpMiddleware(otpService);
 const resendOtpMiddleware = new ResendOtpMiddleware(otpService);
 
-otpRouter.post('/verify', verifyOtpMiddleware.handle.bind(verifyOtpMiddleware));
+otpRouter.post('/verifyUser', verifyOtpMiddleware.handle.bind(verifyOtpMiddleware));
 otpRouter.post('/resend', resendOtpMiddleware.handle.bind(resendOtpMiddleware));
+
 
 
 export default otpRouter;

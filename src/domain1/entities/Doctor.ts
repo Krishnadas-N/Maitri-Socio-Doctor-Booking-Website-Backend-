@@ -43,6 +43,7 @@ class Doctor {
       public gender: 'Male'|'Female'|'Other',
       public dateOfBirth: Date,
       public email: string,
+      public password:string,
       public phone: number,
       public address: Address,
       public specialization: string | ObjectId,

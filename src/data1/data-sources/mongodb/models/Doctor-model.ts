@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Doctor from "../../../../domain1/entities/Doctor";
+import { PasswordUtil } from "../../../../../utils/PasswordUtils";
 
 const DoctorSchema = new mongoose.Schema<Doctor>({
   firstName: {
@@ -12,6 +13,12 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
   lastName: {
     type: String,
     trim: true,
+    maxlength: 50,
+    required:true
+  },
+  password:{
+    type:String,
+    trim:true,
     maxlength: 50,
     required:true
   },
@@ -45,7 +52,6 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
   specialization: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DoctorCategory', 
-    required: true
   },
   education: [
     {
@@ -110,6 +116,16 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
     default: false, 
   },
 });
+
+
+DoctorSchema.pre('save',async function(next){
+  if (this.password  && this.isModified('password') ) {
+    const hasedPassword = await PasswordUtil.HashPassword(this.password);
+    this.password = hasedPassword;
+  }
+  next();
+})
+
 const DoctorModel = mongoose.model<Doctor>("Doctor", DoctorSchema);
 
 export default DoctorModel;
