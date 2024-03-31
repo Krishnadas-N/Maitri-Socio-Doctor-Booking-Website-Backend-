@@ -21,16 +21,18 @@ export class DoctorAuthUseCaseImpl implements DoctorService{
             }
         if(doctorData.email){
         const isDoctorExists = await this.doctorRepository.findDoctorByEmail(doctorData.email);
-        if (isDoctorExists){
-            throw new CustomError("This Email is already Exists,Please Login",409);
+        if (isDoctorExists && isDoctorExists.isVerified === true) {
+            throw new CustomError("This Email is already Exists, Please Login", 409);
         }else{
-            await this.doctorRepository.saveBasicInfo(doctorData);
+            if(!isDoctorExists){
+                await this.doctorRepository.saveBasicInfo(doctorData);
+            }
             const otp = this.otpRepository.generateOTP();
             console.log(otp);
-            await this.otpRepository.sendOTP(doctorData.email,otp);
+           const otpId = await this.otpRepository.sendOTP(doctorData.email,otp);
             console.log("OTP sent successfully");
             console.log("Otp data Saved in datbase");
-            const token  = await generateToken(doctorData.email);
+            const token  = await generateToken(otpId);
             return token;
         } 
         }else{
@@ -48,8 +50,9 @@ export class DoctorAuthUseCaseImpl implements DoctorService{
 
     async registerProfessionalInfoUseCase(doctorData: Partial<Doctor>,token:string): Promise<void> {
         try {
-            const email = await verifyToken(token);
-            await this.doctorRepository.saveProfessionalInfo(doctorData,email);
+            const data = await verifyToken(token);
+            console.log(data)
+            await this.doctorRepository.saveProfessionalInfo(doctorData,data.data);
         }catch (error:any) {
                 if (error instanceof CustomError) {
                     throw error; 

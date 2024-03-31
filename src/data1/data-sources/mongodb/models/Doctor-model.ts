@@ -19,7 +19,7 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
   password:{
     type:String,
     trim:true,
-    maxlength: 50,
+    maxlength: 100,
     required:true
   },
   gender: {
@@ -62,11 +62,11 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
   ],
   experience: {
     type: String,
-    required: true,
+   
   },
   certifications: {
     type: [String],
-    required: true,
+   
   },
   languages: [String],
   consultationFee: [
@@ -97,10 +97,11 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
     type: Boolean,
     default: false,
   },
-  onlineConsultation: {
-    type: Boolean,
-    default: true,
-  },
+  typesOfConsultation: [{
+    type: String,
+    enum: ['video', 'chat', 'clinic'],
+   
+  }],
   maxPatientsPerDay: {
     type: Number,
     default: 10, // Example value, adjust according to your needs

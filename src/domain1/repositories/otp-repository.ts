@@ -8,8 +8,8 @@ import MailService from "../../../config/node-mailer";
 export class OTPRepsositoryImpl implements OTPRepository{
     constructor(private otpDataSource:OtpModelInter){}
 
-    async findByOwnerAndCode(email: string, code: string): Promise<OTP | null> {
-            const otpDoc = await this.otpDataSource.findByEmail(email);
+    async findByOwnerAndCode( code: string): Promise<OTP | null> {
+            const otpDoc = await this.otpDataSource.findByEmail(code);
             if (!otpDoc) {
                 throw new CustomError('OTP does not exist or has expired', 404);
             }  
@@ -20,8 +20,11 @@ export class OTPRepsositoryImpl implements OTPRepository{
 
     }
 
-    async save(otp: OTP): Promise<void> {
-         await this.otpDataSource.create(otp)
+    async save(otp: OTP): Promise<string> {
+        
+        const otpId =  await this.otpDataSource.create(otp);
+        console.log(otpId)
+        return otpId;
     }
 
     generateOTP(): string {
@@ -32,7 +35,7 @@ export class OTPRepsositoryImpl implements OTPRepository{
         return otp;
     }
 
-    async sendOTP(email:string,otp:string):Promise<void>{
+    async sendOTP(email:string,otp:string):Promise<string>{
         
         try {
             await this.sendOtpTOMail(email,otp);
@@ -46,35 +49,32 @@ export class OTPRepsositoryImpl implements OTPRepository{
                 createdAt: new Date(),
                 expiresAt: new Date(Date.now() + 60 * 1000), 
             };
-            await this.save(otpDocument);
-            return ;
+           const otpId =  await this.save(otpDocument);
+            return otpId;
         } catch (error) {
             console.error('Error sending OTP:', error);
             throw new CustomError('Error sending OTP', 500); 
         }
     }
-    async resendOtp(email: string): Promise<void> {
+    async resendOtp(otpId: string): Promise<void> {
         const newOTP = this.generateOTP();
         console.log("\nNew Resend Otp generated",newOTP);
         try {
-            const existingOTP = await this.otpDataSource.findByEmail(email);
+            const existingOTP = await this.otpDataSource.findById(otpId);
+            console.log(existingOTP,"\nexistingOTP")
+            if(!existingOTP){
+                throw new CustomError('Invalid token or Otp Expires Please Register again',423);
+            }
             if (existingOTP) {
                 
                 existingOTP.otp = newOTP;
+                existingOTP.validFor=60;
+                existingOTP.createdAt = new Date();
+                existingOTP.expiresAt = new Date(Date.now() + 60 * 60 * 1000);  // Add extra 2 minutes to the Expiry time for any retry of OTP
                 await this.save(existingOTP);
-            } else {
-              console.log("\nuser Otp Document is expired Creating again...");
-                const otpDocument: OTP = {
-                    email: email,
-                    otp: newOTP,
-                    status: 'NOTUSED',
-                    createdAt: new Date(),
-                    validFor:60,
-                    expiresAt: new Date(Date.now() + 60 * 1000),
-                };
-                await this.save(otpDocument);
-            }
-            await this.sendOtpTOMail(email,newOTP);
+                await this.sendOtpTOMail(existingOTP.email,newOTP);
+            } 
+            
         } catch (error) {
             console.error('Error resending OTP:', error);
             throw new CustomError('Error resending OTP', 500); 

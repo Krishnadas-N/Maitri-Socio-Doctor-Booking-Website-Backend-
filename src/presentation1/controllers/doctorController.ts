@@ -2,6 +2,8 @@ import { Request,Response,NextFunction } from "express";
 import { sendSuccessResponse } from "../../../utils/ReponseHandler";
 import { DoctorService } from "../../domain1/interfaces/use-cases/Doctor-Service/authentication/doctor-authentication";
 import { CustomError } from "../../../utils/CustomError";
+import cloudinary from "../../../config/cloudinary";
+import { dataUri } from "../../../config/multerConfig";
 
 export function registerBasicInfo(doctorService: DoctorService) {
     return async function (req: Request, res: Response, next: NextFunction) {
@@ -29,17 +31,29 @@ export function registerBasicInfo(doctorService: DoctorService) {
 export function registerProfessionalInfo(doctorService: DoctorService) {
     return async function (req: Request, res: Response, next: NextFunction) {
         try {
-            const token: string | undefined = req.query.token as string | undefined;
+            console.log(req.body)
+            const token: string | undefined = req.query.authToken as string | undefined;
             if(!token){
                 throw new CustomError("Token is Not found in query",401);
             }
-            const { specialization, education, experience, certifications, languages, consultationFee } = req.body;
+            if (!req.files || req.files.length === 0) {
+                throw new CustomError('No files uploaded', 400);
+            
+            }
+            
+            const cloudinaryUrls = req.body.cloudinaryUrls;
+            if (cloudinaryUrls.length === 0) {
+                console.error('No Cloudinary URLs found.');
+                return res.status(500).send('Internal Server Error');
+            }
+            const certificationUrls: string[] = cloudinaryUrls;
+            const { specialization, education, experience, languages, consultationFee } = req.body;
 
             await doctorService.registerProfessionalInfoUseCase({
                 specialization,
                 education,
                 experience,
-                certifications,
+                certifications:certificationUrls,
                 languages,
                 consultationFee
             },token);
@@ -59,14 +73,15 @@ export function registerAdditionalInfo(doctorService: DoctorService) {
             if(!token){
                 throw new CustomError("Token is Not found in query",401);
             }
-            const { profilePic, bio, availability, maxPatientsPerDay, onlineConsultation } = req.body;
+
+            const { profilePic, bio, availability, maxPatientsPerDay, typesOfConsultation } = req.body;
 
             await doctorService.RegisterAdditionalInfoUseCase({
                 profilePic,
                 bio,
                 availability,
                 maxPatientsPerDay,
-                onlineConsultation
+                typesOfConsultation
             },token);
 
             return sendSuccessResponse(res, null, "Additional information registered successfully");

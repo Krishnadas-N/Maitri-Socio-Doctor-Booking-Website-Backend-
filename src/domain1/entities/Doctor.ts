@@ -59,7 +59,7 @@ class Doctor {
       public updatedAt: Date,
       public followers: string[],
       public isVerified:boolean,
-      public onlineConsultation:boolean,
+      public typesOfConsultation: ('video' | 'chat' | 'clinic')[],
       public maxPatientsPerDay:number,
       public rating : number,
       public reviews?: Review[],

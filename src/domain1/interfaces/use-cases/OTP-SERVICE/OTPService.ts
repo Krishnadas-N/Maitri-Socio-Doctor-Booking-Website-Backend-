@@ -1,5 +1,5 @@
 
 export interface OTPService{
     resendOtp(email:string):Promise<void>;
-    verifyOTP(email: string, code: string,userType:string): Promise<boolean>;
+    verifyOTP(code: string,section:string): Promise<boolean | string>;
 }

@@ -3,19 +3,23 @@ import { OTPRepository } from "../../interfaces/repositories/OTP-Repository";
 import { OTP } from "../../entities/OTP";
 import { CustomError } from "../../../../utils/CustomError";
 import { UserRepository } from "../../interfaces/repositories/user-Authentication";
+import { IDoctorsRepository } from "../../interfaces/repositories/Doctor-Repository";
+import { generateToken, verifyToken } from "../../../../utils/tokenizeData-Helper";
 
 export class OTPServiceImpl implements OTPService {
   constructor(
     private readonly otpRepository: OTPRepository,
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
+    private readonly doctorRepostory :IDoctorsRepository
   ) {}
 
   async verifyOTP(
-    email: string,
     code: string,
-    userType: string
-  ): Promise<boolean> {
-    const otp = await this.otpRepository.findByOwnerAndCode(email, code);
+    section: string
+  ): Promise<boolean|string> {
+
+    console.log(code ,section,"From otp  service");
+    const otp = await this.otpRepository.findByOwnerAndCode(code);
     console.log("Log from use case VerifyOtp");
     console.log(otp);
     if (!otp) {
@@ -31,24 +35,33 @@ export class OTPServiceImpl implements OTPService {
     if (elapsedTime > validForMs) {
       throw new CustomError("OTP has expired", 400);
     }
-    switch (userType) {
+    let token:string;
+    switch (section) {
       case "user":
-        await this.userRepository.markAsVerified(email);
+        await this.userRepository.markAsVerified(otp.email);
         break;
       // case 'admin':
       //     await this.adminRepository.markAsVerified(email);
       //     break;
       case "doctor":
+        await this.doctorRepostory.markAsVerified(otp.email);
+        token = await generateToken(otp.email); // Generate token for doctor
+        await this.otpRepository.markAsUsed(otp.email);
+        return token; // Return the token
       default:
-        await this.userRepository.markAsVerified(email);
+        await this.userRepository.markAsVerified(otp.email);
         break;
     }
-    await this.otpRepository.markAsUsed(email);
+    
+    await this.otpRepository.markAsUsed(otp.email);
     return otp.otp === code;
   }
-  async resendOtp(email: string): Promise<void> {
+
+
+  async resendOtp(authToken: string): Promise<void> {
     console.log("Log from use case resend otp");
-    console.log(email);
-    this.otpRepository.resendOtp(email);
+    const ownerId = verifyToken(authToken);
+    console.log(ownerId);
+    this.otpRepository.resendOtp(ownerId.data);
   }
 }

@@ -5,7 +5,8 @@ dotenv.config();
 const secret = process.env.TokenHelper || 'default_secret';
 
 export function generateToken(data: any): string {
-    const token = jwt.sign(data, secret);
+    const payload = typeof data === 'object' ? data : { data };
+    const token = jwt.sign(payload, secret, { expiresIn: '1h' });
     return token;
 }
 

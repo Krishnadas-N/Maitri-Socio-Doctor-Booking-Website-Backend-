@@ -10,11 +10,11 @@ export class VerifyOtpMiddleware {
     async handle(req: Request, res: Response, next: NextFunction) {
         try {
             console.log("Log from Controllers Verify otp");
-            const isVerified = await this.otpService.verifyOTP(req.body.email, req.body.otp,req.body.userType);
-            if (!isVerified) {
+            const data = await this.otpService.verifyOTP(req.body.otp,req.body.section);
+            if (!data) {
                 throw new CustomError("Otp is incorrect or time Expired", 409);
             }
-            return sendSuccessResponse(res, isVerified, "User created successful");
+            return sendSuccessResponse(res, data, "User created successful");
         } catch (err) {
             console.log("Error passing yyy")
             next(err);
@@ -27,8 +27,8 @@ export class ResendOtpMiddleware {
 
     async handle(req: Request, res: Response, next: NextFunction) {
         try {
-        console.log("Log from Controllers of Resend otp ",req.body.email);
-        this.otpService.resendOtp(req.body.email);
+        console.log("Log from Controllers of Resend otp ",req.body.authToken);
+        this.otpService.resendOtp(req.body.authToken);
         return sendSuccessResponse(res, {}, "User created successful");
     } catch (err) {
         console.log("Error passing yyy")
