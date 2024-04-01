@@ -5,7 +5,7 @@ import { DoctorServiceImpl } from "../../domain1/use-cases/Specialization/specia
 import { IDoctorSpecializtionRepoImpl } from "../../domain1/repositories/specialization-repository";
 import { MongoDbDoctorSpecializtionDataSource } from "../../data1/data-sources/mongodb/mongodb-specialization-dataSource";
 import { SpecializationController } from "../controllers/specializationController";
-export const specRouter = Router();
+const specRouter = Router();
 
 
 const doctorSpecDataSource = new MongoDbDoctorSpecializtionDataSource();

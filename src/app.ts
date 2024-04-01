@@ -11,6 +11,7 @@ import { CustomError } from '../utils/CustomError';
 import otpRouter from './presentation1/routers/otpRouter';
 import specRouter from './presentation1/routers/specRouter';
 import doctorRouter from './presentation1/routers/doctorRouter';
+import postRouter from './presentation1/routers/postRouter';
 
 // const passport = require('passport');
 dotenv.config();
@@ -31,8 +32,8 @@ app.use(morgan('combined'))
 app.use('/api/users', userRouter);
 app.use('/api/otp',otpRouter);
 app.use('/api/spec',specRouter);
-app.use('/api/doctors',doctorRouter)
-
+app.use('/api/doctors',doctorRouter);
+app.use('/posts/',postRouter);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.log("Error Handler Comes In");
