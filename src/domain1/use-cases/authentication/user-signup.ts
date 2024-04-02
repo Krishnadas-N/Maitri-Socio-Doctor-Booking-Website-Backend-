@@ -1,4 +1,5 @@
 import { CustomError } from "../../../../utils/CustomError";
+import { generateToken } from "../../../../utils/tokenizeData-Helper";
 import { User } from "../../entities/User";
 import { OTPRepository } from "../../interfaces/repositories/OTP-Repository";
 import { UserRepository } from "../../interfaces/repositories/user-Authentication"; 
@@ -12,16 +13,18 @@ export class userSignup implements UserSignup{
     async execute(user: UserWithoutId): Promise<string | null> {
         console.log("Log from use cases (userSignup)");
         const userIsExist = await this.userRepository.findByEmail(user.email);
-        if (userIsExist) {    
+        if (userIsExist && userIsExist.isVerified === true) {    
             throw new CustomError('User Already Exists',409);                    
         }else{
-        const savedUser =  await this.userRepository.save(user);
-        console.log(savedUser)
+            if(!userIsExist){
+                await this.userRepository.save(user);
+            }
         const otp = this.otpRepository.generateOTP();
         console.log(otp);
-        await this.otpRepository.sendOTP(savedUser.email,otp);
+        const otpId= await this.otpRepository.sendOTP(user.email,otp);
+        const token  = await generateToken(otpId);
         console.log("Otp data Saved in datbase")
-        return otp
+        return token
         }
     }
 }

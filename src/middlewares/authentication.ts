@@ -1,22 +1,23 @@
 
 import {Request, NextFunction ,Response} from "express";
-import { userUseCase } from "../domain1/interfaces/use-cases/UserService/User-usecase";
 import { CustomError } from "../../utils/CustomError";
-import { User } from "../domain1/entities/User";
+import { verifyToken } from "../../utils/tokenizeData-Helper";
 
 
-export const verifyUserMiddleware = (userUseCase: userUseCase) => {
+export const verifyUserMiddleware = () => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const userId = req.params.userId; 
-             console.log(userId,"User Id from User Profile");
-            const user: User = await userUseCase.profile(userId);
-
-            if (user.isVerified) {
-              return next();
-            } else {
-               throw new CustomError('User Crenditals is not Verified',403)
-            }
+          console.log("Log from jwt middleware")
+          if (!req.headers.authorization) {
+            throw new CustomError('Authorization header is missing',403); // Use a custom error if desired
+          }
+          
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedToken = verifyToken(token);
+        console.log(decodedToken);
+        req.user = decodedToken.payload;
+        
+        next();
         } catch (error) {
           console.error('Error verifying user:', error);
           next(error)

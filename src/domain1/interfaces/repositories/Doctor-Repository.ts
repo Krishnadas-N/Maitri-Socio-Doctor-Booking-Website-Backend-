@@ -4,8 +4,8 @@ export interface  IDoctorsRepository {
     findDoctorByEmail(email: string): Promise<Doctor | null>;
     findDoctorById(id: string): Promise<Doctor | null>;
     saveBasicInfo(doctor: Partial<Doctor>): Promise<string>;
-    saveProfessionalInfo(doctor: Partial<Doctor>,email:string):Promise<void>;
-    saveAdditionalInfo(doctor: Partial<Doctor>,email:string):Promise<void>;
+    saveProfessionalInfo(doctor: Partial<Doctor>,email:string):Promise<Partial<Doctor> | null>;
+    saveAdditionalInfo(doctor: Partial<Doctor>,email:string):Promise<Partial<Doctor> | null>;
     markAsVerified(email:string): Promise<void>; 
 }
 

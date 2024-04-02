@@ -25,7 +25,7 @@ userRouter.post('/login',loginValidateUser,loginController(loginUseCase));
 
 userRouter.post('/register',SignupValidateUser,signupController(signupUseCase));
 
-userRouter.get('/profile/:userId',verifyUserMiddleware(userService),userController.getUserProfile);
+userRouter.get('/profile/:userId',verifyUserMiddleware,userController.getUserProfile);
 
 
 export default userRouter;

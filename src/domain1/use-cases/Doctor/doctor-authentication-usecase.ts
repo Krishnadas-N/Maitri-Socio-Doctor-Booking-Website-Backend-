@@ -1,6 +1,7 @@
 import { CustomError } from "../../../../utils/CustomError";
 import { PasswordUtil } from "../../../../utils/PasswordUtils";
 import { generateToken, verifyToken } from "../../../../utils/tokenizeData-Helper";
+import { LoginResponse } from "../../../models/docotr-authenticationModel";
 import Doctor from "../../entities/Doctor";
 import { IDoctorsRepository } from "../../interfaces/repositories/Doctor-Repository";
 import { OTPRepository } from "../../interfaces/repositories/OTP-Repository";
@@ -48,11 +49,11 @@ export class DoctorAuthUseCaseImpl implements DoctorService{
     }
     }
 
-    async registerProfessionalInfoUseCase(doctorData: Partial<Doctor>,token:string): Promise<void> {
+    async registerProfessionalInfoUseCase(doctorData: Partial<Doctor>,token:string): Promise<Partial<Doctor> | null> {
         try {
             const data = await verifyToken(token);
             console.log(data)
-            await this.doctorRepository.saveProfessionalInfo(doctorData,data.data);
+            return await this.doctorRepository.saveProfessionalInfo(doctorData,data.data);
         }catch (error:any) {
                 if (error instanceof CustomError) {
                     throw error; 
@@ -64,10 +65,10 @@ export class DoctorAuthUseCaseImpl implements DoctorService{
         }
         
 
-    async RegisterAdditionalInfoUseCase(doctorData: Partial<Doctor>,token:string): Promise<void> {
+    async RegisterAdditionalInfoUseCase(doctorData: Partial<Doctor>,token:string): Promise<Partial<Doctor> | null> {
         try {
             const email = await verifyToken(token);
-            await this.doctorRepository.saveAdditionalInfo(doctorData,email);
+           return await this.doctorRepository.saveAdditionalInfo(doctorData,email);
         }catch (error:any) {
                 if (error instanceof CustomError) {
                     throw error; 
@@ -80,7 +81,7 @@ export class DoctorAuthUseCaseImpl implements DoctorService{
     }
    
     
-    async login(email: string, password: string): Promise<string | null> {
+    async login(email: string, password: string): Promise<LoginResponse | null> {
         try {
             const doctor=await this.doctorRepository.findDoctorByEmail(email);
             if(!doctor){
@@ -94,8 +95,8 @@ export class DoctorAuthUseCaseImpl implements DoctorService{
                 throw new CustomError('Invalid password',409);          
             }
             console.log(email,password);
-            const token  = await generateToken({_id:doctor._id,email});
-            return token;
+            const token  = await generateToken({_id:doctor._id,role:'doctor'});
+            return {doctor,token};
         }catch (error:any) {
                 if (error instanceof CustomError) {
                     throw error; 

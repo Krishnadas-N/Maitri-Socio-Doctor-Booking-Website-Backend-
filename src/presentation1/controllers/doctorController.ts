@@ -2,8 +2,7 @@ import { Request,Response,NextFunction } from "express";
 import { sendSuccessResponse } from "../../../utils/ReponseHandler";
 import { DoctorService } from "../../domain1/interfaces/use-cases/Doctor-Service/authentication/doctor-authentication";
 import { CustomError } from "../../../utils/CustomError";
-import cloudinary from "../../../config/cloudinary";
-import { dataUri } from "../../../config/multerConfig";
+// import cloudinary from "../../../config/cloudinary";
 
 export function registerBasicInfo(doctorService: DoctorService) {
     return async function (req: Request, res: Response, next: NextFunction) {
@@ -49,7 +48,7 @@ export function registerProfessionalInfo(doctorService: DoctorService) {
             const certificationUrls: string[] = cloudinaryUrls;
             const { specialization, education, experience, languages, consultationFee } = req.body;
 
-            await doctorService.registerProfessionalInfoUseCase({
+            const doctorData=  await doctorService.registerProfessionalInfoUseCase({
                 specialization,
                 education,
                 experience,
@@ -58,7 +57,7 @@ export function registerProfessionalInfo(doctorService: DoctorService) {
                 consultationFee
             },token);
 
-            return sendSuccessResponse(res, null, "Professional information registered successfully");
+            return sendSuccessResponse(res, doctorData, "Professional information registered successfully");
         } catch (err) {
             console.error("Error occurred while registering professional info:", err);
             next(err);
@@ -76,7 +75,7 @@ export function registerAdditionalInfo(doctorService: DoctorService) {
 
             const { profilePic, bio, availability, maxPatientsPerDay, typesOfConsultation } = req.body;
 
-            await doctorService.RegisterAdditionalInfoUseCase({
+          const doctorData=  await doctorService.RegisterAdditionalInfoUseCase({
                 profilePic,
                 bio,
                 availability,
@@ -84,7 +83,7 @@ export function registerAdditionalInfo(doctorService: DoctorService) {
                 typesOfConsultation
             },token);
 
-            return sendSuccessResponse(res, null, "Additional information registered successfully");
+            return sendSuccessResponse(res, doctorData, "Additional information registered successfully");
         } catch (err) {
             console.error("Error occurred while registering additional info:", err);
             next(err);
@@ -97,13 +96,13 @@ export function login(doctorService: DoctorService) {
         try {
             const { email, password } = req.body;
 
-            const doctor = await doctorService.login(email, password);
+            const doctorLoggedInData = await doctorService.login(email, password);
 
-            if (!doctor) {
+            if (!doctorLoggedInData) {
               throw new CustomError( "Invalid credentials", 401);
             }
 
-            return sendSuccessResponse(res, doctor, "Login successful");
+            return sendSuccessResponse(res, doctorLoggedInData, "Login successful");
         } catch (err) {
             console.error("Error occurred during login:", err);
             next(err);

@@ -12,7 +12,8 @@ import otpRouter from './presentation1/routers/otpRouter';
 import specRouter from './presentation1/routers/specRouter';
 import doctorRouter from './presentation1/routers/doctorRouter';
 import postRouter from './presentation1/routers/postRouter';
-
+import passport from 'passport';
+// import "../config/passport";
 // const passport = require('passport');
 dotenv.config();
 mongoose.connect(process.env.MONGODB_URL as string)
@@ -27,6 +28,7 @@ app.disable("x-powered-by");
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());  
+app.use(passport.initialize()); 
 app.use(morgan('combined'))
 
 app.use('/api/users', userRouter);
@@ -34,6 +36,24 @@ app.use('/api/otp',otpRouter);
 app.use('/api/spec',specRouter);
 app.use('/api/doctors',doctorRouter);
 app.use('/posts/',postRouter);
+/* GET Google Authentication API. */
+
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {  scope: ["email", "profile"] })
+);
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/", session: false }),
+  (req, res) => {
+    const token = (req.user as any).token; // Assuming user object contains token
+    res.redirect(`http://localhost:3000?token=${token}`);
+  }
+);
+
+
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.log("Error Handler Comes In");

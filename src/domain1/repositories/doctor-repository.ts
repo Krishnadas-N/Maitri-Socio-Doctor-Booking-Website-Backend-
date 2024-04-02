@@ -51,9 +51,9 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
         }
     }
 
-    async saveAdditionalInfo(doctor: Partial<Doctor>, email: string): Promise<void> {
+    async saveAdditionalInfo(doctor: Partial<Doctor>, email: string): Promise<Partial<Doctor> | null> {
         try{
-        await this.doctorDataSource.DbsaveAdditionalInfo(doctor, email);
+         return  await this.doctorDataSource.DbsaveAdditionalInfo(doctor, email);
         }catch(error:any){
         if (error instanceof CustomError) {
             throw error; 
@@ -64,10 +64,10 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
     }
     }
 
-    async saveProfessionalInfo(doctor: Partial<Doctor>, email: string): Promise<void> {
+    async saveProfessionalInfo(doctor: Partial<Doctor>, email: string): Promise<Partial<Doctor> | null> {
         try{
             console.log(email,doctor,"comsole from reposootory profrssional info")
-            await this.doctorDataSource.DbsaveProfessionalInfo(doctor, email);
+            return await this.doctorDataSource.DbsaveProfessionalInfo(doctor, email);
             }catch(error:any){
             if (error instanceof CustomError) {
                 throw error; 

@@ -9,8 +9,8 @@ export function signupController(userSignup: UserSignup) {
     return async function (req: Request, res: Response, next: NextFunction) {
         try {
             console.log("Log from Controllers (1)");
-            const newUser = await userSignup.execute(req.body);
-            return sendSuccessResponse(res, newUser, "User created successful");
+            const token = await userSignup.execute(req.body);
+            return sendSuccessResponse(res, {token}, "User created successful");
         } catch (err) {
             console.log("Error passing yyy")
             next(err);

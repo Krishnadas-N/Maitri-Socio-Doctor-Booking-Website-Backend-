@@ -29,7 +29,7 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
       }
       
 
-    async DbsaveProfessionalInfo(doctor: Partial<Doctor>,email:string): Promise<void> {
+    async DbsaveProfessionalInfo(doctor: Partial<Doctor>,email:string): Promise<Partial<Doctor> | null> {
         console.log(email,"email from  db save professional")
         const { address, specialization, education, experience, languages, certifications } = doctor;
         const existingDoctor = await DoctorModel.findOne({ email });
@@ -59,9 +59,10 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
             existingDoctor.certifications.push(...certifications);
         }
         await existingDoctor.save();
+        return existingDoctor;
     }
 
-    async DbsaveAdditionalInfo(doctor: Partial<Doctor>, email: string): Promise<void> {
+    async DbsaveAdditionalInfo(doctor: Partial<Doctor>, email: string): Promise<Partial<Doctor> | null> {
         const { consultationFee, profilePic, availability, typesOfConsultation, maxPatientsPerDay } = doctor;
         const existingDoctor = await DoctorModel.findOne({ email });
         if (!existingDoctor) {
@@ -92,6 +93,7 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
         }
     
         await existingDoctor.save();
+        return existingDoctor;
     }
     
 
