@@ -5,14 +5,15 @@ import dotenv from 'dotenv';
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { sendErrorResponse } from '../utils/ReponseHandler';
-import userRouter from './presentation1/routers/userRouter';
+import userRouter from './presentation/routers/userRouter';
 import morgan from 'morgan';
 import { CustomError } from '../utils/CustomError';
-import otpRouter from './presentation1/routers/otpRouter';
-import specRouter from './presentation1/routers/specRouter';
-import doctorRouter from './presentation1/routers/doctorRouter';
-import postRouter from './presentation1/routers/postRouter';
+import otpRouter from './presentation/routers/otpRouter';
+import specRouter from './presentation/routers/specRouter';
+import doctorRouter from './presentation/routers/doctorRouter';
+import postRouter from './presentation/routers/postRouter';
 import passport from 'passport';
+import { adminRouter } from './presentation/routers/adminRouter';
 // import "../config/passport";
 // const passport = require('passport');
 dotenv.config();
@@ -35,7 +36,8 @@ app.use('/api/users', userRouter);
 app.use('/api/otp',otpRouter);
 app.use('/api/spec',specRouter);
 app.use('/api/doctors',doctorRouter);
-app.use('/posts/',postRouter);
+app.use('/api/posts/',postRouter);
+app.use('/api/admin',adminRouter);
 /* GET Google Authentication API. */
 
 

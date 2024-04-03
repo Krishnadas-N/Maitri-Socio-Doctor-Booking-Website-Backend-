@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
+import { randomBytes } from 'crypto';
 
 const secret = process.env.TokenHelper || 'default_secret';
 
@@ -17,4 +18,11 @@ export function verifyToken(token: string): any | null {
     } catch (error) {
         return null;
     }
+}
+
+
+
+export function generateRandomToken(length: number = 32): string {
+    const token = randomBytes(length).toString('hex');
+    return token;
 }
