@@ -9,6 +9,8 @@ export interface  IDoctorsRepository {
     markAsVerified(email:string): Promise<void>; 
     setResetToken(email: string): Promise<void>;
     findResetTokenAndSavePassword(token: string, password: string): Promise<void>;
+    AcceptDoctorProfile(id:string):Promise<Doctor>;
+    GetDoctors(page?:number,searchQuery?:string,itemsPerPage?: number):Promise<Doctor[]>;
 }
 
 

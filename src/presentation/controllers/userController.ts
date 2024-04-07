@@ -67,4 +67,41 @@ export class UserController{
         next(error)
        }
    }
+
+   async getAllUsers(req: Request, res: Response,next:NextFunction){
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const pageSize = parseInt(req.query.pageSize as string) || 10;
+        const searchQuery = req.query.searchQuery as string || '';
+
+        const users = await this.userUseCase.getAllUsers(page, pageSize, searchQuery);
+        return sendSuccessResponse(res,users,'Message sent Successfully');
+    } catch (error) {
+        console.error('Error fetching users:', error);
+       next(error)
+    }
+    }
+
+    async BlockOrUnBlokUser(req: Request, res: Response,next:NextFunction){
+        try {
+            const  userId = req.params.userId;
+            const user = await this.userUseCase.BlockOrUnblockUser(userId);
+            return sendSuccessResponse(res,user,'Message sent Successfully');
+        } catch (error) {
+            console.error('Error fetching While Blocking User:', error);
+           next(error)
+        }
+    }
+
+    async getUserById(req: Request, res: Response,next:NextFunction){
+        try {
+            const userId=req.params.userId;
+            const userProfile = await this.userUseCase.profile(userId);
+            return  sendSuccessResponse(res, userProfile,"user profile fetched successfully");
+        } catch (error) {
+            console.error('Error fetching While Blocking User:', error);
+           next(error)
+        }
+    }
+
 }

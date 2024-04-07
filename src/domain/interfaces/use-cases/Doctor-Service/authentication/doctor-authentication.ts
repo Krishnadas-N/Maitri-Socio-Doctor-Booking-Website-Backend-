@@ -8,5 +8,5 @@ export interface DoctorService{
    login(email:string,password:string):Promise<LoginResponse | null>;
    forgotPassword(email:string):Promise<void>;
    setResetPassword(token:string,password:string):Promise<void>;
-    
+   AcceptDoctorProfile(id:string):Promise<Doctor>;
 }

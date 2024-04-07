@@ -2,6 +2,7 @@ import { Request,Response,NextFunction } from "express";
 import { sendSuccessResponse } from "../../../utils/ReponseHandler";
 import { DoctorService } from "../../domain/interfaces/use-cases/Doctor-Service/authentication/doctor-authentication";
 import { CustomError } from "../../../utils/CustomError";
+import { IDoctorUsecase } from "../../domain/interfaces/use-cases/Doctor-Service/Idoctor-Service";
 // import cloudinary from "../../../config/cloudinary";
 
 export function registerBasicInfo(doctorService: DoctorService) {
@@ -135,3 +136,32 @@ export function resetPassword(doctorService: DoctorService) {
 }
 }
 
+export function VerifyProfile(doctorService: DoctorService) {
+    return async function (req:Request,res:Response,next:NextFunction){
+     try{
+      const doctorId = req.params.doctorId;
+      if(!doctorId){
+        throw new CustomError('No Id provided in the Token',400)
+      }
+        await doctorService.AcceptDoctorProfile(doctorId)
+        return sendSuccessResponse(res,"Password Reset Successfully","Password has been changed")
+     }catch(error){
+      next(error)
+     }
+  }
+  }
+
+export function getDoctors(doctorService:IDoctorUsecase){
+    return async function (req:Request,res:Response,next:NextFunction){
+        try{
+            const page = parseInt(req.query.page as string, 10) || 1;
+            const  limit = parseInt(req.query.limit as string, 10) || 25;
+            const search = (req.query.search as string) || '';
+            console.log(page,search,limit);
+              const doctors =await doctorService.GetDoctors(page,search,limit)
+              return sendSuccessResponse(res,{doctors},"Doctors Fetched Success Fully",)
+           }catch(error){
+            next(error)
+           }
+    }
+}

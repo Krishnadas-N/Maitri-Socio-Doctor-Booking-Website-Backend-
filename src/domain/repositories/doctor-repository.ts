@@ -97,6 +97,20 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
     async findResetTokenAndSavePassword(token: string, password: string): Promise<void> {
         await this.doctorDataSource.findResetTokenAndSavePassword(token, password); 
     }
+
+    async AcceptDoctorProfile(id: string): Promise<Doctor> {
+      return await this.doctorDataSource.AcceptprofileComplete(id)
+    }
+    
+   async  GetDoctors(page?: number, searchQuery?: string,itemsPerPage?:number): Promise<Doctor[]> {
+      return  await this.doctorDataSource.findDoctors(page,searchQuery,itemsPerPage)
+    }
+
+
+
+
+
+
     
     private async sendResetPasswordLinkEmail(email: string, resetLink: string): Promise<void> { // Updated function name
         const emailTemplate = resetPasswordLink(resetLink);
@@ -113,6 +127,7 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
             throw new CustomError('Error sending reset password link', 500); 
         }
     }
+  
 
 
 }

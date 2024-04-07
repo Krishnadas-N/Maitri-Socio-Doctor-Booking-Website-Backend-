@@ -14,7 +14,7 @@ const postRepo = new PostRepository(PostDataSource);
 const postUsecase = new PostUsecase(postRepo);
 const postController = new PostController(postUsecase);
 
-postRouter.post('/',verifyUserMiddleware, upload.array('media'),uploadToCloudinary,postController.createPost.bind(postController));
+postRouter.post('/',verifyUserMiddleware, upload.array('media',5),uploadToCloudinary,postController.createPost.bind(postController));
 
 postRouter.get('/',verifyUserMiddleware, postController.getAllPosts.bind(postController));
 

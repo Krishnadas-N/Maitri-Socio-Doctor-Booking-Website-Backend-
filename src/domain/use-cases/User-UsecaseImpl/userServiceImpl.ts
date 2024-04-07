@@ -1,4 +1,5 @@
 import { CustomError } from "../../../../utils/CustomError";
+import { UsersWithTotalCount } from "../../../models/users.model";
 import { User } from "../../entities/User";
 import { UserRepository } from "../../interfaces/repositories/user-IRepository";
 import { userUseCase } from "../../interfaces/use-cases/UserService/User-usecase";
@@ -42,4 +43,26 @@ export class UserUseCaseImpl implements userUseCase{
     }
    }
 
+   async getAllUsers(page: number, pageSize: number, searchQuery: string): Promise<UsersWithTotalCount> {
+    try {
+        return await this.UserRepo.getAllUsers(page, pageSize, searchQuery);
+      }  
+    catch (error:any) {
+    if (error instanceof CustomError) {
+        throw error;
+        }
+    throw new CustomError(error.message || 'Error In Fetching all Users', 500);
+    }
+    }
+    async BlockOrUnblockUser(id: string): Promise<User> {
+        try {
+            return await this.UserRepo.toggleBlockUser(id);
+          }  
+        catch (error:any) {
+        if (error instanceof CustomError) {
+            throw error;
+            }
+        throw new CustomError(error.message || 'Error In While Changing the status of the User', 500);
+        }
+    }
 }

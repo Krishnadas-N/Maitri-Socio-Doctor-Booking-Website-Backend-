@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import MailService from "../../../config/node-mailer";
 import resetPasswordLink from "../../../templates/resetPasswordEmailTemplate";
 import { CustomError } from "../../../utils/CustomError";
@@ -6,6 +7,7 @@ import { User_Data } from "../../data/interfaces/data-sources/user-data-source";
 import { User } from "../entities/User";
 import { UserRepository } from "../interfaces/repositories/user-IRepository";
 import dotenv from 'dotenv';
+import { UsersWithTotalCount } from "../../models/users.model";
 dotenv.config()
 export class  UserAuthenticationRepoImpl implements UserRepository{
     private dataSource: User_Data;
@@ -50,7 +52,18 @@ export class  UserAuthenticationRepoImpl implements UserRepository{
     async findResetTokenAndSavePassword(token: string, password: string): Promise<void> {
         await this.dataSource.findResetTokenAndSavePassword(token, password); 
     }
+
+    async getAllUsers(page: number, pageSize: number, searchQuery: string): Promise<UsersWithTotalCount> {
+       return await this.dataSource.getAllUsers(searchQuery, page, pageSize);
+    }
     
+     async toggleBlockUser(id: string): Promise<User> {
+        if(!mongoose.Types.ObjectId.isValid(id)){
+            throw new CustomError('Inavlid User Id', 400);
+        }
+        return await this.dataSource.toggleBlockUser(id)
+    }
+
     private async sendResetPasswordLinkEmail(email: string, resetLink: string): Promise<void> { // Updated function name
         const emailTemplate = resetPasswordLink(resetLink);
         const mailService = MailService.getInstance();
@@ -67,4 +80,5 @@ export class  UserAuthenticationRepoImpl implements UserRepository{
         }
     }
     
+
 }

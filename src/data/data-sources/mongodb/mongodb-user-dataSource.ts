@@ -1,5 +1,6 @@
 import { CustomError } from "../../../../utils/CustomError";
 import { User } from "../../../domain/entities/User";
+import { UsersWithTotalCount } from "../../../models/users.model";
 import { User_Data } from "../../interfaces/data-sources/user-data-source";
 import { UserModel } from "./models/user-model";
 
@@ -34,6 +35,7 @@ export class MongoDbUserDataSource implements User_Data {
     async findByEmail(email: string): Promise<User | null> {
         try {
             const user = await UserModel.findOne({ email });
+            console.log(user,"user from databse")
             return user ? user.toObject() as User : null;
         } catch (error) {
             throw new Error(`Error finding user by email: ${error}`);
@@ -43,6 +45,7 @@ export class MongoDbUserDataSource implements User_Data {
     async findById(userId: string): Promise<User | null> {
         try {
             const user = await UserModel.findById(userId).exec();
+            console.log(user,"user from databse")
             return user ? user.toObject() as User : null;
         } catch (error) {
             throw new Error(`Error finding user by ID: ${error}`);
@@ -115,5 +118,41 @@ export class MongoDbUserDataSource implements User_Data {
               throw new Error(error.message || 'Internal server error');
             }
         
+    }
+    async getAllUsers(searchQuery: string, page: number, pageSize: number): Promise<UsersWithTotalCount> {
+        try {
+            const regex = new RegExp(searchQuery, 'i');
+            const offset = (page - 1) * pageSize;
+            const users =await UserModel.find({
+                $or: [
+                    { firstName: { $regex: regex } },
+                    { lastName: { $regex: regex } },
+                    { username: { $regex: regex } }
+                ]
+            }).skip(offset).limit(pageSize)
+           const totalCount = await UserModel.countDocuments({
+                $or: [
+                    { firstname: { $regex: regex } },
+                    { lastname: { $regex: regex } },
+                    { username: { $regex: regex } }
+                ]
+            });
+            return {
+                users: users.map(user => user.toObject() as User),
+                totalCount
+            };
+        } catch (error) {
+            throw new Error(`Error getting users: ${error}`);
+        }
+    }
+    async toggleBlockUser(id:string): Promise<User>{
+        const user = await UserModel.findById(id);
+        if (!user) {
+            throw new CustomError('User not found', 404);
+        }
+        user.isBlocked = !user.isBlocked;
+
+            await user.save();
+            return user.toObject() as User;
     }
 }

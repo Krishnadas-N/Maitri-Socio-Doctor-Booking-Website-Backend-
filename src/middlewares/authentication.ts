@@ -9,7 +9,7 @@ export interface CustomRequest extends Request {
 
 export const verifyUserMiddleware = (req: Request, res: Response, next: NextFunction) => {
         try {
-          console.log("Log from jwt middleware")
+          console.log("Log from jwt middleware",req.headers)
           if (!req.headers.authorization) {
             throw new CustomError('Authorization header is missing',403); // Use a custom error if desired
           }

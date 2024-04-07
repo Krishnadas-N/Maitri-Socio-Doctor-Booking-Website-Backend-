@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { CustomError } from "../../../../utils/CustomError";
 import Doctor from "../../../domain/entities/Doctor";
 import { DoctorModelInter } from "../../interfaces/data-sources/doctor-data-source";
@@ -151,5 +152,45 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
                 }
             
         }
+    
+    async AcceptprofileComplete(id:string):Promise<Doctor>{
+        try {
+            if(!mongoose.Types.ObjectId.isValid(id)){
+                throw new CustomError('Invalid doctor ID',400)
+            }
+            const doctor = await DoctorModel.findByIdAndUpdate(id, { isProfileComplete: true }, { new: true }).exec();
+            return doctor?.toObject() as Doctor;
+          } catch (error) {
+            throw new Error(`Error updating profile completion for doctor ${id}: ${error}`);
+          }
+    }
+
+    async findDoctors(page?: number, searchQuery?: string,itemsPerPage?:number): Promise<Doctor[]> {
+        try{
+            const pageNum = page || 1
+            const perPage = itemsPerPage || 10; // Number of items per page
+            const skip = (pageNum - 1) * perPage;
+            let query: any = {};
+            if(searchQuery){
+                query = {
+                    $or: [
+                      { firstName: { $regex: searchQuery, $options: 'i' } }, 
+                      { lastName: { $regex: searchQuery, $options: 'i' } }, 
+                    ],
+                };
+            }
+            const doctors = await DoctorModel.find(query).skip(skip).limit(perPage).exec();
+            return doctors;
+        }catch(error:any){
+            if (error instanceof CustomError) {
+                throw error;
+              }
+          
+              console.error('Unexpected error:', error);
+              throw new Error(error.message || 'Internal server error');
+            }
+        }
+    
+    
   
 }

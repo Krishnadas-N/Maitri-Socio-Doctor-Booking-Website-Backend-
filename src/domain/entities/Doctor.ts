@@ -62,6 +62,7 @@ class Doctor {
       public typesOfConsultation: ('video' | 'chat' | 'clinic')[],
       public maxPatientsPerDay:number,
       public rating : number,
+      public isBlocked?:boolean,
       public reviews?: Review[],
       public isProfileComplete?: boolean,
       public resetToken ?:string | null,

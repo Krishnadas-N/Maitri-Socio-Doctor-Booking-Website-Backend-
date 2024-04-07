@@ -1,3 +1,31 @@
+import { Strategy, ExtractJwt, VerifiedCallback } from 'passport-jwt';
+import fs from 'fs';
+import path from 'path';
+import { tokenData } from '../utils/passportUtils';
+const publicKeyPath = path.join(__dirname, '../id_rsa_pub.pem'); // Update with your public key path
+const publicKey = fs.readFileSync(publicKeyPath, 'utf8');
+
+const options = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: publicKey, 
+    // algorithms: ['RS256'] 
+  };
+
+
+  export default function configurePassport(passport:any) {
+    passport.use(
+        new Strategy(options, async (jwtPayload:tokenData, done: VerifiedCallback) => {
+          try {
+            return done(null, jwtPayload);
+          } catch (error) {
+            return done(error, false);
+          }
+        })
+    )
+    }
+
+
+
 // import passport from "passport";
 // import passportGoogle from "passport-google-oauth20";
 // import dotenv from 'dotenv';

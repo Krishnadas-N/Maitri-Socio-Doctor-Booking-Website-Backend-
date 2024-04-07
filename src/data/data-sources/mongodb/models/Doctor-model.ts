@@ -118,6 +118,10 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
   },
   resetToken:{
     type:String,
+  },
+  isBlocked:{
+    type:Boolean,
+    default:false
   }
 });
 

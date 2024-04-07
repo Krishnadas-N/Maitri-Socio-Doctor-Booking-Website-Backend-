@@ -14,13 +14,13 @@ import doctorRouter from './presentation/routers/doctorRouter';
 import postRouter from './presentation/routers/postRouter';
 import passport from 'passport';
 import { adminRouter } from './presentation/routers/adminRouter';
+import configurePassport from '../config/passport';
 // import "../config/passport";
 // const passport = require('passport');
 dotenv.config();
 mongoose.connect(process.env.MONGODB_URL as string)
   .then(() => console.log('Connected to MongoDB'))
   .catch((error) => console.error(error));
-
 
 const app: Application = express();
 const port = process.env.PORT || 3000;
@@ -32,28 +32,32 @@ app.use(express.json());
 app.use(passport.initialize()); 
 app.use(morgan('combined'))
 
+configurePassport(passport);
+
+
+
 app.use('/api/users', userRouter);
 app.use('/api/otp',otpRouter);
 app.use('/api/spec',specRouter);
 app.use('/api/doctors',doctorRouter);
-app.use('/api/posts/',postRouter);
+app.use('/api/posts',postRouter);
 app.use('/api/admin',adminRouter);
 /* GET Google Authentication API. */
 
 
-app.get(
-  "/auth/google",
-  passport.authenticate("google", {  scope: ["email", "profile"] })
-);
+// app.get(
+//   "/auth/google",
+//   passport.authenticate("google", {  scope: ["email", "profile"] })
+// );
 
-app.get(
-  "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/", session: false }),
-  (req, res) => {
-    const token = (req.user as any).token; // Assuming user object contains token
-    res.redirect(`http://localhost:3000?token=${token}`);
-  }
-);
+// app.get(
+//   "/auth/google/callback",
+//   passport.authenticate("google", { failureRedirect: "/", session: false }),
+//   (req, res) => {
+//     const token = (req.user as any).token; // Assuming user object contains token
+//     res.redirect(`http://localhost:3000?token=${token}`);
+//   }
+// );
 
 
 

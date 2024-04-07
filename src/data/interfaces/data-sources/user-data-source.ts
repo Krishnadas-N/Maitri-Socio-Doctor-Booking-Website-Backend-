@@ -10,4 +10,6 @@ export interface User_Data{
     verifyUser(email:string):Promise<void>;
     saveResetToken(token:string,email:string):Promise<void>;
     findResetTokenAndSavePassword(token:string,password:string):Promise<void>;
+    getAllUsers(searchQuery:string, page:number, pageSize:number):Promise<UsersWithTotalCount>;
+    toggleBlockUser(id:string):Promise<User>;
 }

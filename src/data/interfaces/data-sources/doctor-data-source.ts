@@ -9,4 +9,6 @@ export interface DoctorModelInter{
     findById(id:string):Promise<Doctor|null>;
     saveResetToken(token:string,email:string):Promise<void>;
     findResetTokenAndSavePassword(token:string,password:string):Promise<void>;
+    AcceptprofileComplete(id:string):Promise<Doctor>;
+    findDoctors(page?:number,searchQuery?:string,itemsPerPage?: number): Promise<Doctor[]>;
 }

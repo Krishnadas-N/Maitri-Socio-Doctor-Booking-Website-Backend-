@@ -31,5 +31,10 @@ userRouter.post('/forgot-password', userController.forgotPassword.bind(userContr
 
 userRouter.post('/reset-password/:token', userController.resetPassword.bind(userController)); 
 
+userRouter.get('/get-Users',verifyUserMiddleware,userController.getAllUsers.bind(userController))
+
+userRouter.patch('/change-status/:userId',verifyUserMiddleware,userController.BlockOrUnBlokUser.bind(userController));
+
+userRouter  .get('/get-byId/:userId',userController.getUserById.bind(userController));
 
 export default userRouter;

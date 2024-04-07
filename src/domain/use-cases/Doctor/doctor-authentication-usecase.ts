@@ -133,5 +133,19 @@ export class DoctorAuthUseCaseImpl implements DoctorService{
            throw new CustomError(error.message || 'Error In forgotPassword', 500);
        }
       }
+
+      async AcceptDoctorProfile(id: string): Promise<Doctor> {
+        try {
+            if(!id ){
+                throw new CustomError('Id  is not provided',400);
+            }
+            return await this.doctorRepository.AcceptDoctorProfile(id);
+        } catch (error:any) {
+            if (error instanceof CustomError) {
+                throw error;
+            }
+            throw new CustomError(error.message || 'Error In Accepting Doctor Profile', 500);
+        }
+      }
    
 }
