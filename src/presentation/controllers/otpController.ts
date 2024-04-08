@@ -28,7 +28,7 @@ export class ResendOtpMiddleware {
     async handle(req: Request, res: Response, next: NextFunction) {
         try {
         console.log("Log from Controllers of Resend otp ",req.body.authToken);
-        this.otpService.resendOtp(req.body.authToken);
+        await this.otpService.resendOtp(req.body.authToken);
         return sendSuccessResponse(res, {}, "User created successful");
     } catch (err) {
         console.log("Error passing yyy")

@@ -106,12 +106,14 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
       return  await this.doctorDataSource.findDoctors(page,searchQuery,itemsPerPage)
     }
 
+    async changeStatusofDoctor(id: string): Promise<Doctor> {
+        return  await this.doctorDataSource.changeStatusofDoctor(id)
+    }
 
 
 
 
 
-    
     private async sendResetPasswordLinkEmail(email: string, resetLink: string): Promise<void> { // Updated function name
         const emailTemplate = resetPasswordLink(resetLink);
         const mailService = MailService.getInstance();
@@ -127,6 +129,8 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
             throw new CustomError('Error sending reset password link', 500); 
         }
     }
+
+ 
   
 
 

@@ -6,7 +6,7 @@ import { IDoctorSpecializtionRepo } from "../interfaces/repositories/Specializat
 
 export class IDoctorSpecializtionRepoImpl implements  IDoctorSpecializtionRepo{
     constructor(private SpecDataSource:SpecilaizationInter){}
-    async block(id: string): Promise<boolean> {
+    async block(id: string): Promise<DoctorSpecializtion> {
         try {
             return await this.SpecDataSource.blockSpec(id);
         } catch (error:any) {
@@ -15,9 +15,9 @@ export class IDoctorSpecializtionRepoImpl implements  IDoctorSpecializtionRepo{
             throw new CustomError(error.message||"Error while blocking specialization",500); // Rethrow the error to the caller
         }   
     }
-    async create(specData: Pick<DoctorSpecializtion, "name" | "description">): Promise<void> {
+    async create(specData: Pick<DoctorSpecializtion, "name" | "description">): Promise<DoctorSpecializtion> {
         try {
-            await this.SpecDataSource.create(specData);
+          return  await this.SpecDataSource.create(specData);
         } catch (error:any) {
             // Handle errors
             console.error("Error while creating specialization:", error);
@@ -32,9 +32,9 @@ export class IDoctorSpecializtionRepoImpl implements  IDoctorSpecializtionRepo{
             throw new CustomError(error.message||"Error while getting all specializations",500); 
         } 
     }
-    async  update(id: string, specData: Pick<DoctorSpecializtion, "name" | "description">): Promise<void> {
+    async  update(id: string, specData: Pick<DoctorSpecializtion, "name" | "description">): Promise<DoctorSpecializtion> {
         try {
-            await this.SpecDataSource.updateSpec(id, specData);
+          return await this.SpecDataSource.updateSpec(id, specData);
         } catch (error:any) {
             console.error("Error while updating specialization:", error);
             throw new CustomError(error.message||"Error while updating specializationError while updating specialization",500);

@@ -59,9 +59,19 @@ export class OTPServiceImpl implements OTPService {
 
 
   async resendOtp(authToken: string): Promise<void> {
-    console.log("Log from use case resend otp");
-    const ownerId = verifyToken(authToken);
-    console.log(ownerId);
-    this.otpRepository.resendOtp(ownerId.data);
+    try {
+      console.log("Log from use case resend otp");
+      const ownerId = verifyToken(authToken);
+  
+      if (!ownerId) {
+        throw new CustomError('OTP is expired. Please register again with the same credentials.', 403);
+      }
+  
+      await this.otpRepository.resendOtp(ownerId.data);
+    } catch (err) {
+      console.error("Error occurred while resending OTP:", err);
+      throw err; // Re-throw the error for the caller to handle
+    }
   }
+  
 }

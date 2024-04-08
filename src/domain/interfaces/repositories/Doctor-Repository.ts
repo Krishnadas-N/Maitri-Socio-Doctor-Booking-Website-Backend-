@@ -11,6 +11,7 @@ export interface  IDoctorsRepository {
     findResetTokenAndSavePassword(token: string, password: string): Promise<void>;
     AcceptDoctorProfile(id:string):Promise<Doctor>;
     GetDoctors(page?:number,searchQuery?:string,itemsPerPage?: number):Promise<Doctor[]>;
+    changeStatusofDoctor(id:string):Promise<Doctor>;
 }
 
 

@@ -20,5 +20,22 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
               throw new Error(error.message || 'Internal server error');
             }
     }
+
+   async changeDoctorStatus(id: string): Promise<Doctor> {
+    try{
+        if(!id){
+            throw new CustomError('Doctor Id is Not defined',400)
+        }
+        return await this.doctorRepository.changeStatusofDoctor(id);
+
+    }catch(error:any){
+        if (error instanceof CustomError) {
+            throw error;
+          }
+      
+          console.error('Unexpected error:', error);
+          throw new Error(error.message || 'Internal server error');
+        }
+    }
 }
     

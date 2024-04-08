@@ -17,6 +17,6 @@ adminRouter.post('/login',adminController.adminLogin.bind(adminController))
 
 adminRouter.get('/get-by-email',adminController.getAdminByEmail.bind(adminController));
 
-adminRouter.get('/get-by-id',adminController.getAdminById.bind(adminController));
+adminRouter.get('/',adminController.getAdminById.bind(adminController));
 
 adminRouter.get('/get-by-username',adminController.getAdminByUsername.bind(adminController))

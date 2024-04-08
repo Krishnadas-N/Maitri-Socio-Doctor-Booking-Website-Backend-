@@ -15,8 +15,8 @@ export class SpecializationController {
         try {
             console.log(this.specializationService);
             const data = req.body;
-            await this.specializationService.addSpec(data);
-            return sendSuccessResponse(res,{data: "Specialization added successfully"},"Specialization added successfully");
+            const newSpec =await this.specializationService.addSpec(data);
+            return sendSuccessResponse(res,newSpec,"Specialization added successfully");
         } catch (error) {
             next(error)
         }
@@ -25,8 +25,8 @@ export class SpecializationController {
     async blockSpec(req: Request, res: Response ,next:NextFunction): Promise<void> {
         try {
             const id: string = req.params.id;
-            const isBlocked = await this.specializationService.blockSpec(id);
-           return sendSuccessResponse(res,isBlocked ,'specification has been successfully blocked');
+            const data = await this.specializationService.blockSpec(id);
+           return sendSuccessResponse(res,data ,'specification has been successfully blocked');
         } catch (error) {
            next(error)
         }
@@ -46,8 +46,8 @@ export class SpecializationController {
             const id: string = req.params.id;
             const data = { ...req.body, _id: id };
             console.log(data);
-            await this.specializationService.updateSpec(data);
-            return sendSuccessResponse(res,{},"specialization has been successfully updated")
+           const updatedSpec = await this.specializationService.updateSpec(data);
+            return sendSuccessResponse(res,updatedSpec,"specialization has been successfully updated")
         } catch (error) {
            next(error)
         }

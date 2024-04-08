@@ -18,7 +18,7 @@ specRouter.get('/',specializationsController.getAllSpec.bind(specializationsCont
 specRouter.get('/:id', specializationsController.findASpec.bind(specializationsController));
 
 specRouter.put('/updateSpec/:id',specializationsController.updateSpec.bind(specializationsController));
-specRouter.patch('/:id', specializationsController.blockSpec.bind(specializationsController));
+specRouter.patch('/change-status/:id', specializationsController.blockSpec.bind(specializationsController));
 
 
 

@@ -1,7 +1,9 @@
 import { CustomError } from "../../../../utils/CustomError";
+import { RoleDetails } from "../../../domain/entities/Admin";
 import { User } from "../../../domain/entities/User";
 import { UsersWithTotalCount } from "../../../models/users.model";
 import { User_Data } from "../../interfaces/data-sources/user-data-source";
+import RoleModel from "./models/role-model";
 import { UserModel } from "./models/user-model";
 
 
@@ -34,7 +36,7 @@ export class MongoDbUserDataSource implements User_Data {
 
     async findByEmail(email: string): Promise<User | null> {
         try {
-            const user = await UserModel.findOne({ email });
+            const user = await UserModel.findOne({ email }).populate('roles');
             console.log(user,"user from databse")
             return user ? user.toObject() as User : null;
         } catch (error) {
@@ -154,5 +156,45 @@ export class MongoDbUserDataSource implements User_Data {
 
             await user.save();
             return user.toObject() as User;
+    }
+
+   
+    private async convertToDomain(user: User | null): Promise<User | null> {
+        if (!user) return null;
+        console.log("Log from convertToDomain", user);
+        const roleIds: string[] = user.roles?.map(role => role.roleId) || [];
+        const roleDetails: RoleDetails[] = await this.fetchRoleDetails(roleIds);
+        return new User(
+            user.email,
+            user.password,
+            user.username,
+            user.firstName,
+            user.lastName,
+            user.gender,
+            user.dateOfBirth,
+            user._id,
+            user.profilePic,
+            user.isVerified,
+            user.resetToken,
+            roleDetails,
+        );
+    }
+
+    private async fetchRoleDetails(roleIds: string[]): Promise<RoleDetails[]> {
+        try {
+            const roles = await RoleModel.find({ _id: { $in: roleIds } });
+            const roleDetails: RoleDetails[] = roles.map(role => ({
+                roleId: role._id.toString(),
+                roleName: role.name,
+                permissions: role.permissions // Assuming your RoleModel has a 'permissions' field
+            }));
+            return roleDetails;
+        } catch (error:any) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                throw new CustomError(error.message || 'Failed to findByemail',500);
+            }
+        }
     }
 }

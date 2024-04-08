@@ -13,9 +13,11 @@ const options = {
 
 
   export default function configurePassport(passport:any) {
+    console.log(publicKey);
     passport.use(
         new Strategy(options, async (jwtPayload:tokenData, done: VerifiedCallback) => {
           try {
+            console.log(jwtPayload);
             return done(null, jwtPayload);
           } catch (error) {
             return done(error, false);

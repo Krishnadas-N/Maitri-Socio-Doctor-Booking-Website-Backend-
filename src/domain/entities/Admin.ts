@@ -17,11 +17,12 @@ interface IAdmin {
   class Admin implements IAdmin {
     _id?: string |ObjectId;
     username: string;
+    email:string;
     password: string;
     roles: string[] | RoleDetails[];
     createdAt: Date;
     updatedAt: Date;
-    email:string;
+    
     constructor(
         username: string,
         password: string,
@@ -51,6 +52,7 @@ interface IAdmin {
         _id: this._id,
         username: this.username,
         password: this.password,
+        email: this.email,
         roles: this.roles,
         createdAt: this.createdAt,
         updatedAt: this.updatedAt,

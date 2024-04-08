@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import Doctor from "../../../../domain/entities/Doctor";
 import { PasswordUtil } from "../../../../../utils/PasswordUtils";
 
@@ -122,7 +122,13 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
   isBlocked:{
     type:Boolean,
     default:false
-  }
+  },
+  roles: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Role'
+    }
+  ],
 });
 
 

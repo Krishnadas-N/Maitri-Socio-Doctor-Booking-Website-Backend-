@@ -179,7 +179,19 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
                     ],
                 };
             }
-            const doctors = await DoctorModel.find(query).skip(skip).limit(perPage).exec();
+            const doctors = await DoctorModel.find(query)
+                            .populate({
+                                path: 'specialization',
+                                select: 'name', // Select the name field from DoctorCategory
+                                model: 'DoctorCategory',
+                                options: { // Specify a custom alias for the field
+                                as: 'psycharitst'
+                                }
+                            })
+                            .skip(skip)
+                            .limit(perPage)
+                            .exec();
+
             return doctors;
         }catch(error:any){
             if (error instanceof CustomError) {
@@ -191,6 +203,27 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
             }
         }
     
-    
+   async changeStatusofDoctor(id: string): Promise<Doctor> {
+    try{
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            throw new CustomError("Invalid id format", 400);
+        }
+        const doctor = await DoctorModel.findById(id).exec();
+        
+        if (!doctor) {
+            throw new CustomError("Doctor not found", 404);
+        }
+        doctor.isBlocked = !doctor.isBlocked;
+        await doctor.save();
+         return  doctor
+    }catch(error:any){
+        if (error instanceof CustomError) {
+            throw error;
+          }
+      
+          console.error('Unexpected error:', error);
+          throw new Error(error.message || 'Internal server error');
+        }
+    }
   
 }

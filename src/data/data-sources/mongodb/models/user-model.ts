@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { PasswordUtil } from '../../../../../utils/PasswordUtils';
 
 const userSchema = new mongoose.Schema({
@@ -55,7 +55,13 @@ isVerified:{
 },
 resetToken:{
   type:String,
-}
+},
+roles: [
+  {
+    type: Schema.Types.ObjectId,
+    ref: 'Role'
+  }
+],
 }, 
 { timestamps: true });
 

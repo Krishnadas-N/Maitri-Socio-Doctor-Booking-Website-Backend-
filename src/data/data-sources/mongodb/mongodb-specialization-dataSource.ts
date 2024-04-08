@@ -3,38 +3,42 @@ import { CustomError } from "../../../../utils/CustomError";
 import { DoctorSpecializtion } from "../../../domain/entities/Specialization";
 import { SpecilaizationInter } from "../../interfaces/data-sources/specialization-data-source";
 import DoctorCategoryModel from "./models/Doctor-Specialization-model";
-
+import DoctorModel from "./models/Doctor-model";
 
 export class MongoDbDoctorSpecializtionDataSource implements SpecilaizationInter{
   constructor() {}
 
   async create(
     specData: Pick<DoctorSpecializtion, "name" | "description">
-  ): Promise<void> {
+  ): Promise<DoctorSpecializtion> {
     const specialization = new DoctorCategoryModel({ ...specData });
-    await specialization.save();
+    return  await specialization.save();
   }
   async findAll(): Promise<DoctorSpecializtion[] | null> {
     const specializations = await DoctorCategoryModel.find().exec();
     return specializations || null;
   }
 
-  async updateSpec(
-    id: string,
-    specData: Pick<DoctorSpecializtion, "name" | "description">
-  ): Promise<void> {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new CustomError('Invalid ID parameter', 403);
-  }
-    const result = await DoctorCategoryModel.updateOne({ _id: id }, specData, {
-      upsert: true,
-    });
-    console.log(result);
-    if (!result || result?.modifiedCount === 0)
-      throw new CustomError("The Specialization is Not Found", 404);
-  }
+      async updateSpec(
+        id: string,
+        specData: Pick<DoctorSpecializtion, "name" | "description">
+      ): Promise<DoctorSpecializtion> {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+          throw new CustomError('Invalid ID parameter', 403);
+      }
+  
+      const result = await DoctorCategoryModel.findOneAndUpdate({ _id: id }, specData, { upsert: true, new: true  });
+      
+      console.log(result);
+  
+      if (!result) {
+          throw new CustomError("The Specialization is Not Found", 404);
+      }
+  
+      return result;
+      }
 
-  async blockSpec(id: string): Promise<boolean> {
+  async blockSpec(id: string): Promise<DoctorSpecializtion> {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new CustomError('Invalid ID parameter', 403);
@@ -45,7 +49,10 @@ export class MongoDbDoctorSpecializtionDataSource implements SpecilaizationInter
       }
       doctorCategory.isBlocked = !doctorCategory.isBlocked;
       await doctorCategory.save();
-      return true;
+      if (doctorCategory.isBlocked) {
+        await DoctorModel.updateMany({ specialization: doctorCategory._id }, { isBlocked: true });
+    }
+      return doctorCategory;
     } catch (err: any) {
       throw new CustomError(
         err.message || "Error while Block the Specilalization in the databse",

@@ -8,6 +8,7 @@ import { UserUseCaseImpl } from "../../domain/use-cases/User-UsecaseImpl/userSer
 import { userLogin } from "../../domain/use-cases/authentication/user-login";
 import { userSignup } from "../../domain/use-cases/authentication/user-signup";
 import { verifyUserMiddleware } from "../../middlewares/authentication";
+import { isAuthenticated } from "../../middlewares/jwtAuthenticationMiddleware";
 import { SignupValidateUser, loginValidateUser } from "../../middlewares/requestValidation";
 import { signupController,loginController, UserController } from "../controllers/userController";
 import { Router } from "express";
@@ -25,15 +26,15 @@ userRouter.post('/login',loginValidateUser,loginController(loginUseCase));
 
 userRouter.post('/register',SignupValidateUser,signupController(signupUseCase));
 
-userRouter.get('/profile/:userId',verifyUserMiddleware,userController.getUserProfile);
+userRouter.get('/profile/:userId',isAuthenticated,userController.getUserProfile);
 
 userRouter.post('/forgot-password', userController.forgotPassword.bind(userController)); 
 
 userRouter.post('/reset-password/:token', userController.resetPassword.bind(userController)); 
 
-userRouter.get('/get-Users',verifyUserMiddleware,userController.getAllUsers.bind(userController))
+userRouter.get('/get-Users',isAuthenticated,userController.getAllUsers.bind(userController))
 
-userRouter.patch('/change-status/:userId',verifyUserMiddleware,userController.BlockOrUnBlokUser.bind(userController));
+userRouter.patch('/change-status/:userId',isAuthenticated,userController.BlockOrUnBlokUser.bind(userController));
 
 userRouter  .get('/get-byId/:userId',userController.getUserById.bind(userController));
 

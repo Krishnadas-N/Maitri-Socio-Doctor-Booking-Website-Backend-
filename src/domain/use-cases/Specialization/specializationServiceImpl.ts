@@ -7,17 +7,17 @@ import { DoctorSpecService } from "../../interfaces/use-cases/Doctor-Service/Spe
 export class DoctorServiceImpl implements DoctorSpecService{
     constructor(private readonly specializationRepo:IDoctorSpecializtionRepo){}
     
-    async addSpec(data: Pick<DoctorSpecializtion, "name" | "description">): Promise<void> {
+    async addSpec(data: Pick<DoctorSpecializtion, "name" | "description">): Promise<DoctorSpecializtion> {
         try {
             const exist = await this.specializationRepo.getByName(data.name);
             if(exist) throw new CustomError("This Specialization is Already Exists",409);
-            await this.specializationRepo.create(data);
+            return await this.specializationRepo.create(data);
         } catch (error) {
             console.error("Error while adding specialization:", error);
             throw error;
         }
     }
-    async blockSpec(id: string): Promise<boolean> {
+    async blockSpec(id: string): Promise<DoctorSpecializtion> {
         try {
             return await this.specializationRepo.block(id);
         } catch (error) {
@@ -33,7 +33,7 @@ export class DoctorServiceImpl implements DoctorSpecService{
             throw error;
         }
     }
-    async updateSpec(data: Pick<DoctorSpecializtion, "name" | "description"|"_id">): Promise<void> {
+    async updateSpec(data: Pick<DoctorSpecializtion, "name" | "description"|"_id">): Promise<DoctorSpecializtion> {
         try {
             const id = data._id; 
             if (!id) {
@@ -43,7 +43,7 @@ export class DoctorServiceImpl implements DoctorSpecService{
             if(!isExists){
                 throw new CustomError(`No such specialization with id ${id}` ,404);
             }
-            await this.specializationRepo.update(id, data);
+            return await this.specializationRepo.update(id, data);
         } catch (error) {
             console.error("Error while updating specialization:", error);
             throw error;

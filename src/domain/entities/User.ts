@@ -12,5 +12,6 @@ export class User {
         public profilePic?: string | null,
         public isVerified?:boolean,
         public resetToken ?:string | null,
+        public roles?:any[]
     ) {}
 }

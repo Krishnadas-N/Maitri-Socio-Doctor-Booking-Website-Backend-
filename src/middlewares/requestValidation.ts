@@ -4,8 +4,8 @@ import { CustomError } from "../../utils/CustomError";
 
 export const SignupValidateUser:RequestHandler[] =[
     body('profilePic').optional().isString(),
-    body('firstname').trim().isString().notEmpty().withMessage('First name is required').isLength({ max: 25 }).withMessage('First name must be at most 25 characters'),
-    body('lastname').trim().isString().notEmpty().withMessage('last name is required').isLength({max :25}).withMessage('last name must be atmost 25 characters'),
+    body('firstName').trim().isString().notEmpty().withMessage('First name is required').isLength({ max: 25 }).withMessage('First name must be at most 25 characters'),
+    body('lastName').trim().isString().notEmpty().withMessage('last name is required').isLength({max :25}).withMessage('last name must be atmost 25 characters'),
     body('username').optional().trim().isString().notEmpty().withMessage("Username cannot be empty"),
     body('gender').optional().isIn(['male', 'female', 'other']).withMessage('Invalid gender'),
     body('email').trim().isEmail().withMessage('Invalid email format'),

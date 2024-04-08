@@ -66,6 +66,7 @@ class Doctor {
       public reviews?: Review[],
       public isProfileComplete?: boolean,
       public resetToken ?:string | null,
+      public roles?:any[]
     ) {}
   }
 

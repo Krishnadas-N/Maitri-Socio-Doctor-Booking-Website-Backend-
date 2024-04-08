@@ -11,4 +11,5 @@ export interface DoctorModelInter{
     findResetTokenAndSavePassword(token:string,password:string):Promise<void>;
     AcceptprofileComplete(id:string):Promise<Doctor>;
     findDoctors(page?:number,searchQuery?:string,itemsPerPage?: number): Promise<Doctor[]>;
+    changeStatusofDoctor(id:string):Promise<Doctor>;
 }

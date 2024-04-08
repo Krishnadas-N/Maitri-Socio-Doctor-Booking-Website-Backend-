@@ -165,3 +165,18 @@ export function getDoctors(doctorService:IDoctorUsecase){
            }
     }
 }
+
+export function chnageStatus(doctorService:IDoctorUsecase){
+    return async function (req:Request,res:Response,next:NextFunction){
+        try{
+            const doctorId = req.params.doctorId;
+            if(!doctorId){
+                throw new CustomError('Doctor Id is not Defined',403)
+            }
+              const doctor =await doctorService.changeDoctorStatus(doctorId)
+              return sendSuccessResponse(res,{doctor},"Doctor Fetched Success Fully",)
+           }catch(error){
+            next(error)
+           }
+    }
+}
