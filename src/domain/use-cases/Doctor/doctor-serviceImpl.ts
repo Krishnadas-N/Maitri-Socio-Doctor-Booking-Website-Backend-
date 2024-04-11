@@ -37,5 +37,23 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
           throw new Error(error.message || 'Internal server error');
         }
     }
+
+    async getDoctorById(id: string): Promise<Doctor | null> {
+        try{
+            if(!id){
+                throw new CustomError('Doctor Id is Not defined',400)
+            }
+            return await this.doctorRepository.findDoctorById(id);
+    
+        }catch(error:any){
+            if (error instanceof CustomError) {
+                throw error;
+              }
+          
+              console.error('Unexpected error:', error);
+              throw new Error(error.message || 'Internal server error');
+            }
+    }
+    
 }
     

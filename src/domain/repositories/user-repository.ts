@@ -80,5 +80,20 @@ export class  UserAuthenticationRepoImpl implements UserRepository{
         }
     }
     
+    async findById(id: string): Promise<User | null> {
+        try{
+                if(!id){
+                    throw new CustomError('Id is Not FOund',404);
+                }
+                return await this.dataSource.findById(id);
+        }catch(error:any){
+            if (error instanceof CustomError) {
+                throw error;
+              }
+          
+              console.error('Unexpected error:', error);
+              throw new Error(error.message || 'Internal server error');
+            }
+    }
 
 }

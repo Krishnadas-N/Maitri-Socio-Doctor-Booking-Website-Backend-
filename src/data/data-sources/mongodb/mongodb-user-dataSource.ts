@@ -36,9 +36,15 @@ export class MongoDbUserDataSource implements User_Data {
 
     async findByEmail(email: string): Promise<User | null> {
         try {
-            const user = await UserModel.findOne({ email }).populate('roles');
-            console.log(user,"user from databse")
-            return user ? user.toObject() as User : null;
+            const userDocument = await UserModel.findOne({ email })
+            if (userDocument) {
+                console.log(userDocument,"Log from Amdin");
+                const user = User.fromJSON(userDocument);
+                console.log(user,"Log from Amdin");
+                return this.convertToDomain(user);
+            } else {
+                return null;
+            }
         } catch (error) {
             throw new Error(`Error finding user by email: ${error}`);
         }
@@ -162,7 +168,7 @@ export class MongoDbUserDataSource implements User_Data {
     private async convertToDomain(user: User | null): Promise<User | null> {
         if (!user) return null;
         console.log("Log from convertToDomain", user);
-        const roleIds: string[] = user.roles?.map(role => role.roleId) || [];
+        const roleIds: string[] = user.roles?.map(role => role.toString()) || [];
         const roleDetails: RoleDetails[] = await this.fetchRoleDetails(roleIds);
         return new User(
             user.email,
@@ -177,7 +183,7 @@ export class MongoDbUserDataSource implements User_Data {
             user.isVerified,
             user.resetToken,
             roleDetails,
-        );
+        ).toJson();
     }
 
     private async fetchRoleDetails(roleIds: string[]): Promise<RoleDetails[]> {

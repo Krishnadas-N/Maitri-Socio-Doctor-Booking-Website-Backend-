@@ -56,12 +56,10 @@ isVerified:{
 resetToken:{
   type:String,
 },
-roles: [
-  {
-    type: Schema.Types.ObjectId,
-    ref: 'Role'
-  }
-],
+roles: {
+  type: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
+  default: ['6612457293c66989fc111447'], // Set the default role(s) here
+},
 }, 
 { timestamps: true });
 

@@ -3,7 +3,8 @@ import { objectId } from "./users.model";
 
 export interface Payload {
     id: objectId | undefined | string;
-    roles: RoleDetails[] | string[];
+    roles: RoleDetails[];
     iat: number;
     exp: number;
 }
+

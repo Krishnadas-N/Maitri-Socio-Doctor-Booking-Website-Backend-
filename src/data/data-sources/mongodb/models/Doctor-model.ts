@@ -123,12 +123,10 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
     type:Boolean,
     default:false
   },
-  roles: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Role'
-    }
-  ],
+  roles: {
+    type: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
+    default: ['66141503f83ac04df8392561'], // Set the default role(s) here
+  },
 });
 
 

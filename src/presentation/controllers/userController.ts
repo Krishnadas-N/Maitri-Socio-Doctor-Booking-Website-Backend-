@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { CustomError } from "../../../utils/CustomError";
 import { sendSuccessResponse } from "../../../utils/ReponseHandler";
 import { UserLogin } from "../../domain/interfaces/use-cases/authentication/user-login";
+
 import { UserSignup } from "../../domain/interfaces/use-cases/authentication/user-sigup";
 import { userUseCase } from "../../domain/interfaces/use-cases/UserService/User-usecase";
 
@@ -22,11 +23,12 @@ export function loginController(userLogin: UserLogin) {
     return async function (req: Request, res: Response, next: NextFunction) {
         try {
             const { email, password } = req.body;
-            const token = await userLogin.execute(email, password);
-            if (!token) {
+            const userData = await userLogin.execute(email, password);
+            console.log("Log form User",userData);
+            if (!userData) {
                 throw new CustomError("Email or Password is incorrect", 401);
             }
-            return sendSuccessResponse(res, token, "Login successful");
+            return sendSuccessResponse(res, userData, "Login successful");
         } catch (err) {
             
             next(err);
@@ -69,17 +71,17 @@ export class UserController{
    }
 
    async getAllUsers(req: Request, res: Response,next:NextFunction){
-    try {
-        const page = parseInt(req.query.page as string) || 1;
-        const pageSize = parseInt(req.query.pageSize as string) || 10;
-        const searchQuery = req.query.searchQuery as string || '';
-
-        const users = await this.userUseCase.getAllUsers(page, pageSize, searchQuery);
-        return sendSuccessResponse(res,users,'Message sent Successfully');
-    } catch (error) {
-        console.error('Error fetching users:', error);
-       next(error)
-    }
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const pageSize = parseInt(req.query.pageSize as string) || 10;
+            const searchQuery = req.query.searchQuery as string || '';
+            const users = await this.userUseCase.getAllUsers(page, pageSize, searchQuery);
+            console.log("use data");
+            return sendSuccessResponse(res, users, 'Message sent Successfully');
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            next(error); // Pass the error to your error handling middleware
+        }
     }
 
     async BlockOrUnBlokUser(req: Request, res: Response,next:NextFunction){

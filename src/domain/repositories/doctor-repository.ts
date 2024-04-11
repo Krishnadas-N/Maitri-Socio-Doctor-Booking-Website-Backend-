@@ -1,4 +1,5 @@
 import MailService from "../../../config/node-mailer";
+import confrimationEmailTemplate from "../../../templates/confimrationEmailTemplate";
 import resetPasswordLink from "../../../templates/resetPasswordEmailTemplate";
 import { CustomError } from "../../../utils/CustomError";
 import { generateRandomToken } from "../../../utils/tokenizeData-Helper";
@@ -27,6 +28,11 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
 
     async findDoctorById(id: string): Promise<Doctor | null> {
         try{
+            console.log("Entry COmess in frist ........................");
+            if(!id){
+                throw new CustomError('Invalid Id',400);
+            }
+            console.log("LOG from  doctorBY id    ",id);
            const doctor = await this.doctorDataSource.findById(id);
            return  doctor?doctor:null;
         }catch(error:any){
@@ -54,9 +60,9 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
         }
     }
 
-    async saveAdditionalInfo(doctor: Partial<Doctor>, email: string): Promise<Partial<Doctor> | null> {
+    async saveAdditionalInfo(doctor: Partial<Doctor>, doctorId: string): Promise<Partial<Doctor> | null> {
         try{
-         return  await this.doctorDataSource.DbsaveAdditionalInfo(doctor, email);
+         return  await this.doctorDataSource.DbsaveAdditionalInfo(doctor, doctorId);
         }catch(error:any){
         if (error instanceof CustomError) {
             throw error; 
@@ -67,10 +73,10 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
     }
     }
 
-    async saveProfessionalInfo(doctor: Partial<Doctor>, email: string): Promise<Partial<Doctor> | null> {
+    async saveProfessionalInfo(doctor: Partial<Doctor>, doctorId: string): Promise<Partial<Doctor> | null> {
         try{
-            console.log(email,doctor,"comsole from reposootory profrssional info")
-            return await this.doctorDataSource.DbsaveProfessionalInfo(doctor, email);
+            console.log(doctorId,doctor,"comsole from reposootory profrssional info")
+            return await this.doctorDataSource.DbsaveProfessionalInfo(doctor, doctorId);
             }catch(error:any){
             if (error instanceof CustomError) {
                 throw error; 
@@ -99,7 +105,9 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
     }
 
     async AcceptDoctorProfile(id: string): Promise<Doctor> {
-      return await this.doctorDataSource.AcceptprofileComplete(id)
+    const doctor = await this.doctorDataSource.AcceptprofileComplete(id);
+    await this.sendConfrimationEmailToDoctor(doctor.email);
+    return doctor
     }
     
    async  GetDoctors(page?: number, searchQuery?: string,itemsPerPage?:number): Promise<Doctor[]> {
@@ -127,6 +135,22 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
         } catch (error) {
             console.error('Error sending reset password link:', error);
             throw new CustomError('Error sending reset password link', 500); 
+        }
+    }
+
+    private async sendConfrimationEmailToDoctor(email: string): Promise<void> { // Updated function name
+        const emailTemplate =confrimationEmailTemplate('http://localhost:4200/doctor/login')
+        const mailService = MailService.getInstance();
+        try {
+            await mailService.createConnection();
+            await mailService.sendMail('X-Request-Id-Value', { 
+                to: email,
+                subject: 'Confrimation Email',
+                html: emailTemplate.html,
+            });
+        } catch (error) {
+            console.error('Error sending Confrimation Emai:', error);
+            throw new CustomError('Error sending Confrimation Emai', 500); 
         }
     }
 

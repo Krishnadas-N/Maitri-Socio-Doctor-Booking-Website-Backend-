@@ -32,3 +32,11 @@ const roleSchema = new Schema({
 const RoleModel = mongoose.model<IRole>('Role', roleSchema);
 
 export default RoleModel;
+
+
+// var roleData = {
+//   name: "Doctor",
+//   permissions: ["READ", "WRITE"],
+//   createdAt: new Date(),
+//   updatedAt: new Date()
+// };

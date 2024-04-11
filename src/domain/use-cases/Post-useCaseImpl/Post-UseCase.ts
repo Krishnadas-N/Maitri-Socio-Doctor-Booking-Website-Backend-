@@ -38,9 +38,9 @@ export class PostUsecase implements IPostUsecase {
             }
             const posts = await this.postRepository.getAllPosts(page, limit, query);
             
-            if (!posts || posts.length === 0) {
-                throw new CustomError('No posts found',404);
-            }
+            // if (!posts || posts.length === 0) {
+            //     throw new CustomError('No posts found',404);
+            // }
             return posts;
         } catch (error) {
             if (error instanceof CustomError) {

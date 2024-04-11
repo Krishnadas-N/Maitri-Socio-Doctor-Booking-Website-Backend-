@@ -23,6 +23,7 @@ export  const sendSuccessResponse = <T>(res:Response ,data?: T ,message ?: strin
         data:data,
         message:message||"Operation successful."
     };
+    
      res.status(200).json(responseData);
 }
 

@@ -7,3 +7,8 @@ export interface UsersWithTotalCount {
 }
 
 export type objectId = ObjectId;
+
+export interface UserLoginResponse{
+    user:User,
+    token:string
+}

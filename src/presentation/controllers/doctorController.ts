@@ -29,13 +29,14 @@ export function registerBasicInfo(doctorService: DoctorService) {
 }
 
 export function registerProfessionalInfo(doctorService: DoctorService) {
-    return async function (req: Request, res: Response, next: NextFunction) {
+    return async function (req: any, res: Response, next: NextFunction) {
         try {
-            console.log(req.body)
-            const token: string | undefined = req.query.authToken as string | undefined;
-            if(!token){
-                throw new CustomError("Token is Not found in query",401);
+            const doctorId = req.user.id || ''
+            if(!doctorId){
+                throw new CustomError('Doctor is not authenticated',401)
             }
+            console.log(req.files);
+            console.log(req.body)
             if (!req.files || req.files.length === 0) {
                 throw new CustomError('No files uploaded', 400);
             
@@ -56,7 +57,7 @@ export function registerProfessionalInfo(doctorService: DoctorService) {
                 certifications:certificationUrls,
                 languages,
                 consultationFee
-            },token);
+            },doctorId);
 
             return sendSuccessResponse(res, doctorData, "Professional information registered successfully");
         } catch (err) {
@@ -67,22 +68,20 @@ export function registerProfessionalInfo(doctorService: DoctorService) {
 }
 
 export function registerAdditionalInfo(doctorService: DoctorService) {
-    return async function (req: Request, res: Response, next: NextFunction) {
+    return async function (req: any, res: Response, next: NextFunction) {
         try {
-            const token: string | undefined = req.query.token as string | undefined;
-            if(!token){
-                throw new CustomError("Token is Not found in query",401);
-            }
-
-            const { profilePic, bio, availability, maxPatientsPerDay, typesOfConsultation } = req.body;
+            const cloudinaryUrls = req.body.cloudinaryUrls;
+            console.log(cloudinaryUrls);
+            const doctorId = req.user.id
+            const { bio, availability, maxPatientsPerDay, typesOfConsultation } = req.body;
 
           const doctorData=  await doctorService.RegisterAdditionalInfoUseCase({
-                profilePic,
+                profilePic:cloudinaryUrls[0],
                 bio,
                 availability,
                 maxPatientsPerDay,
                 typesOfConsultation
-            },token);
+            },doctorId);
 
             return sendSuccessResponse(res, doctorData, "Additional information registered successfully");
         } catch (err) {
@@ -143,22 +142,25 @@ export function VerifyProfile(doctorService: DoctorService) {
       if(!doctorId){
         throw new CustomError('No Id provided in the Token',400)
       }
-        await doctorService.AcceptDoctorProfile(doctorId)
-        return sendSuccessResponse(res,"Password Reset Successfully","Password has been changed")
+        const doctor =await doctorService.AcceptDoctorProfile(doctorId)
+        return sendSuccessResponse(res,doctor,"Password has been changed")
      }catch(error){
       next(error)
      }
   }
   }
 
+
 export function getDoctors(doctorService:IDoctorUsecase){
     return async function (req:Request,res:Response,next:NextFunction){
         try{
+            console.log("Log fro Dcotor Cotnrillers ********************************************");
             const page = parseInt(req.query.page as string, 10) || 1;
             const  limit = parseInt(req.query.limit as string, 10) || 25;
             const search = (req.query.search as string) || '';
             console.log(page,search,limit);
               const doctors =await doctorService.GetDoctors(page,search,limit)
+              console.log("Log fro Dcotor Cotnrillers ********************************************",doctors);
               return sendSuccessResponse(res,{doctors},"Doctors Fetched Success Fully",)
            }catch(error){
             next(error)
@@ -174,6 +176,23 @@ export function chnageStatus(doctorService:IDoctorUsecase){
                 throw new CustomError('Doctor Id is not Defined',403)
             }
               const doctor =await doctorService.changeDoctorStatus(doctorId)
+              return sendSuccessResponse(res,{doctor},"Doctor Fetched Success Fully",)
+           }catch(error){
+            next(error)
+           }
+    }
+}
+
+
+export function getDoctorById(doctorService:IDoctorUsecase){
+    return async function (req:Request,res:Response,next:NextFunction){
+        console.log("GEttt Docotroe By ID   ",req.params.doctorId);
+        try{
+            const doctorId = req.params.doctorId;
+            if(!doctorId){
+                throw new CustomError('Doctor Id is not Defined',403)
+            }
+              const doctor =await doctorService.getDoctorById(doctorId)
               return sendSuccessResponse(res,{doctor},"Doctor Fetched Success Fully",)
            }catch(error){
             next(error)

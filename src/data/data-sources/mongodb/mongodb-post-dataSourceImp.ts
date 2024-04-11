@@ -10,56 +10,80 @@ export class MongoDbPostDataSource implements IPostModel{
     async getAllPosts(page: number, limit: number, query?: string): Promise<Post[]> {
         const skip = (page - 1) * limit;
         const baseMatch = {
-            isBlocked: false,
-          };
-        const aggregationPipeline:any = [];
-        aggregationPipeline.push({ $match: baseMatch }); 
-            if (query) {
-                const textSearchPipeline = [
-                    {
-                        $search: {
-                            text: {
-                                query,
-                                path: ['title', 'content']
-                            }
-                        }
-                    }
-                ];
-
-                const doctorPipeline = [
-                    {
-                        $lookup: {
-                            from: 'doctors',
-                            localField: 'doctorId',
-                            foreignField: '_id',
-                            as: 'doctor'
-                        }
-                    },
-                    {
-                        $unwind: '$doctor'
-                    },
-                    {
-                        $match: {
-                           'doctor.isProfileComplete': true,
-                            'doctor.firstName': { $regex: new RegExp(`.*${query}.*`, 'i') }
-                        }
-                    }
-                ];
-
-                aggregationPipeline.push({
-                    $unionWith: {
-                        coll:'posts',
-                        pipeline:[...textSearchPipeline,...doctorPipeline]
-                    }
-                });
+          isBlocked: false, // Adjust criteria if needed
+        };
+      
+        const aggregationPipeline: any = [];
+        aggregationPipeline.push({ $match: baseMatch });
+      
+        const doctorLookupPipeline = [
+          {
+            $lookup: {
+              from: 'doctors',
+              localField: 'doctorId',
+              foreignField: '_id',
+              as: 'doctor'
             }
-
-            const posts = await PostModel.aggregate(aggregationPipeline)
-                                                    .skip(skip)
-                                                    .limit(limit)
-                                                    .exec();
-            return posts;
-    }
+          },
+          {
+            $unwind: '$doctor' // Flatten the doctor array
+          },
+          // Optionally uncomment to filter doctors
+          // {
+          //   $match: {
+          //     'doctor.isProfileComplete': true
+          //   }
+          // },
+          {
+            $project: {
+              _id: 1,
+              title: 1,
+              content: 1,
+              createdAt: 1,
+              tags: 1,
+              media: 1,
+              likes: 1,
+              comments: 1,
+              reportedBy: 1,
+              isBlocked: 1,
+              isArchived: 1,
+              doctorName: '$doctor.firstName', // Include doctor's name
+              doctorProfileImage:'$doctor.profilePic'
+            }
+          }
+        ];
+      
+        aggregationPipeline.push(...doctorLookupPipeline);
+      
+        if (query) {
+          const textSearchPipeline = [
+            {
+              $search: {
+                text: {
+                  query,
+                  path: ['title', 'content']
+                }
+              }
+            }
+          ];
+      
+          aggregationPipeline.push({
+            $unionWith: {
+              coll: 'posts',
+              pipeline: [...textSearchPipeline]
+            }
+          });
+        }
+      
+        const posts = await PostModel.aggregate(aggregationPipeline)
+          .skip(skip)
+          .limit(limit)
+          .exec();
+      
+        console.log("Log form ...", posts);
+        return posts;
+      }
+      
 
     async create(post: Post): Promise<Post> {
         const newPost = await PostModel.create(post); 

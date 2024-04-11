@@ -1,5 +1,6 @@
 import { CustomError } from "../../../../utils/CustomError";
 import { PasswordUtil } from "../../../../utils/PasswordUtils";
+import { issueJWT } from "../../../../utils/passportUtils";
 import { generateToken, verifyToken } from "../../../../utils/tokenizeData-Helper";
 import { LoginResponse } from "../../../models/docotr-authenticationModel";
 import Doctor from "../../entities/Doctor";
@@ -49,11 +50,10 @@ export class DoctorAuthUseCaseImpl implements DoctorService{
     }
     }
 
-    async registerProfessionalInfoUseCase(doctorData: Partial<Doctor>,token:string): Promise<Partial<Doctor> | null> {
+    async registerProfessionalInfoUseCase(doctorData: Partial<Doctor>,doctorId:string): Promise<Partial<Doctor> | null> {
         try {
-            const data = await verifyToken(token);
-            console.log(data)
-            return await this.doctorRepository.saveProfessionalInfo(doctorData,data.data);
+            console.log(doctorId)
+            return await this.doctorRepository.saveProfessionalInfo(doctorData,doctorId);
         }catch (error:any) {
                 if (error instanceof CustomError) {
                     throw error; 
@@ -65,10 +65,9 @@ export class DoctorAuthUseCaseImpl implements DoctorService{
         }
         
 
-    async RegisterAdditionalInfoUseCase(doctorData: Partial<Doctor>,token:string): Promise<Partial<Doctor> | null> {
+    async RegisterAdditionalInfoUseCase(doctorData: Partial<Doctor>,doctorId:string): Promise<Partial<Doctor> | null> {
         try {
-            const email = await verifyToken(token);
-           return await this.doctorRepository.saveAdditionalInfo(doctorData,email);
+           return await this.doctorRepository.saveAdditionalInfo(doctorData,doctorId);
         }catch (error:any) {
                 if (error instanceof CustomError) {
                     throw error; 
@@ -94,9 +93,14 @@ export class DoctorAuthUseCaseImpl implements DoctorService{
             if (!isValidPassword) {
                 throw new CustomError('Invalid password',409);          
             }
-            console.log(email,password);
-            const token  = await generateToken({_id:doctor._id,role:'doctor'});
-            return {doctor,token};
+            if (doctor && doctor._id) {
+                console.log(email,password);
+                const tokenData = issueJWT({_id:doctor._id.toString(),roles: doctor.roles || []});
+                console.log(tokenData);
+                return { doctor, token:tokenData.token };
+              }else{
+                throw new CustomError('Id is not found in Doctor',404)
+              }
         }catch (error:any) {
                 if (error instanceof CustomError) {
                     throw error; 

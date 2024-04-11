@@ -9,9 +9,9 @@ export class PostController {
     constructor(private postUsecase: IPostUsecase) {}
 
     
-    async createPost(req: Request, res: Response,next:NextFunction) {
+    async createPost(req: any, res: Response,next:NextFunction) {
         const doctor = req.user; 
-        const doctorId ='6607aa5161bb6294aad590fc' 
+        const doctorId =req.user.id 
         console.log("user",doctor,doctorId);
         const {  title, content, tags } = req.body;
         const cloudinaryUrls = req.body.cloudinaryUrls;
@@ -47,10 +47,10 @@ export class PostController {
         }
     }
 
-    async likePost(req: Request, res: Response, next: NextFunction) {
+    async likePost(req: any, res: Response, next: NextFunction) {
         try {
             const postId = req.params.postId
-            const  userId  = req.user as string;
+            const  userId  = req.user.id as string;
             console.log(postId,userId);
             if (!postId || !userId) {
                throw new CustomError('Post ID and User ID are required' ,403);
@@ -67,9 +67,9 @@ export class PostController {
     }
     
 
-    async commentOnPost(req: Request, res: Response,next:NextFunction) {
+    async commentOnPost(req: any, res: Response,next:NextFunction) {
         const postId = req.params.postId
-        const  userId  = req.user as string;
+        const  userId  = req.user.id as string;
         const { content } = req.body;
         try {
             if (!postId || !userId || !content) {
