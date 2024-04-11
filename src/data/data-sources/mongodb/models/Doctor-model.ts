@@ -71,9 +71,17 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
   languages: [String],
   consultationFee: [
     {
-      type: Number,
-      min: 0,
-    },
+      type: {
+        type: String,
+        enum: ['video', 'chat', 'clinic'], // Define the types of consultation
+        required: true
+      },
+      fee: {
+        type: Number,
+        min: 0,
+        required: true
+      }
+    }
   ],
   availability: [
     {
