@@ -60,14 +60,22 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
         if (certifications) {
             existingDoctor.certifications=certifications
         }
+        existingDoctor.registrationStepsCompleted = existingDoctor.registrationStepsCompleted+1
         await existingDoctor.save();
         return existingDoctor;
     }
 
     async DbsaveAdditionalInfo(doctor: Partial<Doctor>, doctorId: string): Promise<Partial<Doctor> | null> {
         // const { consultationFee, profilePic, availability, typesOfConsultation, maxPatientsPerDay } = doctor;
-        const existingDoctor = await DoctorModel.findOneAndUpdate({ _id:doctorId },doctor,{new:true});
-
+        const existingDoctor = await DoctorModel.findOneAndUpdate(
+            { _id: doctorId },
+            {
+              ...doctor,
+              $inc: { registrationStepsCompleted: 1 }
+            },
+            { new: true }
+          );
+          
         if (!existingDoctor) {
             throw new CustomError("No Such Doctor Found", 404);
         }
@@ -81,9 +89,11 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
 
     async verifyDoctor(email:string):Promise<void>{
         try {
-           await DoctorModel.updateOne({email},{$set:{
-            isVerified:true
-           }});
+            await DoctorModel.updateOne({ email }, {
+                $set: { isVerified: true },
+                $inc: { registrationStepsCompleted: 1 }
+              });
+              
         } catch (error) {
             throw new Error(`Error deleting doctor: ${error}`);
         }
@@ -252,7 +262,7 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
         const roleIds: string[] = doctorData?.roles?.map(role => role.toString()) || [];
         const roleDetails: RoleDetails[] = await this.fetchRoleDetails(roleIds);
     
-        const address = doctorData.address ? new Address(doctorData.address.street, doctorData.address.city, doctorData.address.zipcode, doctorData.address.country) : doctorData.address;
+        const address = doctorData.address ? new Address(doctorData.address.state, doctorData.address.city, doctorData.address.zipcode, doctorData.address.country) : doctorData.address;
         const education = doctorData.education ? doctorData.education.map(edu => new Education(edu.degree, edu.institution, edu.year)) : [];
         const availability = doctorData.availability ? doctorData.availability.map(avail => new Availability(avail.dayOfWeek, avail.startTime, avail.endTime)) : [];
         const reviews = doctorData.reviews ? doctorData.reviews.map(review => new Review(review.patientName, review.comment, review.rating, review.createdAt)) : [];
@@ -280,6 +290,7 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
             doctorData.maxPatientsPerDay,
             roleDetails,
             doctorData.consultationFee,
+            doctorData.registrationStepsCompleted,
             doctorData.createdAt,
             doctorData.updatedAt,
             doctorData.followers,
@@ -293,5 +304,5 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
         return doctor.toJson(); // Assuming toJSON() method is defined in Doctor class
     }
     
-  
+    
 }

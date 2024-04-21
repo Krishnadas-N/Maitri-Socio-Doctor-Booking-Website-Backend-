@@ -5,6 +5,10 @@ import { UserLogin } from "../../domain/interfaces/use-cases/authentication/user
 
 import { UserSignup } from "../../domain/interfaces/use-cases/authentication/user-sigup";
 import { userUseCase } from "../../domain/interfaces/use-cases/UserService/User-usecase";
+import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
+import { EditProfileDto } from "../../models/users.model";
+
+
 
 export function signupController(userSignup: UserSignup) {
     return async function (req: Request, res: Response, next: NextFunction) {
@@ -41,8 +45,10 @@ export class UserController{
     }
     async getUserProfile(req: Request, res: Response, next: NextFunction){
         try{
-         const userId = req.params.userId;
-         const userProfile = await this.userUseCase.profile(userId);
+        assertHasUser(req)
+         const userId = req.user.id;
+         console.log(userId,"User Id");
+         const userProfile = await this.userUseCase.profile(userId as string);
          return  sendSuccessResponse(res, userProfile,"user profile fetched successfully");
         }catch(error){
             next(error)
@@ -63,6 +69,7 @@ export class UserController{
        try{
         const passwordToken = req.params.token
           const {newPassword}=req.body;
+          console.log(passwordToken,"token",newPassword)
           await this.userUseCase.setResetPassword(passwordToken,newPassword);
           return sendSuccessResponse(res,"Password Reset Successfully","Password has been changed")
        }catch(error){
@@ -102,6 +109,52 @@ export class UserController{
             return  sendSuccessResponse(res, userProfile,"user profile fetched successfully");
         } catch (error) {
             console.error('Error fetching While Blocking User:', error);
+           next(error)
+        }
+    }
+
+    async editUserProfile(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const userId=req.user.id;
+            const { firstName, lastName, username, dateOfBirth, gender }: EditProfileDto = req.body;
+            const updatedProfile = await this.userUseCase.editUserProfile(userId as string, {
+                firstName,
+                lastName,
+                username,
+                dateOfBirth,
+                gender,
+              });
+            return  sendSuccessResponse(res, updatedProfile,"user profile Edited successfully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
+
+
+    async ChangeUserProfile(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const userId=req.user.id;
+            const imageUrl= req.body.cloudinaryUrls[0]
+            console.log("image Url from COntrolelr",imageUrl);
+            await this.userUseCase.changeProfilePic(userId as string ,imageUrl );
+            return  sendSuccessResponse(res, imageUrl,"user profile Edited successfully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
+
+    async changePassword(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const userId=req.user.id;
+            await this.userUseCase.changeUserPassword(userId as string);
+            return  sendSuccessResponse(res, {},"Reset password Link shared Successfully to Your email");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
            next(error)
         }
     }

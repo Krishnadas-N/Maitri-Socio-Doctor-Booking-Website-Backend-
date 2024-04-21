@@ -11,9 +11,11 @@ import { AuthMiddleware } from "../../middlewares/jwtAuthenticationMiddleware";
 const adminDataSource = new AdminDataSource();
 const adminRepository = new AdminRepoImpl(adminDataSource);
 
-const userRepositoryImpl = new UserAuthenticationRepoImpl(new MongoDbUserDataSource())
+const userDataSource = new MongoDbUserDataSource()
+const userRepositoryImpl = new UserAuthenticationRepoImpl(userDataSource)
 
 const doctorDataSource = new MongoDbDoctorDataSourceImpl();
 const doctorRepo = new IDoctorRepositoryImpl(doctorDataSource);
+
 
 export const authMiddleWare = new AuthMiddleware(userRepositoryImpl,doctorRepo,adminRepository)

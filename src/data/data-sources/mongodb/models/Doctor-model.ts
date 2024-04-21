@@ -44,7 +44,7 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
     required: true,
   },
   address: {
-    street: String,
+    state: String,
     city: String,
     zipcode: Number,
     country: String,
@@ -135,6 +135,12 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
     type: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
     default: ['66141503f83ac04df8392561'], // Set the default role(s) here
   },
+  registrationStepsCompleted:{
+    type:Number,
+    required:true,
+    default:0,
+    enum:[0,1,2,3]
+  }
 });
 
 

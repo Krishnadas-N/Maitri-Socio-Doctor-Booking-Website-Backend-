@@ -3,7 +3,7 @@ import { RoleDetails } from "./Admin";
 
 export class Address {
     constructor(
-      public street: string,
+      public state: string,
       public city: string,
       public zipcode: number,
       public country: string
@@ -36,6 +36,13 @@ export class Availability {
     ) {}
 }
 
+class consultationFee{
+  constructor(
+    public type: 'video'|'chat'| 'clinic',
+    public fee: number,
+  ) {}
+  }
+
 class Doctor {
     constructor(
       public _id: string,
@@ -59,7 +66,8 @@ class Doctor {
       public typesOfConsultation: ('video' | 'chat' | 'clinic')[],
       public maxPatientsPerDay:number,
       public roles:string[] | RoleDetails[],
-      public consultationFee?: number[],
+      public consultationFee: consultationFee[],
+      public registrationStepsCompleted :number,
       public createdAt?: Date,
       public updatedAt?: Date,
       public followers?: string[],
@@ -84,7 +92,7 @@ class Doctor {
           password: this.password,
           phone: this.phone,
           address: {
-              street: this.address.street,
+              state: this.address.state,
               city: this.address.city,
               zipcode: this.address.zipcode,
               country: this.address.country
@@ -104,6 +112,7 @@ class Doctor {
               startTime: avail.startTime,
               endTime: avail.endTime
           })),
+          registrationStepsCompleted:this.registrationStepsCompleted,
           profilePic: this.profilePic,
           bio: this.bio,
           createdAt: this.createdAt,

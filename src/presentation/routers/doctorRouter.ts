@@ -6,7 +6,7 @@ import { IDoctorRepositoryImpl } from "../../domain/repositories/doctor-reposito
 import { DoctorAuthUseCaseImpl } from "../../domain/use-cases/Doctor/doctor-authentication-usecase";
 import { MongoDbOtpDataSource } from "../../data/data-sources/mongodb/mongodb-otp-dataSource";
 import { OTPRepsositoryImpl } from "../../domain/repositories/otp-repository";
-import { VerifyProfile, chnageStatus, forgotPassword, getDoctorById, getDoctors, login, registerAdditionalInfo, registerBasicInfo, registerProfessionalInfo, resetPassword } from "../controllers/doctorController";
+import { VerifyProfile, chnageStatus, forgotPassword, getCurrentDoctor, getDoctorById, getDoctors, login, registerAdditionalInfo, registerBasicInfo, registerProfessionalInfo, resetPassword } from "../controllers/doctorController";
 import { upload, uploadToCloudinary } from "../../../config/uploadMiddleWare";
 import { DoctorUseCaseImpl } from "../../domain/use-cases/Doctor/doctor-serviceImpl";
 import { authMiddleWare } from "./authRouterSetup";
@@ -35,9 +35,10 @@ doctorRouter.get('/get-doctor/:doctorId',authMiddleWare.isAuthenticated.bind(aut
 
 doctorRouter.patch('/verify-profile/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Admin'], 'WRITE'),VerifyProfile(doctorAuthService));
 
-doctorRouter.get('/get-doctors',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User', 'Admin',"Doctor"], 'READ'),getDoctors(doctorServices));
+doctorRouter.get('/get-doctors',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User','Admin',"Doctor"], 'READ'),getDoctors(doctorServices));
 
 doctorRouter.put('/change-status/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Admin'], 'WRITE'),chnageStatus(doctorServices));
 
+doctorRouter.get('/get-currentDocotor',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Doctor'], 'READ'),getCurrentDoctor(doctorServices))
 
 export default doctorRouter;

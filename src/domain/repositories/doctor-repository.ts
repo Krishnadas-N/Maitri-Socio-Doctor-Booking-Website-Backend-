@@ -1,6 +1,6 @@
 import MailService from "../../../config/node-mailer";
+import resetPasswordLink from "../../../templates/changePasswordTemplate";
 import confrimationEmailTemplate from "../../../templates/confimrationEmailTemplate";
-import resetPasswordLink from "../../../templates/resetPasswordEmailTemplate";
 import { CustomError } from "../../../utils/CustomError";
 import { generateRandomToken } from "../../../utils/tokenizeData-Helper";
 import { DoctorModelInter } from "../../data/interfaces/data-sources/doctor-data-source";

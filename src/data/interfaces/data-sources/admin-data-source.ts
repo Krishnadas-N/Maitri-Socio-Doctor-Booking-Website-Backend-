@@ -2,10 +2,10 @@ import Admin from "../../../domain/entities/Admin";
 import Role from "../../../domain/entities/Role";
 
 export interface AdminModelInter {      
-    create(admin: Admin): Promise<void>; 
+     create(admin: Admin): Promise<void>; 
      findByUsername(username: string): Promise<Admin | null>;
-    findByemail(email:string):Promise<Admin | null>;
-    findById(id:string):Promise<Admin|null> ;  
+     findByemail(email:string):Promise<Admin | null>;
+     findById(id:string):Promise<Admin|null> ;  
 //   getRoles(): Promise<Role[]>;
 //   assignRole(adminId: string, roleId: string): Promise<void>;
 //   unassignRole(adminId: string, roleId: string): Promise<void>;

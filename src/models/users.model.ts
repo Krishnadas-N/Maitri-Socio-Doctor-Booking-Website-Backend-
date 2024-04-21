@@ -12,3 +12,14 @@ export interface UserLoginResponse{
     user:User,
     token:string
 }
+
+
+export interface EditProfileDto {
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+    dateOfBirth?: Date;
+    gender?: 'male' | 'female' | 'other';
+  }
+
+export type userType = 'User'|'Doctor'

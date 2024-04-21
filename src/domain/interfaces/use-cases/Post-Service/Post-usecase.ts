@@ -1,3 +1,4 @@
+import { userType } from "../../../../models/users.model";
 import { Post, Reply ,Media, Comment} from "../../../entities/POST";
 
 export interface IPostUsecase {
@@ -5,11 +6,11 @@ export interface IPostUsecase {
 
     getAllPosts(page: number, limit?: number, query?: string): Promise<Post[]>;
 
-    likePost(postId: string, userId: string): Promise<Post | null>;
+    likePost(postId: string, userId: string,userType:userType): Promise<Post | null>;
 
-    commentOnPost(postId: string, userId: string, content: string): Promise<Post | null>;
+    commentOnPost(postId: string, userId: string, content: string,userType:userType): Promise<Comment | null>;
 
-    replyToComment(postId: string, commentId: string, userId: string, content: string): Promise<Post | null>;
+    replyToComment(postId: string, commentId: string, userId: string, content: string,userType:userType): Promise<Reply | null>;
 
     reportPost(postId: string, userId: string, reason: string): Promise<Post | null>;
 
@@ -21,15 +22,17 @@ export interface IPostUsecase {
 
     explorePostsByTag(tag: string): Promise<Post[] | null>;
 
-    editComment(postId :string,commentId: string, content: string): Promise<Comment | null>;
+    editComment(postId :string,commentId: string, content: string,userType:userType): Promise<Comment | null>;
    
     deleteComment(postId: string,commentId: string): Promise<boolean>;
 
-    editReply(postId :string,commentId:string,replyId: string, content: string): Promise<Reply | null>;
+    editReply(postId :string,commentId:string,replyId: string, content: string,userType:userType): Promise<Reply | null>;
    
     deleteReply(postId: string, commentId: string,replyId: string): Promise<boolean>;
 
     // reviewReportedPosts(): Promise<Post[]>;
     // takeActionOnReportedPost(postId: string, action: 'remove' | 'warn'): Promise<boolean>;
+    getDoctorPosts(doctorId: string): Promise<Post[]> ; 
 
+    editPost(doctorId:string, postId:string, title:string, content:string, tags:string[]):Promise<{title:string, content:string, tags:string[]}>
 }

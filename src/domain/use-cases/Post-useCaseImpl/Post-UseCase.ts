@@ -1,5 +1,6 @@
 import { CustomError } from "../../../../utils/CustomError";
 import { PostCreationError, PostSearchError } from "../../../models/post.models";
+import { userType } from "../../../models/users.model";
 import { Comment, Media, Post, Reply } from "../../entities/POST";
 import { IPostsRepository } from "../../interfaces/repositories/POST-IRepository";
 import { IPostUsecase } from "../../interfaces/use-cases/Post-Service/Post-usecase";
@@ -67,27 +68,27 @@ export class PostUsecase implements IPostUsecase {
         } 
     }
 
-    async  likePost(postId: string, userId: string): Promise<Post | null> {
+    async  likePost(postId: string, userId: string,userType:userType): Promise<Post | null> {
             if (!postId || !userId) {
                 throw new CustomError('PostId and UserId are required', 400);
             }
-            const updatedPost = await this.postRepository.likePost(postId, userId);
+            const updatedPost = await this.postRepository.likePost(postId, userId,userType);
             return updatedPost;
     }
 
-    commentOnPost(postId: string, userId: string, content: string): Promise<Post | null> {
+    commentOnPost(postId: string, userId: string, content: string,userType:userType): Promise<Comment | null> {
         if (!postId || !userId || !content ) {
             throw new CustomError('Invalid postId, userId, or comment content', 400);
         }
-        return this.postRepository.commentOnPost(postId, {userId, content, timestamp:new Date(Date.now())});
+        return this.postRepository.commentOnPost(postId, {userId, content, timestamp:new Date(Date.now()),externalModelType:userType});
     }
     
-    async replyToComment(postId: string, commentId: string, userId: string, content: string): Promise<Post | null> {
+    async replyToComment(postId: string, commentId: string, userId: string, content: string,userType:userType): Promise<Reply | null> {
         if (!postId || !commentId || !userId || !content) {
             throw new CustomError('Invalid postId, commentId, userId, or content', 400);
         }
 
-        return await this.postRepository.replyToComment(postId, commentId, {userId, content,timestamp:new Date(Date.now())});
+        return await this.postRepository.replyToComment(postId, commentId, {userId, content,timestamp:new Date(Date.now()),externalModelType:userType});
     }
     async reportPost(postId: string, userId: string, reason: string): Promise<Post | null> {
         try {
@@ -123,13 +124,13 @@ export class PostUsecase implements IPostUsecase {
             }
         }
     }
-    async editReply(postId :string,commentId:string,replyId: string, content: string): Promise<Reply | null> {
+    async editReply(postId :string,commentId:string,replyId: string, content: string,userType:userType): Promise<Reply | null> {
         try {
             if (!postId || !commentId || !replyId || !content) {
                 throw new CustomError('postId, commentId, replyId, and content are required', 400);
             }
 
-            const updatedReply = await this.postRepository.editReply(postId, commentId, replyId, content);
+            const updatedReply = await this.postRepository.editReply(postId, commentId, replyId, content,userType);
             return updatedReply;
         } catch (error:any) {
             if (error instanceof CustomError) {
@@ -139,9 +140,9 @@ export class PostUsecase implements IPostUsecase {
             }
         }  
     }
-    async editComment(postId: string, commentId: string, content: string): Promise<Comment | null> {
+    async editComment(postId: string, commentId: string, content: string,userType:userType): Promise<Comment | null> {
         try {
-        return await this.postRepository.editComment(postId, commentId, content);
+        return await this.postRepository.editComment(postId, commentId, content,userType);
     } catch (error:any) {
         if (error instanceof CustomError) {
             throw error;
@@ -204,4 +205,31 @@ export class PostUsecase implements IPostUsecase {
         }
     }
 
+    async getDoctorPosts(doctorId: string): Promise<Post[]> {
+        try {
+            console.log(doctorId,' doctor id');
+            if (!doctorId) {
+                throw new CustomError('Doctor ID is required', 400);
+            }
+            return await this.postRepository.getDoctorUploadedPosts(doctorId);
+        } catch (error:any) {
+            console.error('Error archiving post:', error);
+            throw new CustomError(error.message || 'Error archiving post:', 500);
+        }
+            
+    }
+
+   async editPost(doctorId: string, postId:string,title: string, content: string, tags: string[]): Promise<{ title: string; content: string; tags: string[]; }> {
+    try {
+    if(!doctorId){
+            throw new CustomError('Unautorized User',403)
+        }
+     return await this.postRepository.editPost(doctorId,postId,title,content,tags)
+    }catch (error:any) {
+        console.error('Error archiving post:', error);
+        throw new CustomError(error.message || 'Error archiving post:', 500);
+    }
+    } 
+    
+    
 }

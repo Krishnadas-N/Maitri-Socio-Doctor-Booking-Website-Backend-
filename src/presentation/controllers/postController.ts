@@ -3,15 +3,18 @@ import { sendSuccessResponse } from "../../../utils/ReponseHandler";
 import { IPostUsecase } from "../../domain/interfaces/use-cases/Post-Service/Post-usecase";
 import { Media } from "../../domain/entities/POST";
 import { CustomError } from "../../../utils/CustomError";
+import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
+import { userType } from "../../models/users.model";
 
 
 export class PostController {
     constructor(private postUsecase: IPostUsecase) {}
 
     
-    async createPost(req: any, res: Response,next:NextFunction) {
+    async createPost(req: Request, res: Response,next:NextFunction) {
         const doctor = req.user; 
-        const doctorId =req.user.id 
+        assertHasUser(req)
+        const doctorId =req.user.id as string
         console.log("user",doctor,doctorId);
         const {  title, content, tags } = req.body;
         const cloudinaryUrls = req.body.cloudinaryUrls;
@@ -33,6 +36,24 @@ export class PostController {
         }
     }
 
+    async editPost(req: Request, res: Response,next:NextFunction) {
+        assertHasUser(req)
+        const doctorId =req.user.id as string
+        console.log("user",doctorId);
+        console.log(req.body);
+        const {  title, content, tags } = req.body;
+        const postId = req.params.postId
+        try {
+            if(!postId){
+                throw new CustomError("Post Id is not defined",404)
+            }
+            const post = await this.postUsecase.editPost(doctorId, postId,title, content, tags);
+            sendSuccessResponse(res,post,"Create a new post successfully");
+        } catch (error) {
+          next(error);
+        } 
+    }
+
     async getAllPosts(req: Request, res: Response,next:NextFunction) {
         const { page, limit, query } = req.query;
 
@@ -47,8 +68,10 @@ export class PostController {
         }
     }
 
-    async likePost(req: any, res: Response, next: NextFunction) {
+    async likePost(req: Request, res: Response, next: NextFunction) {
         try {
+            assertHasUser(req)
+            const userType: userType = req.user.roles[0].roleName as userType;
             const postId = req.params.postId
             const  userId  = req.user.id as string;
             console.log(postId,userId);
@@ -56,7 +79,7 @@ export class PostController {
                throw new CustomError('Post ID and User ID are required' ,403);
             }
     
-            const post = await this.postUsecase.likePost(postId, userId);
+            const post = await this.postUsecase.likePost(postId, userId,userType);
             if (!post) {
                 throw new CustomError('Post not found or unable to like the post' ,404);
             }
@@ -67,15 +90,18 @@ export class PostController {
     }
     
 
-    async commentOnPost(req: any, res: Response,next:NextFunction) {
+    async commentOnPost(req: Request, res: Response,next:NextFunction) {
+        assertHasUser(req)
+        const userType: userType = req.user.roles[0].roleName as userType;
         const postId = req.params.postId
         const  userId  = req.user.id as string;
-        const { content } = req.body;
+        const content = req.body.comment;
+        console.log(postId,userId,content)
         try {
             if (!postId || !userId || !content) {
                 throw new CustomError('Post ID, User ID, and Comment Content are required' ,400);
             }
-            const post = await this.postUsecase.commentOnPost(postId, userId, content);
+            const post = await this.postUsecase.commentOnPost(postId, userId, content,userType);
             if (!post) {
                 throw new CustomError( 'Post not found or unable to add comment to the post' ,404);
             }
@@ -88,14 +114,16 @@ export class PostController {
 
     async replyToComment(req: Request, res: Response,next:NextFunction) {
         const postId = req.params.postId
-        const  userId  = req.user as string;
+        assertHasUser(req)
+        const userType: userType = req.user.roles[0].roleName as userType;
+        const  userId  = req.user.id as string;
         const { commentId, content } = req.body;
         console.log(postId,userId,commentId, content);
         try {
             if (!postId || !commentId || !userId || !content) {
                 throw new CustomError('Post ID, Comment ID, User ID, and Content are required',400);
             }
-            const post = await this.postUsecase.replyToComment(postId, commentId, userId, content);
+            const post = await this.postUsecase.replyToComment(postId, commentId, userId, content,userType);
             if (!post) {
                 throw new CustomError( 'Post not found or unable to add comment to the post' ,404);
             }
@@ -107,6 +135,7 @@ export class PostController {
 
     async reportPost(req: Request, res: Response,next:NextFunction) {
         const { postId, userId, reason } = req.body;
+        // const userType: userType= req.user.roles[0].roleName;
         try {
             if (!postId || !userId || !reason) {
                 throw new CustomError('Post ID, User ID, and Reason are required', 400);
@@ -149,6 +178,7 @@ export class PostController {
     }
 
     async getPostDetails(req: Request, res: Response,next:NextFunction) {
+        console.log('//////////////////////////////////////////////////////');
         const { postId } = req.params;
         try {
             if (!postId) {
@@ -176,11 +206,13 @@ export class PostController {
 
     async editComment(req: Request, res: Response,next:NextFunction) {
         const { postId, commentId, content } = req.body;
+        assertHasUser(req)
+        const userType: userType = req.user.roles[0].roleName as userType;
         try {
             if (!postId || !commentId || !content) {
                 throw new CustomError('Post ID, Comment ID, and Content are required', 400);
             }
-            const comment = await this.postUsecase.editComment(postId, commentId, content);
+            const comment = await this.postUsecase.editComment(postId, commentId, content,userType);
             if (!comment) {
                 throw new CustomError('Failed to edit comment', 404);
             }
@@ -206,12 +238,14 @@ export class PostController {
 
     async editReply(req: Request, res: Response,next:NextFunction) {
         const { postId, commentId, replyId, content } = req.body;
+        assertHasUser(req)
+        const userType: userType = req.user.roles[0].roleName as userType;
         try {
             if (!postId || !commentId || !replyId || !content) {
                 throw new CustomError('Post ID, Comment ID, Reply ID, and Content are required', 400);
             }
 
-            const reply = await this.postUsecase.editReply(postId, commentId, replyId, content);
+            const reply = await this.postUsecase.editReply(postId, commentId, replyId, content,userType);
             return sendSuccessResponse(res, reply, 'Reply Edited  SuccessFully Deleted.');
         } catch (error) {
           next(error);
@@ -225,6 +259,20 @@ export class PostController {
                 throw new CustomError('Post ID, Comment ID, and Reply ID are required', 400);
             }
             const result = await this.postUsecase.deleteReply(postId, commentId, replyId);
+            return sendSuccessResponse(res, result, 'Reply Deleted SuccessFully Deleted.');
+        } catch (error) {
+          next(error);
+        }
+    }
+
+    async getDoctorPosts(req: Request, res: Response,next:NextFunction) {
+        try {
+            
+            assertHasUser(req);
+            const doctorId = req.user.id;
+            console.log("Doctor id ",doctorId);
+            const result = await this.postUsecase.getDoctorPosts(doctorId as string);
+            console.log("Post gets by doctor",result);
             return sendSuccessResponse(res, result, 'Reply Deleted SuccessFully Deleted.');
         } catch (error) {
           next(error);

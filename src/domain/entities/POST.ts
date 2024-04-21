@@ -1,28 +1,33 @@
 
 import { Types } from "mongoose";
 import { ObjectId } from "mongoose";
+import { userType } from "../../models/users.model";
 
 export   class Like {
     _id?: string;
+    externalModelType:userType;
     userId: string; 
     timestamp: Date;
   
-    constructor(userId: string, timestamp: Date) {
+    constructor(userId: string, timestamp: Date,externalModelType:userType) {
       this.userId = userId;
-      this.timestamp = timestamp;
+      this.timestamp = timestamp; 
+      this.externalModelType = externalModelType
     }
   }
   
 
 export class Reply {
-    _id?: string | ObjectId;
-    userId: Types.ObjectId | string;
+    _id?: string | ObjectId ;
+    userId: Types.ObjectId | string | any;
+    externalModelType:userType;
     content: string;
     timestamp: Date;
     replies?: Reply[];
-    constructor(userId: Types.ObjectId |string, content: string, timestamp: Date,replies: Reply[] = []) {
+    constructor(userId: Types.ObjectId |string, content: string, timestamp: Date,replies: Reply[] = [],externalModelType:userType) {
         this.userId = userId;
         this.content = content;
+        this.externalModelType = externalModelType;
         this.timestamp = timestamp;
         this.replies = replies;
     }
@@ -42,14 +47,16 @@ export class Report {
 
 export class Comment {
   _id?: string;
-  userId: string | Types.ObjectId;
+  externalModelType:userType;
+  userId: string | Types.ObjectId | any;
   content: string;
   timestamp: Date;
   replies?: Reply[];
-  constructor(userId: string | Types.ObjectId, content: string, timestamp: Date = new Date()) {
+  constructor(userId: string | Types.ObjectId, content: string, timestamp: Date = new Date(), externalModelType:userType) {
       this.userId = userId;
       this.content = content;
       this.timestamp = timestamp;
+      this.externalModelType = externalModelType
   }
 }
 

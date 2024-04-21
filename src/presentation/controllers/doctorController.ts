@@ -3,11 +3,12 @@ import { sendSuccessResponse } from "../../../utils/ReponseHandler";
 import { DoctorService } from "../../domain/interfaces/use-cases/Doctor-Service/authentication/doctor-authentication";
 import { CustomError } from "../../../utils/CustomError";
 import { IDoctorUsecase } from "../../domain/interfaces/use-cases/Doctor-Service/Idoctor-Service";
+import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
 // import cloudinary from "../../../config/cloudinary";
 
 export function registerBasicInfo(doctorService: DoctorService) {
     return async function (req: Request, res: Response, next: NextFunction) {
-        try {
+        try {  
             const { firstName, lastName, gender, dateOfBirth,password, email, phone } = req.body;
 
            const token = await doctorService.registerBasicInfoUseCase({
@@ -48,9 +49,10 @@ export function registerProfessionalInfo(doctorService: DoctorService) {
                 return res.status(500).send('Internal Server Error');
             }
             const certificationUrls: string[] = cloudinaryUrls;
-            const { specialization, education, experience, languages, consultationFee } = req.body;
+            const { specialization, education, experience, languages, consultationFee ,address} = req.body;
 
             const doctorData=  await doctorService.registerProfessionalInfoUseCase({
+                address,
                 specialization,
                 education,
                 experience,
@@ -194,6 +196,23 @@ export function getDoctorById(doctorService:IDoctorUsecase){
             }
               const doctor =await doctorService.getDoctorById(doctorId)
               return sendSuccessResponse(res,{doctor},"Doctor Fetched Success Fully",)
+           }catch(error){
+            next(error)
+           }
+    }
+}
+
+export function getCurrentDoctor(doctorService:IDoctorUsecase){
+    return async function (req:Request,res:Response,next:NextFunction){
+        console.log("getCurrentDoctor   ",);
+        try{
+            assertHasUser(req)
+            const doctorId = req.user.id;
+            if(!doctorId){
+                throw new CustomError('Doctor Id is not Defined',403)
+            }
+              const doctor =await doctorService.getDoctorById(doctorId as string)
+              return sendSuccessResponse(res,doctor,"Doctor Fetched Success Fully",)
            }catch(error){
             next(error)
            }

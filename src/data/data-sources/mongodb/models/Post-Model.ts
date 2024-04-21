@@ -2,7 +2,14 @@ import mongoose, { Schema, Document } from 'mongoose';
 import { Post } from '../../../../domain/entities/POST';
 
 const LikeSchema =  new mongoose.Schema({
-    userId: { type: Schema.Types.ObjectId, required: true },
+    externalModelType: {
+        type: String,
+        enum: ['User', 'Doctor'], 
+    },
+    userId: {
+        type: Schema.Types.ObjectId,
+        refPath: 'externalModelType', // Dynamic referencing for nested replies
+    },
     timestamp: { type: Date, default: Date.now }
   }, { _id: false });
 
@@ -17,28 +24,63 @@ const postMediaSchema =  new mongoose.Schema({
 })
 
 const ReplySchema = new mongoose.Schema({
-    userId: { type: Schema.Types.ObjectId, required: true },
+    externalModelType: {
+        type: String,
+        enum: ['User', 'Doctor'], 
+        required: true
+    },
+    userId: {
+        type: Schema.Types.ObjectId,
+        refPath: 'externalModelType', // Use dynamic referencing based on externalModelType
+        required: true
+    },
     content: { type: String, required: true },
     timestamp: { type: Date, default: Date.now },
     replies: [{
-        userId: { type: Schema.Types.ObjectId, required: true },
+        externalModelType: {
+            type: String,
+            enum: ['User', 'Doctor'], 
+            required: true
+        },
+        userId: {
+            type: Schema.Types.ObjectId,
+            refPath: 'externalModelType', // Dynamic referencing for nested replies
+            required: true
+        },
         content: { type: String, required: true },
-        timestamp: { type: Date, default: Date.now },
+        timestamp: { type: Date, default: Date.now }
     }]
 });
 
 
-const CommentSchema =new mongoose.Schema({
-    userId: { type: Schema.Types.ObjectId, required: true },
-        content: { type: String, required: true },
-        timestamp: { type: Date, default: Date.now },
-        replies: [ReplySchema]
-    });
-
+const CommentSchema = new mongoose.Schema({
+    externalModelType: {
+        type: String,
+        enum: ['User', 'Doctor'], 
+        required: true
+    },
+    userId: {
+        type: Schema.Types.ObjectId,
+        refPath: 'externalModelType', // Use dynamic referencing based on externalModelType
+        required: true
+    },
+    content: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+    replies: [ReplySchema]
+});
 
 // Report sub-schema
 const ReportSchema = new mongoose.Schema({
-    userId: { type: Schema.Types.ObjectId, required: true },
+    externalModelType: {
+        type: String,
+        enum: ['User', 'Doctor'], 
+        required: true
+    },
+    userId: {
+        type: Schema.Types.ObjectId,
+        refPath: 'externalModelType', // Dynamic referencing for nested replies
+        required: true
+    },
     reason: { type: String, required: true },
     timestamp: { type: Date, default: Date.now }
 });
@@ -49,7 +91,7 @@ const PostSchema: Schema = new mongoose.Schema<Post>({
     doctorId: {
          type: Schema.Types.ObjectId, 
          ref: 'Doctor',
-          required: true 
+         required: true 
         },
     title: {
         type: String, 

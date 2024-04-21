@@ -5,7 +5,7 @@ import { PostUsecase } from '../../domain/use-cases/Post-useCaseImpl/Post-UseCas
 import { PostController } from '../controllers/postController';
 import { upload, uploadToCloudinary } from '../../../config/uploadMiddleWare';
 import { authMiddleWare } from './authRouterSetup';
-
+import { checkRolesAndPermissions } from "../../middlewares/roleBasedAuthMiddleware";
 
 const  postRouter =  Router();
 
@@ -16,9 +16,11 @@ const postController = new PostController(postUsecase);
 
 postRouter.post('/',authMiddleWare.isAuthenticated.bind(authMiddleWare), upload.array('media',5),uploadToCloudinary,postController.createPost.bind(postController));
 
-postRouter.get('/',authMiddleWare.isAuthenticated.bind(authMiddleWare), postController.getAllPosts.bind(postController));
+postRouter.get('/',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'), postController.getAllPosts.bind(postController));
 
 postRouter.post('/:postId/like', authMiddleWare.isAuthenticated.bind(authMiddleWare),postController.likePost.bind(postController));
+
+postRouter.put('/edit/:postId', authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'WRITE'), postController.editPost.bind(postController))
 
 postRouter.post('/:postId/comment', authMiddleWare.isAuthenticated.bind(authMiddleWare),postController.commentOnPost.bind(postController));
 
@@ -30,7 +32,7 @@ postRouter.post('/block',authMiddleWare.isAuthenticated.bind(authMiddleWare), po
 
 postRouter.post('/archive', authMiddleWare.isAuthenticated.bind(authMiddleWare),postController.archivePost.bind(postController));
 
-postRouter.get('/:postId',authMiddleWare.isAuthenticated.bind(authMiddleWare), postController.getPostDetails.bind(postController));
+postRouter.get('/p/:postId',authMiddleWare.isAuthenticated.bind(authMiddleWare), postController.getPostDetails.bind(postController));
 
 postRouter.get('/tag/:tag',authMiddleWare.isAuthenticated.bind(authMiddleWare), postController.explorePostsByTag.bind(postController));
 
@@ -41,5 +43,7 @@ postRouter.delete('/comment/delete', authMiddleWare.isAuthenticated.bind(authMid
 postRouter.put('/comment/reply/edit',authMiddleWare.isAuthenticated.bind(authMiddleWare), postController.editReply.bind(postController));
 
 postRouter.delete('/comment/reply/delete',authMiddleWare.isAuthenticated.bind(authMiddleWare), postController.deleteReply.bind(postController));
+
+postRouter.get('/get-doctor-posts',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),postController.getDoctorPosts.bind(postController))
 
 export default postRouter;

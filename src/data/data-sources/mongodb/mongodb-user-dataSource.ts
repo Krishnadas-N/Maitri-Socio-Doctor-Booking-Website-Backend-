@@ -1,7 +1,7 @@
 import { CustomError } from "../../../../utils/CustomError";
 import { RoleDetails } from "../../../domain/entities/Admin";
 import { User } from "../../../domain/entities/User";
-import { UsersWithTotalCount } from "../../../models/users.model";
+import { EditProfileDto, UsersWithTotalCount } from "../../../models/users.model";
 import { User_Data } from "../../interfaces/data-sources/user-data-source";
 import RoleModel from "./models/role-model";
 import { UserModel } from "./models/user-model";
@@ -106,8 +106,9 @@ export class MongoDbUserDataSource implements User_Data {
     }
     }
 
-   async saveResetToken(token: string, email: string): Promise<void> {
+   async saveResetToken(email: string, token: string): Promise<void> {
     try {
+        console.log(token ,email,'///////////////////////////');
         const user = await UserModel.findOne({email}); 
         if (!user) {
             throw new CustomError('User not found or unauthorized', 404);
@@ -163,6 +164,20 @@ export class MongoDbUserDataSource implements User_Data {
             await user.save();
             return user.toObject() as User;
     }
+
+    async editProfile(userId: string, data: EditProfileDto): Promise<User> {
+        const updatedUser = await UserModel.findByIdAndUpdate(userId, data, { new: true }) as User;
+        if (!updatedUser) {
+          throw new CustomError('User Not Found', 404);
+        }
+        return updatedUser ;
+      }
+
+      async changeProfilePic(userId:string,image:string):Promise<void>{
+        await UserModel.updateOne({_id:userId}, {$set:{profilePic:image}}); 
+      }
+      
+
 
    
     private async convertToDomain(user: User | null): Promise<User | null> {

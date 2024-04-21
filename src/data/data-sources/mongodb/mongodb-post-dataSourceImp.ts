@@ -3,12 +3,15 @@ import { Comment, Post, Reply, Report } from "../../../domain/entities/POST";
 import { IPostModel } from "../../interfaces/data-sources/post-data-source";
 import { PostModel } from "./models/Post-Model";
 import { CustomError } from "../../../../utils/CustomError";
+import { userType } from "../../../models/users.model";
+import { UserModel } from "./models/user-model";
+import DoctorModel from "./models/Doctor-model";
 
 
 export class MongoDbPostDataSource implements IPostModel{
     constructor(){}
-    async getAllPosts(page: number, limit: number, query?: string): Promise<Post[]> {
-        const skip = (page - 1) * limit;
+    async getAllhPosts(page: number, limit: number, query?: string): Promise<Post[]> {
+         const skip = (page - 1) * limit;
         const baseMatch = {
           isBlocked: false, // Adjust criteria if needed
         };
@@ -19,14 +22,14 @@ export class MongoDbPostDataSource implements IPostModel{
         const doctorLookupPipeline = [
           {
             $lookup: {
-              from: 'doctors',
+              from: 'doctors', // Replace with your doctor collection name
               localField: 'doctorId',
               foreignField: '_id',
               as: 'doctor'
             }
           },
           {
-            $unwind: '$doctor' // Flatten the doctor array
+            $unwind: '$doctor' // Flatten the doctor array (optional if you want an array of doctors)
           },
           // Optionally uncomment to filter doctors
           // {
@@ -43,17 +46,70 @@ export class MongoDbPostDataSource implements IPostModel{
               tags: 1,
               media: 1,
               likes: 1,
-              comments: 1,
+              comments: 1, // Include comments field for population
               reportedBy: 1,
               isBlocked: 1,
               isArchived: 1,
               doctorName: '$doctor.firstName', // Include doctor's name
-              doctorProfileImage:'$doctor.profilePic'
+              doctorProfileImage: '$doctor.profilePic'
             }
           }
         ];
       
-        aggregationPipeline.push(...doctorLookupPipeline);
+        const commentPopulationPipeline = [
+            {
+                $lookup: {
+                    from: {
+                        $switch: {
+                            branches: [
+                                {
+                                    case: { $eq: ['$comments.externalModelType', 'User'] },
+                                    then: 'users'
+                                },
+                                {
+                                    case: { $eq: ['$comments.externalModelType', 'Doctor'] },
+                                    then: 'doctors'
+                                },
+                                // Add more cases if needed
+                            ],
+                            default: 'fallbackCollection' // Specify a fallback collection if none of the conditions match
+                        }
+                    },
+                    localField: 'comments.userId',
+                    foreignField: '_id',
+                    as: 'comments.author'
+                }
+          },
+          {
+            $project: {
+              _id: 1,
+              title: 1,
+              content: 1,
+              createdAt: 1,
+              tags: 1,
+              media: 1,
+              likes: 1,
+              comments: {
+                _id: 1, // Include relevant comment fields
+                content: 1,
+                timestamp: 1,
+                author: { // Include relevant user/doctor data
+                  _id: 1,
+                  // User/doctor specific fields (e.g., name, profile picture)
+                }
+              },
+              reportedBy: 1,
+              isBlocked: 1,
+              isArchived: 1,
+              doctorName: '$doctor.firstName', // Include doctor's name (assuming a doctor lookup is still needed)
+              doctorProfileImage: '$doctor.profilePic'
+            }
+          }
+        ];
+      
+        // Choose which pipeline to use based on doctor lookup requirement:
+        aggregationPipeline.push(...(doctorLookupPipeline ? doctorLookupPipeline : []));
+        aggregationPipeline.push(...commentPopulationPipeline);
       
         if (query) {
           const textSearchPipeline = [
@@ -80,10 +136,63 @@ export class MongoDbPostDataSource implements IPostModel{
           .limit(limit)
           .exec();
       
-        console.log("Log form ...", posts);
-        return posts;
-      }
+        // You can optionally log the posts and their JSON string for debugging purposes
+        console.log(posts, JSON.stringify(posts));
       
+        return posts;
+    }
+      
+    async getAllPosts(page: number, limit: number, query?: string): Promise<Post[]> {
+        const skip = (page - 1) * limit;
+        const baseMatch = {
+            isBlocked: false,
+        };
+    
+        let postsQuery = PostModel.find(baseMatch)
+            .skip(skip)
+            .limit(limit);
+    
+        if (query) {
+            postsQuery = postsQuery.find({ $text: { $search: query } });
+        }
+    
+        const posts = await postsQuery.exec();
+    
+        // Populate doctorId for each post
+        await PostModel.populate(posts, { path: 'doctorId', select: 'firstName profilePic' });
+    
+        // Populate user and doctor data for comments and replies
+        for (const post of posts) {
+            if (post.comments && post.comments.length > 0) {
+                for (const comment of post.comments) {
+                    let userModel;
+                    if (comment.externalModelType === 'User') {
+                        userModel = 'User';
+                    } else if (comment.externalModelType === 'Doctor') {
+                        userModel = 'Doctor';
+                    }
+    
+                    if (userModel) {
+                        await PostModel.populate(comment, { path: 'userId', model: userModel, select: '_id firstName lastName profilePic' });
+                    }
+    
+                    // Populate replies for each comment
+                    if (comment.replies && comment.replies.length > 0) {
+                        for (const reply of comment.replies) {
+                            const replyModel = reply.externalModelType === 'User' ? 'User' : 'Doctor';
+                            await PostModel.populate(reply, { path: 'userId', model: replyModel, select: '_id firstName lastName profilePic' });
+                        }
+                    }
+                }
+            }
+        }
+    
+        // Log posts and their JSON string for debugging purposes
+        console.log(posts, JSON.stringify(posts));
+    
+        return posts;
+    }
+    
 
     async create(post: Post): Promise<Post> {
         const newPost = await PostModel.create(post); 
@@ -99,19 +208,20 @@ export class MongoDbPostDataSource implements IPostModel{
         return post;
     }
 
-    async likePost(postId: string, userId: string): Promise<Post> {
+    async likePost(postId: string, userId: string,userType:userType): Promise<Post> {
         if (!mongoose.Types.ObjectId.isValid(postId) || !mongoose.Types.ObjectId.isValid(userId)) {
             throw new CustomError('Invalid Post Id or User Id', 400);  
         }
         const post = await PostModel.findById(postId);
-
+        console.log("Log from like post after finding the post for like",post);
         if (!post) {
             throw new CustomError('Post not found', 404);
         }
-
-        const likedIndex = post.likes?.findIndex(like => like.userId === userId);
+        console.log(post.likes);
+        const likedIndex = post.likes?.findIndex(like => like.userId.toString() === userId.toString());
+        console.log(likedIndex,"Log from liked post index");
         if(likedIndex === undefined || likedIndex === -1){
-            post.likes?.push({userId,timestamp:new Date()});
+            post.likes?.push({externalModelType:userType,userId,timestamp:new Date()});
         } else{
             post.likes?.splice(likedIndex, 1);
         }
@@ -119,9 +229,10 @@ export class MongoDbPostDataSource implements IPostModel{
     }
 
     
-    async commentOnPost(postId: string, comment: Comment): Promise<Post | null> {
-        if (!postId || !comment || !comment.userId || !comment.content) {
-            throw new CustomError('Invalid postId, userId, or comment content', 400);
+    async commentOnPost(postId: string, comment: Comment): Promise<Comment | null> {
+        console.log(comment);
+        if (!postId || !comment || !comment.userId || !comment.content || !comment.externalModelType) {
+            throw new CustomError('Invalid postId, userId, model or comment content', 400);
         }
 
         if (!mongoose.Types.ObjectId.isValid(postId)) {
@@ -145,11 +256,17 @@ export class MongoDbPostDataSource implements IPostModel{
         post.comments.push(comment);
 
         const updatedPost = await post.save();
-
-        return updatedPost;
+        const newComment = updatedPost && updatedPost.comments && updatedPost.comments.length > 0 ? updatedPost.comments[updatedPost.comments.length - 1] : null;
+        if(newComment){
+            const userObject = newComment.externalModelType === 'User' 
+            ? await UserModel.findById(comment.userId, { _id: 1, firstName: 1, lastName: 1, profilePic: 1 })
+            : await DoctorModel.findById(comment.userId, { _id: 1, firstName: 1, lastName: 1, profilePic: 1 });
+            newComment.userId = userObject;
+        }
+        return newComment;
     }
 
-    async replyToComment(postId: string, commentId: string, reply: Reply): Promise<Post | null> {
+    async replyToComment(postId: string, commentId: string, reply: Reply): Promise<Reply | null> {
         console.log(postId, commentId,reply);
         if (!mongoose.Types.ObjectId.isValid(postId) || !mongoose.Types.ObjectId.isValid(commentId) || !mongoose.Types.ObjectId.isValid(reply.userId)) {
             throw new CustomError('Invalid Post Id', 400);
@@ -165,8 +282,15 @@ export class MongoDbPostDataSource implements IPostModel{
             throw new CustomError('Comment not found', 404);
         }
         comment.replies?.push(reply);
-        const updatedPost = await post.save();
-        return updatedPost;
+        await post.save();
+        const lastReply = comment.replies && comment.replies.length > 0 ? comment.replies[comment.replies.length - 1] : null;
+        console.log(comment.replies, "this is the replie",lastReply);
+        if(lastReply){
+            lastReply.userId =  lastReply.externalModelType === 'User' 
+            ? await UserModel.findById(lastReply.userId, { _id: 1, firstName: 1, lastName: 1, profilePic: 1 })
+            : await DoctorModel.findById(lastReply.userId, { _id: 1, firstName: 1, lastName: 1, profilePic: 1 });
+        }
+        return lastReply;
     }
     
     async reportPost(postId: string, report: Report): Promise<Post | null> {
@@ -193,10 +317,11 @@ export class MongoDbPostDataSource implements IPostModel{
         return  await PostModel.find({ tags: tag });
     }
 
-    async editReply(postId: string | mongoose.Types.ObjectId, commentId: string | mongoose.Types.ObjectId, replyId: string, content: string): Promise<Reply | null> {
+    async editReply(postId: string | mongoose.Types.ObjectId, commentId: string | mongoose.Types.ObjectId, replyId: string, content: string,userType:userType): Promise<Reply | null> {
         if (!postId || !commentId || !replyId || !content) {
             throw new CustomError('postId, commentId, replyId, and content are required', 400);
         }
+        console.log(userType);
         const post = await PostModel.findById(postId);
             if (!post) {
                 throw new CustomError('Post not found', 404);
@@ -217,10 +342,11 @@ export class MongoDbPostDataSource implements IPostModel{
             return reply;
     }
 
-    async editComment(postId: string | mongoose.Types.ObjectId, commentId: string | mongoose.Types.ObjectId, content: string): Promise<Comment | null> {
+    async editComment(postId: string | mongoose.Types.ObjectId, commentId: string | mongoose.Types.ObjectId, content: string,userType:userType): Promise<Comment | null> {
         if (!mongoose.Types.ObjectId.isValid(postId) || !mongoose.Types.ObjectId.isValid(commentId)) {
             throw new CustomError('Invalid postId or commentId', 400);
         }  
+        console.log(userType);
         const post = await PostModel.findById(postId);
         if (!post) {
             throw new CustomError('Post not found', 404);
@@ -289,5 +415,76 @@ export class MongoDbPostDataSource implements IPostModel{
         }
         const blockedPost = await PostModel.findByIdAndUpdate(postId, { blocked: true }, { new: true });
         return blockedPost;
+    }
+
+     async getDoctorPosts(doctorId: string): Promise<Post[]> {
+        console.log(doctorId,'///////////////');
+        if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+            throw new Error('Invalid doctorId');
+        }
+        
+        const posts = await PostModel.aggregate([
+            { 
+              $match : { "doctorId" : new mongoose.Types.ObjectId(doctorId) } 
+            },
+            {
+              $lookup: {
+                from: 'doctors',
+                localField: 'doctorId',
+                foreignField: '_id',
+                as: 'doctor'
+              }
+            },
+            {
+              $unwind: '$doctor'
+            },
+            {
+              $project: {
+                _id: 1,
+                title: 1,
+                content: 1,
+                createdAt: 1,
+                tags: 1,
+                media: 1,
+                likes: 1,
+                comments: 1,
+                reportedBy: 1,
+                isBlocked: 1,
+                isArchived: 1,
+                doctorName: '$doctor.firstName',
+                doctorProfileImage: '$doctor.profilePic',
+                doctorLocation: '$doctor.address'
+              }
+            }
+          ]);
+            console.log(posts,'///12132112121///');
+        return posts
+    }
+
+   async editDoctorPost(doctorId: string, postId:string,title: string, content: string, tags: string[]): Promise<{ title: string; content: string; tags: string[]; }> {
+      try{
+        if (!mongoose.Types.ObjectId.isValid(doctorId) || !mongoose.Types.ObjectId.isValid(postId)) {
+            throw new CustomError('Invalid doctorId or postId', 400);
+          }
+          const updatedPost = await PostModel.findOneAndUpdate(
+            { _id: postId, doctorId },
+            { title, content, tags }, 
+            { new: true }
+            );
+           if (!updatedPost) {
+            throw new CustomError('Post not found', 404);
+          }
+          return {
+            title: updatedPost.title,
+            content: updatedPost.content,
+            tags: updatedPost.tags && updatedPost.tags?.length>0?updatedPost.tags:[],
+          };
+      }catch(err:any){
+        if(err instanceof CustomError){
+            throw err
+        }else{
+            throw new CustomError('Error editing the post: ' + err.message,500)
+        }
+      }
     }
 }

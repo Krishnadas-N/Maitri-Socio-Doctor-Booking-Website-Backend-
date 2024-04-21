@@ -2,7 +2,7 @@ import { RoleDetails } from "../domain/entities/Admin";
 import { objectId } from "./users.model";
 
 export interface Payload {
-    id: objectId | undefined | string;
+    id: objectId | string;
     roles: RoleDetails[];
     iat: number;
     exp: number;

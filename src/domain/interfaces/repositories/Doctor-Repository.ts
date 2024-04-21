@@ -12,6 +12,7 @@ export interface  IDoctorsRepository {
     AcceptDoctorProfile(id:string):Promise<Doctor>;
     GetDoctors(page?:number,searchQuery?:string,itemsPerPage?: number):Promise<Doctor[]>;
     changeStatusofDoctor(id:string):Promise<Doctor>;
+   
 }
 
 

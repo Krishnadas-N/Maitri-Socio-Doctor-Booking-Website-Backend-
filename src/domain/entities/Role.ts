@@ -1,4 +1,4 @@
-interface IRole {
+export interface IRole {
     _id?: string;
     name: string;
     permissions: string[];
@@ -6,7 +6,7 @@ interface IRole {
     updatedAt: Date;
   }
   
-  class Role implements IRole {
+ export class Role implements IRole {
     _id?: string;
     name: string;
     permissions: string[];

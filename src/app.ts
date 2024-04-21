@@ -15,6 +15,7 @@ import postRouter from './presentation/routers/postRouter';
 import passport from 'passport';
 import { adminRouter } from './presentation/routers/adminRouter';
 import configurePassport from '../config/passport';
+import { roleRouter } from './presentation/routers/rolePermissionRouter';
 // import "../config/passport";
 // const passport = require('passport');
 dotenv.config();
@@ -42,6 +43,7 @@ app.use('/api/spec',specRouter);
 app.use('/api/doctors',doctorRouter);
 app.use('/api/posts',postRouter);
 app.use('/api/admin',adminRouter);
+app.use('/api/role',roleRouter)
 /* GET Google Authentication API. */
 
 

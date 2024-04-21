@@ -4,6 +4,7 @@ import { Comment, Post, Reply, Report } from '../entities/POST';
 import { CustomError } from '../../../utils/CustomError';
 import { PostSearchError } from '../../models/post.models';
 import { IPostModel } from '../../data/interfaces/data-sources/post-data-source';
+import { userType } from '../../models/users.model';
 
 export class PostRepository implements IPostsRepository {
     constructor(private readonly postRepoDataScource: IPostModel) {}
@@ -33,16 +34,16 @@ export class PostRepository implements IPostsRepository {
         }
     }
 
-    async likePost(postId: string, userId: string): Promise<Post | null> {
+    async likePost(postId: string, userId: string,userType:userType): Promise<Post | null> {
         try{
-            return  await this.postRepoDataScource.likePost(postId,userId);
+            return  await this.postRepoDataScource.likePost(postId,userId,userType);
             } catch (error:any) {
                 throw new CustomError(error.message || PostSearchError.SearchFailed, 500);
             }
        
     }
 
-    async commentOnPost(postId: string, comment: Comment): Promise<Post | null> {
+    async commentOnPost(postId: string, comment: Comment): Promise<Comment | null> {
         try{
         return await this.postRepoDataScource.commentOnPost(postId, comment);
         }catch(error:any){
@@ -50,7 +51,7 @@ export class PostRepository implements IPostsRepository {
         }
     }
 
-    async replyToComment(postId: string, commentId: string, reply: Reply): Promise<Post | null> {
+    async replyToComment(postId: string, commentId: string, reply: Reply): Promise<Reply | null> {
         try {
             if (!postId || !commentId || !reply || !reply.userId || !reply.content) {
                 throw new Error('Invalid parameters for replying to comment');
@@ -75,12 +76,12 @@ export class PostRepository implements IPostsRepository {
         return this.postRepoDataScource.getPostByTag(tag)
     }
     
-    async editReply(postId: string | Types.ObjectId, commentId: string | Types.ObjectId, replyId: string, content: string): Promise<Reply | null> {
-        return await this.postRepoDataScource.editReply(postId, commentId, replyId, content); 
+    async editReply(postId: string | Types.ObjectId, commentId: string | Types.ObjectId, replyId: string, content: string,userType:userType): Promise<Reply | null> {
+        return await this.postRepoDataScource.editReply(postId, commentId, replyId, content,userType); 
     }
 
-    async editComment(postId: string | Types.ObjectId, commentId: string | Types.ObjectId, content: string): Promise<Comment | null> {
-        return this.postRepoDataScource.editComment(postId,commentId,content);
+    async editComment(postId: string | Types.ObjectId, commentId: string | Types.ObjectId, content: string,userType:userType): Promise<Comment | null> {
+        return this.postRepoDataScource.editComment(postId,commentId,content,userType);
     }
     
     async deleteReply(postId: string | Types.ObjectId, commentId: string | Types.ObjectId, replyId: string): Promise<boolean> {
@@ -102,9 +103,13 @@ export class PostRepository implements IPostsRepository {
     }
 
     
+    async getDoctorUploadedPosts(doctorId: string): Promise<Post[]> {
+        return await this.postRepoDataScource.getDoctorPosts(doctorId);
+    }
 
-
-    
+   async editPost(doctorId: string,  postId:string,title: string, content: string, tags: string[]): Promise<{ title: string; content: string; tags: string[]; }> {
+    return await this.postRepoDataScource.editDoctorPost(doctorId,postId,title,content,tags)
+    }
 
     
 
@@ -117,5 +122,6 @@ export class PostRepository implements IPostsRepository {
     //     const result = await this.postModel.findByIdAndUpdate(postId, update).exec();
     //     return !!result;
     // }
+
 
 }
