@@ -81,7 +81,7 @@ export class Post {
     reportedBy?: Report[];
     isBlocked?: boolean;
     isArchived?: boolean;
-  
+    isLikedByUser?: boolean;
     constructor(
       doctorId: string,
       title: string,
@@ -93,7 +93,7 @@ export class Post {
       comments?: Comment[],
       reportedBy?: Report[],
       isBlocked: boolean = false,
-    isArchived: boolean = false
+    isArchived: boolean = false,
     ) {
       this.doctorId = doctorId;
       this.title = title;

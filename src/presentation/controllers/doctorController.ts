@@ -72,18 +72,11 @@ export function registerProfessionalInfo(doctorService: DoctorService) {
 export function registerAdditionalInfo(doctorService: DoctorService) {
     return async function (req: any, res: Response, next: NextFunction) {
         try {
-            const cloudinaryUrls = req.body.cloudinaryUrls;
-            console.log(cloudinaryUrls);
             const doctorId = req.user.id
-            const { bio, availability, maxPatientsPerDay, typesOfConsultation } = req.body;
-
-          const doctorData=  await doctorService.RegisterAdditionalInfoUseCase({
-                profilePic:cloudinaryUrls[0],
-                bio,
-                availability,
-                maxPatientsPerDay,
-                typesOfConsultation
-            },doctorId);
+            console.log("additional Info ",req.body,req.body.consultationFee);
+          const doctorData=  await doctorService.RegisterAdditionalInfoUseCase(
+               req.body
+            ,doctorId);
 
             return sendSuccessResponse(res, doctorData, "Additional information registered successfully");
         } catch (err) {
@@ -208,6 +201,7 @@ export function getCurrentDoctor(doctorService:IDoctorUsecase){
         try{
             assertHasUser(req)
             const doctorId = req.user.id;
+            console.log("getCurrentDoctor   ",doctorId);
             if(!doctorId){
                 throw new CustomError('Doctor Id is not Defined',403)
             }
@@ -218,3 +212,45 @@ export function getCurrentDoctor(doctorService:IDoctorUsecase){
            }
     }
 }
+
+
+export function updateDoctorProfilePic(doctorService:IDoctorUsecase){
+    return async function (req:Request,res:Response,next:NextFunction){
+        console.log("getCurrentDoctor   ",);
+        try{
+            assertHasUser(req)
+            const doctorId = req.user.id;
+            const imageUrl= req.body.cloudinaryUrls[0]
+            console.log("image Url from COntrolelr",imageUrl);
+            if(!doctorId){
+                throw new CustomError('Doctor Id is not Defined',403)
+            }
+              const doctor =await doctorService.getDoctorById(doctorId as string)
+              return sendSuccessResponse(res,doctor,"Doctor Fetched Success Fully",)
+           }catch(error){
+            next(error)
+           }
+    }
+}
+
+
+export function saveSelectedSlots(doctorService: IDoctorUsecase) {
+    return async function (req: Request, res: Response, next: NextFunction) {
+        console.log("getCurrentDoctor   ",req.body);
+        try {
+            assertHasUser(req);
+            const doctorId = req.user.id;
+            console.log(doctorId,req.body.selectedSlots)
+            if (!doctorId) {
+                throw new CustomError('Doctor Id is not defined', 403);
+            }
+            const doctor = await doctorService.saveSelectedSlots(doctorId as string, req.body.selectedSlots);
+            return sendSuccessResponse(res, doctor, "Doctor slots saved successfully");
+        } catch (error) {
+            next(error);
+        }
+    };
+}
+
+
+

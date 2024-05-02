@@ -1,3 +1,4 @@
+import { makeAppoinmentReqModel } from "../../../models/Consultation.model";
 import { EditProfileDto, UsersWithTotalCount } from "../../../models/users.model";
 import { User } from "../../entities/User";
 

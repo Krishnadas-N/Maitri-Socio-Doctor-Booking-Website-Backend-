@@ -2,7 +2,7 @@ import { Model, Types } from 'mongoose';
 import { IPostsRepository } from '../interfaces/repositories/POST-IRepository';
 import { Comment, Post, Reply, Report } from '../entities/POST';
 import { CustomError } from '../../../utils/CustomError';
-import { PostSearchError } from '../../models/post.models';
+import { PostSearchError, postsReponseModel } from '../../models/post.models';
 import { IPostModel } from '../../data/interfaces/data-sources/post-data-source';
 import { userType } from '../../models/users.model';
 
@@ -17,18 +17,18 @@ export class PostRepository implements IPostsRepository {
         return newPost;
     }
 
-    async findById(id: string): Promise<Post | null> {
+    async findById(id: string,userId:string): Promise<postsReponseModel | null> {
         try {
-            const post = await this.postRepoDataScource.findById(id);
+            const post = await this.postRepoDataScource.findById(id,userId);
             return post;
         } catch (error:any) {
             throw new Error(`Failed to fetch post details: ${error.message}`);
         }
     }
 
-    async getAllPosts(page: number, limit: number, query?: string): Promise<Post[]> {
+    async getAllPosts(page: number, limit: number,userId:string, query?: string): Promise<postsReponseModel[]> {
         try{
-        return await this.postRepoDataScource.getAllPosts(page, limit, query)
+        return await this.postRepoDataScource.getAllPosts(page, limit,userId, query)
         } catch (error:any) {
             throw new CustomError(error.message || PostSearchError.SearchFailed, 500);
         }
@@ -111,7 +111,9 @@ export class PostRepository implements IPostsRepository {
     return await this.postRepoDataScource.editDoctorPost(doctorId,postId,title,content,tags)
     }
 
-    
+   async deletePost(doctorId:string,postId: string): Promise<void> {
+        return this.postRepoDataScource.deletePost(doctorId,postId);
+    }
 
     // async getReportedPosts(): Promise<Post[]> {
     //     return await this.postModel.find({ reportedBy: { $exists: true, $not: { $size: 0 } } }).exec();

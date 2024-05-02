@@ -9,7 +9,18 @@ import { UserModel } from "./models/user-model";
 
 
 export class MongoDbUserDataSource implements User_Data {
+   
     constructor() { }
+
+    static async isUserExists(id?: string, email?: string): Promise<User | null> {
+        if (id) {
+            return UserModel.findById(id);
+        } else if (email) {
+            return UserModel.findOne({ email: email });
+        } else {
+            throw new Error("Invalid arguments. Please provide either ID or email.");
+        }
+    }
 
     async create(user: Omit<User, '_id'>): Promise<User> {
         try {

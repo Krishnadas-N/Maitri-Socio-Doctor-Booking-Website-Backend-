@@ -1,11 +1,12 @@
 import { Types } from "mongoose";
 import { Comment, Post, Reply, Report } from "../../../domain/entities/POST";
 import { userType } from "../../../models/users.model";
+import { postsReponseModel } from "../../../models/post.models";
 
 export interface IPostModel{
-    getAllPosts(page: number, limit: number, query?: string): Promise<Post[]>;
+    getAllPosts(page: number, limit: number, userId:string,query?: string): Promise<postsReponseModel[]>;
     create(post: Post): Promise<Post>;
-    findById(id: string | Types.ObjectId): Promise<Post | null>;
+    findById(id: string,userId:string): Promise<postsReponseModel | null> 
     likePost(postId: string | Types.ObjectId, userId: string | Types.ObjectId,userType:userType): Promise<Post | null>;
     commentOnPost(postId: string | Types.ObjectId, comment: Comment): Promise<Comment | null>;
     replyToComment(postId: string | Types.ObjectId, commentId: string | Types.ObjectId, reply: Reply): Promise<Reply | null>;
@@ -19,5 +20,5 @@ export interface IPostModel{
     deleteReply(postId: string | Types.ObjectId, commentId: string | Types.ObjectId, replyId: string | Types.ObjectId): Promise<boolean>; 
     getDoctorPosts(doctorId:string):Promise<Post[]>;
     editDoctorPost(doctorId:string, postId:string, title:string, content:string, tags:string[]):Promise<{title:string, content:string, tags:string[]}>
-
+    deletePost(doctorId:string,postId:string):Promise<void>;
 }

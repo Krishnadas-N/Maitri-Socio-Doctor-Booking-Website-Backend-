@@ -17,6 +17,10 @@ import { InterestedDoctorsDataSource } from "../../data/data-sources/mongodb/mon
 import { InterestedDoctors } from "../../domain/use-cases/User-UsecaseImpl/InterestedDoctorsServiceimpl";
 import { addToInterest, getInterests, removeInterest } from "../controllers/DoctorInterestsController";
 import { upload, uploadToCloudinary } from "../../../config/uploadMiddleWare";
+import { ConsultaionModel } from "../../data/data-sources/mongodb/mongodb-Consultation-dataSource";
+import { ConsultationRepoImpl } from "../../domain/repositories/consultation-repoImpl";
+import { ConsultationUseCaseImpl } from "../../domain/use-cases/Consultaiton/consultation-usecaseImpl";
+import { ConsultationController } from "../controllers/consultationController";
 export const userRouter = Router();
 
 
@@ -31,7 +35,10 @@ const interestsDoctorsDataSource =  new InterestedDoctorsDataSource()
 const IntersetedDoctorsRepo = new InterestedDoctorsRepoImpl(interestsDoctorsDataSource);
 const InterestedDoctorsUseCase = new InterestedDoctors(IntersetedDoctorsRepo);
 
-
+const ConsultaionDataSource = new ConsultaionModel();
+const consultationRepo = new ConsultationRepoImpl(ConsultaionDataSource);
+const consultationUsecase = new ConsultationUseCaseImpl(consultationRepo);
+const consultationController = new ConsultationController(consultationUsecase);
 
 userRouter.post('/login',loginValidateUser,loginController(loginUseCase));
 
@@ -51,14 +58,31 @@ userRouter.get('/get-byId/:userId',authMiddleWare.isAuthenticated.bind(authMiddl
 
 userRouter.put('/edit-profile',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),userController.editUserProfile.bind(userController));
 
-userRouter.post('/addToInterest/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'WRITE'),addToInterest(InterestedDoctorsUseCase));
+userRouter.post('/addToInterest/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),addToInterest(InterestedDoctorsUseCase));
 
-userRouter.delete('/removeInterest/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'WRITE'),removeInterest(InterestedDoctorsUseCase));
+userRouter.delete('/removeInterest/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),removeInterest(InterestedDoctorsUseCase));
 
 userRouter.get('/get-doctor-interests',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),getInterests(InterestedDoctorsUseCase))
 
 userRouter.patch('/change-profilePic',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),upload.single('profilePic'),uploadToCloudinary,userController.ChangeUserProfile.bind(userController))
 
-userRouter.get('/change-password',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),userController.changePassword.bind(userController))
+userRouter.get('/change-password',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),userController.changePassword.bind(userController));
+
+userRouter.post('/make-appointment/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.makeAnAppoinment.bind(consultationController))
+
+userRouter.get('/get-appoinment/:appoinmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getAppoinmentDetails.bind(consultationController));
+
+userRouter.post('/make-payment/:appoinmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.createPayment.bind(consultationController));
+
+userRouter.post('/verify-payment/:appointmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.verifyWebhook.bind(consultationController));
+
+userRouter.get('/get-appoinments',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getUserAppoinments.bind(consultationController));
+
+
+userRouter.put('/change-appoinment-status/:appointmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getUserAppoinments.bind(consultationController));
+
+userRouter.get('/get-booked-slots/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getDoctorAvailableSlots.bind(consultationController));
+
+userRouter.get('/get-doctors',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getDoctors.bind(consultationController))
 
 export default userRouter;

@@ -58,10 +58,12 @@ export class PostController {
         const { page, limit, query } = req.query;
 
         try {
+            assertHasUser(req)
+            const userId = req.user.id as string;
             const pageNumber: number = page ? +page : 1;
             const limitNumber: number = limit ? +limit : 10;
 
-            const posts = await this.postUsecase.getAllPosts(pageNumber, limitNumber, query as string);
+            const posts = await this.postUsecase.getAllPosts(pageNumber, limitNumber,userId, query as string);
             sendSuccessResponse(res,posts,"Post are SuccessFully Retrieved");
         } catch (error) {
           next(error);
@@ -180,11 +182,13 @@ export class PostController {
     async getPostDetails(req: Request, res: Response,next:NextFunction) {
         console.log('//////////////////////////////////////////////////////');
         const { postId } = req.params;
+        assertHasUser(req)
+        const  userId  = req.user.id as string;
         try {
             if (!postId) {
                 throw new CustomError('Post ID is required', 400);
             }
-            const post = await this.postUsecase.getPostDetails(postId);
+            const post = await this.postUsecase.findPostById(postId,userId);
             return sendSuccessResponse(res, post, 'Post Details is successfully reterieved on.');
         } catch (error) {
           next(error);
@@ -274,6 +278,20 @@ export class PostController {
             const result = await this.postUsecase.getDoctorPosts(doctorId as string);
             console.log("Post gets by doctor",result);
             return sendSuccessResponse(res, result, 'Reply Deleted SuccessFully Deleted.');
+        } catch (error) {
+          next(error);
+        }
+    }
+
+    
+    async deleteDoctorPost(req: Request, res: Response,next:NextFunction) {
+        try {
+            const postId = req.params.postId as string;
+            assertHasUser(req);
+            const doctorId = req.user.id;
+            console.log("Doctor id ",doctorId);
+             await this.postUsecase.deletePost(doctorId as string,postId);
+            return sendSuccessResponse(res, {}, 'Post Deleted SuccessFully Deleted.');
         } catch (error) {
           next(error);
         }

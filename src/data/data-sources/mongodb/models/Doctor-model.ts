@@ -2,6 +2,23 @@ import mongoose, { Schema } from "mongoose";
 import Doctor from "../../../../domain/entities/Doctor";
 import { PasswordUtil } from "../../../../../utils/PasswordUtils";
 
+
+const AvailabilitySchema = new mongoose.Schema({
+  dayOfWeek: {
+    type: String,
+    enum: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    required: true,
+  },
+  isAvailable: {
+    type: Boolean,
+    default: false, 
+  },
+  startTime: String,
+  endTime: String,
+});
+
+
+
 const DoctorSchema = new mongoose.Schema<Doctor>({
   firstName: {
     type: String,
@@ -83,13 +100,7 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
       }
     }
   ],
-  availability: [
-    {
-      dayOfWeek: String,
-      startTime: String,
-      endTime: String,
-    },
-  ],
+  availability: [AvailabilitySchema],
   profilePic: String,
   bio: String,
   createdAt: {
@@ -140,7 +151,13 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
     required:true,
     default:0,
     enum:[0,1,2,3]
-  }
+  },
+  selectedSlots: [{
+    date: Date,
+    slots: [String], 
+  }]
+},{
+  timestamps:true
 });
 
 
@@ -152,6 +169,12 @@ DoctorSchema.pre('save',async function(next){
   next();
 })
 
+DoctorSchema.index({ firstName: 'text', lastName: 'text', specialization: 'text', bio: 'text' });
+
+
 const DoctorModel = mongoose.model<Doctor>("Doctor", DoctorSchema);
 
 export default DoctorModel;
+
+
+

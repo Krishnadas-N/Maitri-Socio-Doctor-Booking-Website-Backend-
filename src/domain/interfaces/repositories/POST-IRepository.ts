@@ -1,14 +1,15 @@
 import { Types } from "mongoose";
 import { Comment, Post, Reply, Report } from "../../entities/POST";
 import { userType } from "../../../models/users.model";
+import { postsReponseModel } from "../../../models/post.models";
 
 
 export interface  IPostsRepository{
-    getAllPosts(page: number, limit: number, query?: string): Promise<Post[]>;
+    getAllPosts(page: number, limit: number, userId:string,query?: string,): Promise<postsReponseModel[]>;
     
      create(post: Post): Promise<Post>;
 
-     findById(id: string|Types.ObjectId): Promise<Post | null>;
+     findById(id: string,userId:string): Promise<postsReponseModel | null> 
 
      likePost(postId: string|Types.ObjectId, userId: string|Types.ObjectId,userType:userType): Promise<Post | null>;
 
@@ -37,5 +38,7 @@ export interface  IPostsRepository{
 
     //  takeActionOnReportedPost(postId: string, action: 'remove' | 'warn'): Promise<boolean>;
     getDoctorUploadedPosts(doctorId:string):Promise<Post[]>
-    editPost(doctorId:string, postId:string, title:string, content:string, tags:string[]):Promise<{title:string, content:string, tags:string[]}>
+    editPost(doctorId:string, postId:string, title:string, content:string, tags:string[]):Promise<{title:string, content:string, tags:string[]}>;
+
+    deletePost(doctorId:string,postId:string):Promise<void>;
 }

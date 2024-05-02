@@ -13,10 +13,12 @@ export class InterestedDoctorsDataSource implements IInterstedDoctors{
             if(!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(doctorId)){
                 throw new CustomError('Invalid  User or Doctor ID', 400);
             }
-            const interestedDoctor = new InterestedDoctorModel({
-                userId: userId,
-                doctorIds: [{ doctorId: doctorId, dateAdded: new Date() }]
-            });
+            let interestedDoctor = await InterestedDoctorModel.findOne({ userId: userId });
+        
+            if (!interestedDoctor) {
+                interestedDoctor = new InterestedDoctorModel({ userId: userId, doctorIds: [] });
+            }
+            interestedDoctor.doctorIds.push({ doctorId: doctorId, dateAdded: new Date() })
             await interestedDoctor.save();
             return interestedDoctor.toObject();
         } catch (error:any) {
@@ -36,38 +38,16 @@ export class InterestedDoctorsDataSource implements IInterstedDoctors{
                     }
                 },{
                     $lookup:{
-                        from:'users',
-                        let :{"userId":'$userId'},
-                        pipeline:[
-                            {
-                                $match:{
-                                    $expr:{$eq:["$_id", "$$userId"]}
-                                }
-                            },
-                            {
-                                $lookup:{
-                                    from:'doctors',
-                                    let:{'doctorId':'$doctorIds.doctorId' },
-                                    pipeline:[
-                                        {
-                                            $match:{
-                                                $expr:{
-                                                    $eq:["$_id","$$doctorId"]
-                                                }
-                                            }
-                                        }
-                                    ],
-                                    as:'doctorInfo'
-                                }
-                            }
-                        ],
-                        as:"userInfo"
+                        from:'doctors',
+                        localField:"doctorIds.doctorId",
+                        foreignField:"_id",
+                        as:"doctorsInfo"
                     }
                 },
             ])
 
             console.log(interests,"Log from Interests database");
-            return interests.map((interest: any) => interest.toObject());
+            return interests;
         } catch (error:any) {
             throw new CustomError(error.message||"Failed to get interests",500);
         }

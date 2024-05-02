@@ -6,6 +6,7 @@ import { CustomError } from "../../../../utils/CustomError";
 import { userType } from "../../../models/users.model";
 import { UserModel } from "./models/user-model";
 import DoctorModel from "./models/Doctor-model";
+import { postsReponseModel } from "../../../models/post.models";
 
 
 export class MongoDbPostDataSource implements IPostModel{
@@ -142,7 +143,7 @@ export class MongoDbPostDataSource implements IPostModel{
         return posts;
     }
       
-    async getAllPosts(page: number, limit: number, query?: string): Promise<Post[]> {
+    async getAllPosts( page: number, limit: number, userId:string, query?: string): Promise<postsReponseModel[]> {
         const skip = (page - 1) * limit;
         const baseMatch = {
             isBlocked: false,
@@ -157,7 +158,7 @@ export class MongoDbPostDataSource implements IPostModel{
         }
     
         const posts = await postsQuery.exec();
-    
+        const postsResponse: postsReponseModel[] = [];
         // Populate doctorId for each post
         await PostModel.populate(posts, { path: 'doctorId', select: 'firstName profilePic' });
     
@@ -185,12 +186,22 @@ export class MongoDbPostDataSource implements IPostModel{
                     }
                 }
             }
+            const isLikedByUser = post.likes?.some(like => like.userId.toString() === userId.toString());
+            const isPermissionToCrud = post.doctorId && typeof post.doctorId === 'object' && post.doctorId._id.toString() === userId.toString();
+            console.log(isPermissionToCrud,post.doctorId);
+            postsResponse.push({
+                post: post,
+                isLikedUser: !!isLikedByUser, // Convert to boolean
+                isPermissionToCrud: isPermissionToCrud as boolean
+            });
+            
+            console.log(post.isLikedByUser);
         }
     
         // Log posts and their JSON string for debugging purposes
-        console.log(posts, JSON.stringify(posts));
-    
-        return posts;
+        console.log(postsResponse, JSON.stringify(postsResponse));
+
+        return postsResponse;
     }
     
 
@@ -199,13 +210,50 @@ export class MongoDbPostDataSource implements IPostModel{
         return newPost;
     }
 
-    async findById(id: string): Promise<Post | null> {
+    async findById(id: string,userId:string): Promise<postsReponseModel | null> {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             throw new CustomError('Invalid Post Id', 400);  
         }
+        let postsResponse: postsReponseModel;
+        const post = await PostModel.findById(id).populate({ path: 'doctorId', select: 'firstName profilePic' });
+        if(!post){
+            throw new CustomError('No Post Found in this Id',404);
+        }
+        if (post.comments && post.comments.length > 0) {
+            for (const comment of post.comments) {
+                let userModel;
+                if (comment.externalModelType === 'User') {
+                    userModel = 'User';
+                } else if (comment.externalModelType === 'Doctor') {
+                    userModel = 'Doctor';
+                }
 
-        const post = await PostModel.findById(id);
-        return post;
+                if (userModel) {
+                    await PostModel.populate(comment, { path: 'userId', model: userModel, select: '_id firstName lastName profilePic' });
+                }
+
+                // Populate replies for each comment
+                if (comment.replies && comment.replies.length > 0) {
+                    for (const reply of comment.replies) {
+                        const replyModel = reply.externalModelType === 'User' ? 'User' : 'Doctor';
+                        await PostModel.populate(reply, { path: 'userId', model: replyModel, select: '_id firstName lastName profilePic' });
+                    }
+                }
+            }
+        }
+        const isLikedByUser = post.likes?.some(like => like.userId.toString() === userId.toString());
+        const isPermissionToCrud = post.doctorId && typeof post.doctorId === 'object' && post.doctorId._id.toString() === userId.toString();
+        console.log(isPermissionToCrud,post.doctorId);
+        postsResponse ={
+            post: post,
+            isLikedUser: !!isLikedByUser, // Convert to boolean
+            isPermissionToCrud: isPermissionToCrud as boolean
+        }
+        
+        console.log(post.isLikedByUser);
+    console.log(postsResponse, JSON.stringify(postsResponse));
+
+    return postsResponse;
     }
 
     async likePost(postId: string, userId: string,userType:userType): Promise<Post> {
@@ -423,6 +471,7 @@ export class MongoDbPostDataSource implements IPostModel{
             throw new Error('Invalid doctorId');
         }
         
+
         const posts = await PostModel.aggregate([
             { 
               $match : { "doctorId" : new mongoose.Types.ObjectId(doctorId) } 
@@ -486,5 +535,24 @@ export class MongoDbPostDataSource implements IPostModel{
             throw new CustomError('Error editing the post: ' + err.message,500)
         }
       }
+    }
+
+    async deletePost(doctorId:string,postId: string): Promise<void> {
+        try{
+            if (!mongoose.Types.ObjectId.isValid(postId)) {
+                throw new CustomError('Invalid  postId', 400);
+              }
+            
+           const result =await PostModel.findOneAndDelete({_id : postId , doctorId});
+           if(!result){
+            throw new CustomError('Unauthorized User of Post not Found',403)
+           }
+          }catch(err:any){
+            if(err instanceof CustomError){
+                throw err
+            }else{
+                throw new CustomError('Error editing the post: ' + err.message,500)
+            }
+          }
     }
 }

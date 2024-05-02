@@ -66,15 +66,9 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
     }
 
     async DbsaveAdditionalInfo(doctor: Partial<Doctor>, doctorId: string): Promise<Partial<Doctor> | null> {
+            console.log(doctor);
         // const { consultationFee, profilePic, availability, typesOfConsultation, maxPatientsPerDay } = doctor;
-        const existingDoctor = await DoctorModel.findOneAndUpdate(
-            { _id: doctorId },
-            {
-              ...doctor,
-              $inc: { registrationStepsCompleted: 1 }
-            },
-            { new: true }
-          );
+        const existingDoctor = await DoctorModel.findOne({ _id:doctorId});
           
         if (!existingDoctor) {
             throw new CustomError("No Such Doctor Found", 404);
@@ -82,8 +76,26 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
         if (!existingDoctor.isVerified) {
             throw new CustomError("Doctor account has not been verified yet. Please complete the verification process.", 403);
         }
+        console.log(doctor.consultationFee, "Consultation Fee");
+        console.log(doctor.availability);
+        const { consultationFee, typesOfConsultation, availability, maxPatientsPerDay } = doctor;
         
-        return existingDoctor;
+        if(consultationFee){
+        existingDoctor.consultationFee = consultationFee;
+        }
+        if(typesOfConsultation){
+            const consultationTypes = typesOfConsultation.map((item:any) => item.type);
+        existingDoctor.typesOfConsultation = consultationTypes;
+        }
+        if(availability){
+            existingDoctor.availability = availability;
+        }
+      
+        if(maxPatientsPerDay){
+        existingDoctor.maxPatientsPerDay = maxPatientsPerDay;
+        }
+        existingDoctor.registrationStepsCompleted= existingDoctor.registrationStepsCompleted+1
+        return await existingDoctor.save();
     }
     
 
@@ -237,7 +249,25 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
           throw new Error(error.message || 'Internal server error');
         }
     }
-
+    async changeProfilePic(doctorId:string,image:string):Promise<void>{
+        await DoctorModel.updateOne({_id:doctorId}, {$set:{profilePic:image}}); 
+      }
+      
+      async saveSelectedSlots(doctorId: string, selectedSlots: { date: Date; slots: string[]; }[]): Promise<Doctor> {
+        try {
+            const doctor = await DoctorModel.findOneAndUpdate({_id:doctorId},{selectedSlots:selectedSlots},{new:true});
+            if (!doctor) {
+                throw new CustomError('Doctor not found', 403);
+            }
+            return doctor;
+        } catch (error: any) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                throw new CustomError(error.message || 'Failed to save selected slots', 500);
+            }
+        }
+    }
     private async fetchRoleDetails(roleIds: string[]): Promise<RoleDetails[]> {
         try {
             const roles = await RoleModel.find({ _id: { $in: roleIds } });
@@ -264,7 +294,7 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
     
         const address = doctorData.address ? new Address(doctorData.address.state, doctorData.address.city, doctorData.address.zipcode, doctorData.address.country) : doctorData.address;
         const education = doctorData.education ? doctorData.education.map(edu => new Education(edu.degree, edu.institution, edu.year)) : [];
-        const availability = doctorData.availability ? doctorData.availability.map(avail => new Availability(avail.dayOfWeek, avail.startTime, avail.endTime)) : [];
+        const availability = doctorData.availability ? doctorData.availability.map(avail => new Availability(avail.dayOfWeek, avail.startTime, avail.endTime, avail.isAvailable)) : [];
         const reviews = doctorData.reviews ? doctorData.reviews.map(review => new Review(review.patientName, review.comment, review.rating, review.createdAt)) : [];
     
         const doctor = new Doctor(
@@ -299,10 +329,13 @@ export class MongoDbDoctorDataSourceImpl implements DoctorModelInter{
             reviews,
             doctorData.isProfileComplete,
             doctorData.resetToken,
+            doctorData.selectedSlots
         );
     
         return doctor.toJson(); // Assuming toJSON() method is defined in Doctor class
     }
     
+   
     
+      
 }

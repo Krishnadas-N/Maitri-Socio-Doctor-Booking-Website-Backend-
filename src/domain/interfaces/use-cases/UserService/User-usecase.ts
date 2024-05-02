@@ -10,4 +10,5 @@ export interface userUseCase{
     editUserProfile(userId: string, data: EditProfileDto):Promise<User>;
     changeProfilePic(userId:string,image:string):Promise<void>;
     changeUserPassword(userId:string):Promise<void>;
+    
 }

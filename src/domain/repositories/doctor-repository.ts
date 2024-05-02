@@ -118,7 +118,32 @@ export class IDoctorRepositoryImpl  implements IDoctorsRepository {
         return  await this.doctorDataSource.changeStatusofDoctor(id)
     }
 
+    async changeProfilePic(doctorId:string,image:string):Promise<void>{
+        try {
+            await this.doctorDataSource.changeProfilePic(doctorId,image);
+        } catch (error: any) {
+          if (error instanceof CustomError) {
+            throw error;
+          }
+    
+          console.error("Unexpected error:", error);
+          throw new Error(error.message || "Internal server error");
+        } 
+    }
 
+    async saveSelectedSlots(doctorId: string, selectedSlots: { date: Date; slots: string[]; }[]): Promise<Doctor> {
+        try {
+            return await this.doctorDataSource.saveSelectedSlots(doctorId, selectedSlots);
+        } catch (error) {
+            // Handle error
+            console.error("Error in saving selected slots:", error);
+            throw error;
+        }
+    }
+
+    // async getBookedSlots(date: Date): Promise<string[]> {
+    //     return await this.doctorDataSource.getBookedSlots(date);
+    // }
 
 
 

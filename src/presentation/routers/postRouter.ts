@@ -18,6 +18,8 @@ postRouter.post('/',authMiddleWare.isAuthenticated.bind(authMiddleWare), upload.
 
 postRouter.get('/',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'), postController.getAllPosts.bind(postController));
 
+postRouter.delete('/p/:postId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'WRITE'), postController.deleteDoctorPost.bind(postController))
+
 postRouter.post('/:postId/like', authMiddleWare.isAuthenticated.bind(authMiddleWare),postController.likePost.bind(postController));
 
 postRouter.put('/edit/:postId', authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'WRITE'), postController.editPost.bind(postController))

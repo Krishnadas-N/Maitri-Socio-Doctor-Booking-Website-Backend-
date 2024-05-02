@@ -16,6 +16,10 @@ import passport from 'passport';
 import { adminRouter } from './presentation/routers/adminRouter';
 import configurePassport from '../config/passport';
 import { roleRouter } from './presentation/routers/rolePermissionRouter';
+import { Websocket } from './presentation/webSocket/webSocket';
+import http from 'http';
+import { initializeSocketConnection } from './presentation/webSocket/socketService';
+import chatRouter from './presentation/routers/chatRouter';
 // import "../config/passport";
 // const passport = require('passport');
 dotenv.config();
@@ -24,6 +28,8 @@ mongoose.connect(process.env.MONGODB_URL as string)
   .catch((error) => console.error(error));
 
 const app: Application = express();
+const server = http.createServer(app); 
+const io = Websocket.getInstance(server);
 const port = process.env.PORT || 3000;
 app.use(cors());
 app.disable("x-powered-by"); 
@@ -43,9 +49,11 @@ app.use('/api/spec',specRouter);
 app.use('/api/doctors',doctorRouter);
 app.use('/api/posts',postRouter);
 app.use('/api/admin',adminRouter);
-app.use('/api/role',roleRouter)
+app.use('/api/role',roleRouter);
+app.use('/api/chat',chatRouter)
 /* GET Google Authentication API. */
 
+initializeSocketConnection(io)
 
 // app.get(
 //   "/auth/google",
@@ -60,6 +68,8 @@ app.use('/api/role',roleRouter)
 //     res.redirect(`http://localhost:3000?token=${token}`);
 //   }
 // );
+
+
 
 
 
@@ -78,6 +88,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is Fire at http://localhost:${port}`);
 });

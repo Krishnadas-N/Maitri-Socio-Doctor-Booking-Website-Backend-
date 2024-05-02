@@ -118,6 +118,8 @@ const PostSchema: Schema = new mongoose.Schema<Post>({
         type: Boolean,
         default: false
     }
+  },{
+    timestamps:true
   });
 
 

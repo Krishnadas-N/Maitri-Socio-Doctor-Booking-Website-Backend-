@@ -41,7 +41,9 @@ export function loginController(userLogin: UserLogin) {
 }
 
 export class UserController{
-    constructor(private userUseCase:userUseCase) {
+    constructor(
+        private userUseCase:userUseCase,
+    ) {
     }
     async getUserProfile(req: Request, res: Response, next: NextFunction){
         try{
@@ -158,5 +160,21 @@ export class UserController{
            next(error)
         }
     }
+
+    
+    async getBookedSlots(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const doctorId = req.params.doctorId as string;
+            const userId=req.user.id;
+            await this.userUseCase.changeUserPassword(userId as string);
+            return  sendSuccessResponse(res, {},"Reset password Link shared Successfully to Your email");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
+
+ 
 
 }

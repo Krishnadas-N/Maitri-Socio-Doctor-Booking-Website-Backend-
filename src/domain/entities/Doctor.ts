@@ -32,7 +32,8 @@ export class Availability {
     constructor(
       public dayOfWeek: string,
       public startTime: string,
-      public endTime: string
+      public endTime: string,
+      public isAvailable: boolean,
     ) {}
 }
 
@@ -77,6 +78,10 @@ class Doctor {
       public reviews?: Review[],
       public isProfileComplete?: boolean,
       public resetToken ?:string | null,
+      public selectedSlots?:[{
+        date: Date,
+        slots: string[], 
+      }],
     
     ) {}
 
@@ -131,7 +136,9 @@ class Doctor {
           })),
           isProfileComplete: this.isProfileComplete,
           resetToken: this.resetToken,
-          roles: this.roles
+          selectedSlots:this.selectedSlots,
+          roles: this.roles,
+          
       };
   }
   }

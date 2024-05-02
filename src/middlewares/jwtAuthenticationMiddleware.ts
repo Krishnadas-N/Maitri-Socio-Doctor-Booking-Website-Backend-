@@ -5,6 +5,7 @@ import { Payload } from '../models/payload.model';
 import { UserRepository } from '../domain/interfaces/repositories/user-IRepository';
 import { IDoctorsRepository } from '../domain/interfaces/repositories/Doctor-Repository';
 import { IAdminRepo } from '../domain/interfaces/repositories/Admin-Repository';
+import { Socket } from 'socket.io';
 
 export class  AuthMiddleware {
   constructor(
@@ -12,6 +13,7 @@ export class  AuthMiddleware {
     private doctorRepo:IDoctorsRepository,
     private adminRepo:IAdminRepo
   ){}
+
   isAuthenticated (req: Request, res: Response, next: NextFunction) {
   try {
     passport.authenticate('jwt', { session: false }, async (err:Error, payload:Payload, info:any) => {
@@ -64,4 +66,6 @@ export class  AuthMiddleware {
   }
  }  
 
+
+  
 }

@@ -1,5 +1,5 @@
 import { CustomError } from "../../../../utils/CustomError";
-import { PostCreationError, PostSearchError } from "../../../models/post.models";
+import { PostCreationError, PostSearchError, postsReponseModel } from "../../../models/post.models";
 import { userType } from "../../../models/users.model";
 import { Comment, Media, Post, Reply } from "../../entities/POST";
 import { IPostsRepository } from "../../interfaces/repositories/POST-IRepository";
@@ -32,12 +32,12 @@ export class PostUsecase implements IPostUsecase {
         }
     }
 
-    async getAllPosts(page: number, limit: number, query?: string): Promise<Post[]> {
+    async getAllPosts(page: number, limit: number,userId:string, query?: string): Promise<postsReponseModel[]> {
         try {
             if (page <= 0 || limit <= 0) {
                 throw new CustomError('Invalid page or limit value',400);
             }
-            const posts = await this.postRepository.getAllPosts(page, limit, query);
+            const posts = await this.postRepository.getAllPosts(page, limit, userId,query);
             
             // if (!posts || posts.length === 0) {
             //     throw new CustomError('No posts found',404);
@@ -51,22 +51,7 @@ export class PostUsecase implements IPostUsecase {
         }
 
     }
-    async getPostDetails(postId: string): Promise<Post | null> {
-        try {
-            if (!postId) {
-                throw new Error("postId is missing.");
-            }
-
-            const post = await this.postRepository.findById(postId);
-            if (!post) {
-                return null; 
-            }
-
-            return post;
-        } catch (error:any) {
-            throw new Error(`Failed to fetch post details: ${error.message}`);
-        } 
-    }
+   
 
     async  likePost(postId: string, userId: string,userType:userType): Promise<Post | null> {
             if (!postId || !userId) {
@@ -230,6 +215,34 @@ export class PostUsecase implements IPostUsecase {
         throw new CustomError(error.message || 'Error archiving post:', 500);
     }
     } 
+
+   async findPostById(id: string, userId: string): Promise<postsReponseModel | null> {
+    try {
+        if (!id) {
+            throw new Error("postId is missing.");
+        }
+
+        const post = await this.postRepository.findById(id,userId);
+        if (!post) {
+            return null; 
+        }
+
+        return post;
+    } catch (error:any) {
+        throw new Error(`Failed to fetch post details: ${error.message}`);
+    }  
+    }
     
+    async deletePost(doctorId:string,postId: string): Promise<void> {
+        try {
+            if (!postId) {
+                throw new Error("postId is missing.");
+            }
+    
+            return await this.postRepository.deletePost(doctorId,postId);
+        } catch (error:any) {
+            throw new Error(`Failed to fetch post details: ${error.message}`);
+        }  
+    }
     
 }

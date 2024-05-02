@@ -39,6 +39,8 @@ const adminSchema = new Schema({
     type: Date,
     default: Date.now
   }
+},{
+  timestamps:true
 });
 
 adminSchema.pre('save',async function(next){

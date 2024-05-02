@@ -46,11 +46,13 @@ import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
         return async function (req:Request,res:Response,next:NextFunction){
             try{
                 assertHasUser(req)
-                const userId = req.user?.id
-                if(userId){
+                const userId = req.user.id
+                
+                if(!userId){
                     throw new CustomError('Unauthorized User',403);
                 }
                 const interests= await InterestedDoctorsUsecase.getUserInterestsForUser(userId as string);
+                console.log(interests)
                 return sendSuccessResponse(res,interests,"User Interests")
             }catch(err){
                 next(err)
