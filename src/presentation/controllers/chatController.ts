@@ -61,12 +61,12 @@ export class ChatController {
         try {
             assertHasUser(req)
             const senderId = req.user.id as string;
-            const { message, messageType, receiverId } = req.body;
+            const { message, messageType, receiverId,userType } = req.body;
             if (!senderId || !message || !messageType || !receiverId) {
                 throw new CustomError('Missing required parameters', 400);
             }
 
-            const savedMessage = await this.chatUseCase.sendMessage(senderId, message, messageType, receiverId);
+            const savedMessage = await this.chatUseCase.sendMessage(senderId, message, messageType, receiverId,userType);
             sendSuccessResponse(res,savedMessage,'Message sent successfully');
         } catch (error) {
             next(error)

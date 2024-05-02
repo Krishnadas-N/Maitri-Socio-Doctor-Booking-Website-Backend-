@@ -1,6 +1,6 @@
 import { CustomError } from "../../../../utils/CustomError";
 import { SaveMessageResponse, getChatResponse } from "../../../models/chat-models";
-import { Conversation } from "../../entities/Chat";
+import { Conversation, Message } from "../../entities/Chat";
 import { ChatRepository } from "../../interfaces/repositories/chat-IRepository";
 import { ChatUseCase } from "../../interfaces/use-cases/chat-Service/chat-IUsecase";
 
@@ -21,11 +21,12 @@ export class ChatUseCaseImpl implements ChatUseCase {
         await this.repository.closeChat(chatId, doctorId);
     }
 
-    async sendMessage(senderId: string, message: string, conversationId: string, receiverId: string): Promise<SaveMessageResponse> {
+    async sendMessage(senderId: string, message: string, conversationId: string, receiverId: string,userType: string): Promise<Message> {
+      
         if (!senderId || !message || !conversationId || !receiverId) {
             throw new CustomError('Missing required parameters', 400);
         }
-        return await this.repository.saveMessage(senderId, message, conversationId, receiverId);
+        return await this.repository.saveMessage(senderId, message, conversationId, receiverId,userType);
     }
 
    async createConverstation(doctorId: string, patientId: string): Promise<string> {
@@ -57,4 +58,19 @@ export class ChatUseCaseImpl implements ChatUseCase {
             }
           }
     }
+
+    async getIndividualMessages(convId: string): Promise<Message[]> {
+        try{
+        if(!convId){
+            throw new CustomError( 'Invalid parameter provided', 400);
+                }
+                return this.repository.getConversationMessages(convId)
+            } catch (error: any) {
+            if (error instanceof CustomError) {
+            throw error;
+            } else {
+            throw new CustomError(error.message || "Internal Server", 500);
+            }
+        }
+}
 }

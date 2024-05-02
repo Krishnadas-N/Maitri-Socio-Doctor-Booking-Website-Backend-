@@ -18,7 +18,7 @@ chatRouter.get('/get-conversationId/:userId',authMiddleWare.isAuthenticated.bind
 
 chatRouter.get('/chats',chatController.getChatsForUser.bind(chatController));
 
-chatRouter.get('/get-conversation/:convId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),chatController.getConversation.bind(chatController))
+chatRouter.get('/get-conversation/:convId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),chatController.getConversation.bind(chatController))
 
 chatRouter.post('/chats/:chatId/close', chatController.closeChat.bind(chatController));
 

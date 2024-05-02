@@ -1,43 +1,5 @@
 import { objectId } from "../../models/common-models";
 
-export interface Participant {
-    participantType: 'User' | 'Doctor';
-    participant: objectId;
-    delivered: boolean;
-    read: boolean;
-    lastSeen: Date;
-}
-
-export interface Message {
-    contentType: 'text' | 'audio' | 'video' | 'document';
-    content: {
-        text?: string;
-        fileUrl?: string;
-        fileName?: string;
-        fileSize?: number;
-        fileType?: string;
-    };
-    meta: {
-        participant: objectId | string;
-        delivered: boolean;
-        read: boolean;
-    }[];
-}
-
-export class Chat {
-    constructor(
-        public participants: Participant[],
-        public messages: Message[],
-        public sender: objectId,
-        public is_group_message: boolean,
-        public isOpen: boolean,
-        public createdAt: Date,
-        public updatedAt: Date,
-        public name?:string,
-    ) {}
-}
-
-
 export class Conversation {
     constructor(
       public members: Member[],
@@ -54,3 +16,31 @@ export class Conversation {
     memberType: 'User' | 'Doctor';
   }
   
+  interface Meta extends Member{
+    delivered: boolean,
+     read: boolean
+  }
+
+  export class Message {
+    constructor(
+        public _id: string,
+        public conversationId: string | objectId,
+        public senderId: string | objectId,
+        public senderModel: 'User' | 'Doctor', // Assuming only two sender models
+        public content: MessageContent,
+        public messageType: 'text' | 'audio' | 'video' | 'document',
+        public createdAt: Date,
+        public meta: Meta[]
+    ) {}
+}
+
+// MessageContent Entity
+export class MessageContent {
+    constructor(
+        public text?: string,
+        public fileUrl?: string,
+        public fileName?: string,
+        public fileSize?: number,
+        public fileType?: string
+    ) {}
+}
