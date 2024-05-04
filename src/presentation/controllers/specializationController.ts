@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-import { sendSuccessResponse } from '../../../utils/ReponseHandler';
-import { CustomError } from '../../../utils/CustomError';
-import { DoctorSpecService } from '../../domain/interfaces/use-cases/Doctor-Service/SpecializationService/doctor-specialization';
+import { sendSuccessResponse } from '../../utils/reponseHandler'; 
+import { CustomError } from '../../utils/customError'; 
+import { IDoctorSpecializationUsecase } from '../../domain/interfaces/use-cases/doctorSpecializationIUsecase';
 
 
 
 export class SpecializationController {
-    private specializationService: DoctorSpecService
-    constructor(specImpl:DoctorSpecService) {
+    private specializationService: IDoctorSpecializationUsecase
+    constructor(specImpl:IDoctorSpecializationUsecase) {
         this.specializationService = specImpl;
     }
 

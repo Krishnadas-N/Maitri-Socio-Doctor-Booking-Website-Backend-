@@ -1,33 +1,20 @@
 import { NextFunction, Request, Response } from "express";
-import { CustomError } from "../../../utils/CustomError";
-import { sendSuccessResponse } from "../../../utils/ReponseHandler";
-import { UserLogin } from "../../domain/interfaces/use-cases/authentication/user-login";
-
-import { UserSignup } from "../../domain/interfaces/use-cases/authentication/user-sigup";
-import { userUseCase } from "../../domain/interfaces/use-cases/UserService/User-usecase";
+import { CustomError } from "../../utils/customError";
+import { sendSuccessResponse } from "../../utils/reponseHandler"; 
+import { IUserUseCase } from "../../domain/interfaces/use-cases/userIUsecase";
 import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
 import { EditProfileDto } from "../../models/users.model";
 
 
-
-export function signupController(userSignup: UserSignup) {
-    return async function (req: Request, res: Response, next: NextFunction) {
-        try {
-            console.log("Log from Controllers (1)");
-            const token = await userSignup.execute(req.body);
-            return sendSuccessResponse(res, {token}, "User created successful");
-        } catch (err) {
-            console.log("Error passing yyy")
-            next(err);
-        }
-    };
-}
-
-export function loginController(userLogin: UserLogin) {
-    return async function (req: Request, res: Response, next: NextFunction) {
+export class UserController{
+    constructor(
+        private userUseCase:IUserUseCase,
+    ) {
+    }
+    async loginUser(req: Request, res: Response, next: NextFunction) {
         try {
             const { email, password } = req.body;
-            const userData = await userLogin.execute(email, password);
+            const userData = await this.userUseCase.login(email, password);
             console.log("Log form User",userData);
             if (!userData) {
                 throw new CustomError("Email or Password is incorrect", 401);
@@ -37,14 +24,19 @@ export function loginController(userLogin: UserLogin) {
             
             next(err);
         }
-    };
-}
-
-export class UserController{
-    constructor(
-        private userUseCase:userUseCase,
-    ) {
     }
+
+    async signupUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            console.log("Log from Controllers (1)");
+            const token = await this.userUseCase.signUp(req.body);
+            return sendSuccessResponse(res, {token}, "User created successful");
+        } catch (err) {
+            console.log("Error passing yyy")
+            next(err);
+        }
+    }
+
     async getUserProfile(req: Request, res: Response, next: NextFunction){
         try{
         assertHasUser(req)
@@ -162,19 +154,40 @@ export class UserController{
     }
 
     
-    async getBookedSlots(req: Request, res: Response,next:NextFunction){
+
+
+    async addUserMedicalRecord(req: Request, res: Response,next:NextFunction){
         try {
             assertHasUser(req);
-            const doctorId = req.params.doctorId as string;
-            const userId=req.user.id;
-            await this.userUseCase.changeUserPassword(userId as string);
-            return  sendSuccessResponse(res, {},"Reset password Link shared Successfully to Your email");
+            const { title, description } = req.body;
+            const fileUrl = req.body.cloudinaryUrls[0]
+            console.log("File url of medical record",fileUrl);
+            const userId = req.user.id as string
+            const medicalRecord = await this.userUseCase.addMedicalRecord(userId, fileUrl, title, description);
+              if (!medicalRecord) {
+                throw new CustomError('Failed to add medical record',400)
+              }
+            return  sendSuccessResponse(res,medicalRecord,"new Medical record saved Successfully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
+    async getUserMedicalRecords(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const userId = req.user.id as string
+            const medicalRecord = await this.userUseCase.getUserMedicalRecords(userId);
+            console.log(medicalRecord);
+              if (!medicalRecord) {
+                throw new CustomError('Failed to get medical record',400)
+              }
+            return  sendSuccessResponse(res,medicalRecord,"new Medical record saved Successfully");
         } catch (error) {
             console.error('Error fetching While Editing the  User:', error);
            next(error)
         }
     }
 
- 
 
 }

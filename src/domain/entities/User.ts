@@ -1,3 +1,4 @@
+import { objectId } from "../../models/users.model";
 import { RoleDetails } from "./Admin";
 
 export class User {
@@ -49,3 +50,15 @@ export class User {
         );
     }
 }
+
+
+export interface IMedicalRecord extends Document {
+    _id?:string;
+    userId:string;
+    fileUrl: string;
+    title: string;
+    description: string;
+    createdAt: Date;
+}
+
+

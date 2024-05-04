@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { MongoDbPostDataSource } from '../../data/data-sources/mongodb/mongodb-post-dataSourceImp';
-import { PostRepository } from '../../domain/repositories/post-repository';
-import { PostUsecase } from '../../domain/use-cases/Post-useCaseImpl/Post-UseCase';
+import { MongoDbPostDataSource } from '../../data/data-sources/mongodb/mongodbPostDataSource';
+import { PostRepository } from '../../domain/repositories/postRepository';
+import { PostUsecase } from '../../domain/use-cases/postUsecase';
 import { PostController } from '../controllers/postController';
-import { upload, uploadToCloudinary } from '../../../config/uploadMiddleWare';
+import { upload, uploadToCloudinary } from '../../config/uploadMiddleWare'; 
 import { authMiddleWare } from './authRouterSetup';
 import { checkRolesAndPermissions } from "../../middlewares/roleBasedAuthMiddleware";
 

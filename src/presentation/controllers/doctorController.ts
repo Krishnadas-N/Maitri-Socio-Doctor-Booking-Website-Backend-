@@ -1,12 +1,11 @@
 import { Request,Response,NextFunction } from "express";
-import { sendSuccessResponse } from "../../../utils/ReponseHandler";
-import { DoctorService } from "../../domain/interfaces/use-cases/Doctor-Service/authentication/doctor-authentication";
-import { CustomError } from "../../../utils/CustomError";
-import { IDoctorUsecase } from "../../domain/interfaces/use-cases/Doctor-Service/Idoctor-Service";
+import { sendSuccessResponse } from "../../utils/reponseHandler"; 
+import { CustomError } from "../../utils/customError"; 
+import { IDoctorUsecase } from "../../domain/interfaces/use-cases/doctorUsecase";
 import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
 // import cloudinary from "../../../config/cloudinary";
 
-export function registerBasicInfo(doctorService: DoctorService) {
+export function registerBasicInfo(doctorService: IDoctorUsecase) {
     return async function (req: Request, res: Response, next: NextFunction) {
         try {  
             const { firstName, lastName, gender, dateOfBirth,password, email, phone } = req.body;
@@ -29,7 +28,7 @@ export function registerBasicInfo(doctorService: DoctorService) {
     };
 }
 
-export function registerProfessionalInfo(doctorService: DoctorService) {
+export function registerProfessionalInfo(doctorService: IDoctorUsecase) {
     return async function (req: any, res: Response, next: NextFunction) {
         try {
             const doctorId = req.user.id || ''
@@ -69,7 +68,7 @@ export function registerProfessionalInfo(doctorService: DoctorService) {
     };
 }
 
-export function registerAdditionalInfo(doctorService: DoctorService) {
+export function registerAdditionalInfo(doctorService: IDoctorUsecase) {
     return async function (req: any, res: Response, next: NextFunction) {
         try {
             const doctorId = req.user.id
@@ -86,7 +85,7 @@ export function registerAdditionalInfo(doctorService: DoctorService) {
     };
 }
 
-export function login(doctorService: DoctorService) {
+export function login(doctorService: IDoctorUsecase) {
     return async function (req: Request, res: Response, next: NextFunction) {
         try {
             const { email, password } = req.body;
@@ -105,7 +104,7 @@ export function login(doctorService: DoctorService) {
     };
 }
 
-export function forgotPassword(doctorService: DoctorService) {
+export function forgotPassword(doctorService: IDoctorUsecase) {
    return async function(req: Request, res: Response, next: NextFunction){
     try{
         const {email} = req.body;
@@ -117,7 +116,7 @@ export function forgotPassword(doctorService: DoctorService) {
 }
 }
 
-export function resetPassword(doctorService: DoctorService) {
+export function resetPassword(doctorService: IDoctorUsecase) {
   return async function (req:Request,res:Response,next:NextFunction){
    try{
     const passwordToken = req.params.token
@@ -130,7 +129,7 @@ export function resetPassword(doctorService: DoctorService) {
 }
 }
 
-export function VerifyProfile(doctorService: DoctorService) {
+export function VerifyProfile(doctorService: IDoctorUsecase) {
     return async function (req:Request,res:Response,next:NextFunction){
      try{
       const doctorId = req.params.doctorId;

@@ -1,11 +1,11 @@
 import { Request, Response ,NextFunction} from 'express';
-import { CustomError } from "../../../utils/CustomError";
-import { sendSuccessResponse } from "../../../utils/ReponseHandler";
-import { OTPService } from '../../domain/interfaces/use-cases/OTP-SERVICE/OTPService';
+import { CustomError } from '../../utils/customError'; 
+import { sendSuccessResponse } from '../../utils/reponseHandler'; 
+import { IOtpUsecase } from '../../domain/interfaces/use-cases/otpIUsecase'; 
 
 
 export class VerifyOtpMiddleware {
-    constructor(private otpService: OTPService) {}
+    constructor(private otpService: IOtpUsecase) {}
 
     async handle(req: Request, res: Response, next: NextFunction) {
         try {
@@ -23,7 +23,7 @@ export class VerifyOtpMiddleware {
 }
 
 export class ResendOtpMiddleware {
-    constructor(private otpService: OTPService) {}
+    constructor(private otpService: IOtpUsecase) {}
 
     async handle(req: Request, res: Response, next: NextFunction) {
         try {

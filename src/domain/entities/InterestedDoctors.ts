@@ -1,6 +1,6 @@
 // InterestedDoctor.ts
 
-import { objectId } from "../../models/common-models";
+import { objectId } from "../../models/common.models";
 
 
 export class InterestedDoctor {

@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-export interface RoleDetails {
+interface RoleDetails {
     roleId: string;
     roleName: string;
     permissions: string[];
@@ -60,4 +60,9 @@ interface IAdmin {
     }
   }
   
-  export default Admin;
+  export  {
+    Admin,
+    RoleDetails,
+    IAdmin
+  }
+    ;

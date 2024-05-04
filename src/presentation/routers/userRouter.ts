@@ -1,48 +1,51 @@
 
 
-import { MongoDbOtpDataSource } from "../../data/data-sources/mongodb/mongodb-otp-dataSource";
-import { MongoDbUserDataSource } from "../../data/data-sources/mongodb/mongodb-user-dataSource";
-import { OTPRepsositoryImpl } from "../../domain/repositories/otp-repository";
-import { UserAuthenticationRepoImpl } from "../../domain/repositories/user-repository";
-import { UserUseCaseImpl } from "../../domain/use-cases/User-UsecaseImpl/userServiceImpl";
-import { userLogin } from "../../domain/use-cases/authentication/user-login";
-import { userSignup } from "../../domain/use-cases/authentication/user-signup";
-import { SignupValidateUser, loginValidateUser } from "../../middlewares/requestValidation";
-import { signupController,loginController, UserController } from "../controllers/userController";
+import { MongoDbOtpDataSource } from "../../data/data-sources/mongodb/mongodbOtpDataSource" 
+import { MongoDbUserDataSource } from "../../data/data-sources/mongodb/mongodbUserDataSource" 
+import { OTPRepsositoryImpl } from "../../domain/repositories/otpRepository" 
+import { UserRepository } from "../../domain/repositories/userRepository" 
+import { UserUseCase } from "../../domain/use-cases/userUsecase" 
+import { SignupValidateUser,loginValidateUser } from "../../middlewares/requestValidation" 
+import {  UserController } from "../controllers/userController" 
 import { Router } from "express";
-import { authMiddleWare } from "./authRouterSetup";
-import { checkRolesAndPermissions } from "../../middlewares/roleBasedAuthMiddleware";
-import { InterestedDoctorsRepoImpl } from "../../domain/repositories/interestedDoctorsRepoImpl";
-import { InterestedDoctorsDataSource } from "../../data/data-sources/mongodb/mongodb-interestedDoctors-datasource";
-import { InterestedDoctors } from "../../domain/use-cases/User-UsecaseImpl/InterestedDoctorsServiceimpl";
-import { addToInterest, getInterests, removeInterest } from "../controllers/DoctorInterestsController";
-import { upload, uploadToCloudinary } from "../../../config/uploadMiddleWare";
-import { ConsultaionModel } from "../../data/data-sources/mongodb/mongodb-Consultation-dataSource";
-import { ConsultationRepoImpl } from "../../domain/repositories/consultation-repoImpl";
-import { ConsultationUseCaseImpl } from "../../domain/use-cases/Consultaiton/consultation-usecaseImpl";
-import { ConsultationController } from "../controllers/consultationController";
+import { authMiddleWare } from "./authRouterSetup" 
+import { checkRolesAndPermissions } from "../../middlewares/roleBasedAuthMiddleware"
+import { InterestedDoctorsRepoImpl } from "../../domain/repositories/interestedDoctorsRepository" 
+import { InterestedDoctorsDataSource } from "../../data/data-sources/mongodb/mongodbInterestedDataSource" 
+import { InterestedDoctors } from "../../domain/use-cases/InterestedDoctorsUsecase" 
+import { addToInterest, getInterests, removeInterest } from "../controllers/doctorInterestsController" 
+import { upload, uploadToCloudinary } from "../../config/uploadMiddleWare" 
+import { ConsultaionModel } from "../../data/data-sources/mongodb/mongodbConsultationDataSource" 
+import { ConsultationRepoImpl } from "../../domain/repositories/consultationRepository" 
+import { ConsultationUseCaseImpl } from "../../domain/use-cases/consultationUsecase" 
+import { ConsultationController } from "../controllers/consultationController" 
+import { WalletDataSource } from "../../data/data-sources/mongodb/mongodbWalletDataSource"
+import { WalletRepository } from "../../domain/repositories/walletRepository" 
+import { walletUseCase } from "../../domain/use-cases/walletUsecase" 
+import { WalletController } from "../controllers/walletController" 
 export const userRouter = Router();
 
-
-const userRepositoryImpl = new UserAuthenticationRepoImpl(new MongoDbUserDataSource())
+const userRepositoryImpl = new UserRepository(new MongoDbUserDataSource())
 const otpRepsositoryImpl = new OTPRepsositoryImpl(new MongoDbOtpDataSource()) 
-const loginUseCase = new userLogin(userRepositoryImpl);
-const signupUseCase  = new userSignup(userRepositoryImpl,otpRepsositoryImpl);
-const userService = new UserUseCaseImpl(userRepositoryImpl);
+const userService = new UserUseCase(userRepositoryImpl,otpRepsositoryImpl);
 const userController = new UserController(userService);
 
 const interestsDoctorsDataSource =  new InterestedDoctorsDataSource()
 const IntersetedDoctorsRepo = new InterestedDoctorsRepoImpl(interestsDoctorsDataSource);
 const InterestedDoctorsUseCase = new InterestedDoctors(IntersetedDoctorsRepo);
 
-const ConsultaionDataSource = new ConsultaionModel();
-const consultationRepo = new ConsultationRepoImpl(ConsultaionDataSource);
+const consultaionDataSource = new ConsultaionModel(new WalletDataSource());
+const consultationRepo = new ConsultationRepoImpl(consultaionDataSource);
 const consultationUsecase = new ConsultationUseCaseImpl(consultationRepo);
 const consultationController = new ConsultationController(consultationUsecase);
 
-userRouter.post('/login',loginValidateUser,loginController(loginUseCase));
+const walletRepo = new WalletRepository(new WalletDataSource());
+const walletUsecase = new walletUseCase(walletRepo);
+const walletController = new WalletController(walletUsecase);
 
-userRouter.post('/register',SignupValidateUser,signupController(signupUseCase));
+userRouter.post('/login',loginValidateUser,userController.loginUser.bind(userController));
+
+userRouter.post('/register',SignupValidateUser,userController.signupUser.bind(userController));
 
 userRouter.get('/profile',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),userController.getUserProfile.bind(userController));
 
@@ -79,10 +82,17 @@ userRouter.post('/verify-payment/:appointmentId',authMiddleWare.isAuthenticated.
 userRouter.get('/get-appoinments',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getUserAppoinments.bind(consultationController));
 
 
-userRouter.put('/change-appoinment-status/:appointmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getUserAppoinments.bind(consultationController));
+userRouter.put('/change-appoinment-status/:appointmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.changeAppoinmentStatusByUser.bind(consultationController));
 
 userRouter.get('/get-booked-slots/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getDoctorAvailableSlots.bind(consultationController));
 
 userRouter.get('/get-doctors',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getDoctors.bind(consultationController))
+
+userRouter.get('/get-wallet',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),walletController.getUserWallet.bind(walletController))
+
+userRouter.post('/medical-records',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),upload.single('file'),uploadToCloudinary,userController.addUserMedicalRecord.bind(userController));
+
+userRouter.get('/medical-records',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),userController.getUserMedicalRecords.bind(userController));
+
 
 export default userRouter;

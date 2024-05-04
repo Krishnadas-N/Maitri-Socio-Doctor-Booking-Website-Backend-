@@ -1,25 +1,25 @@
-import { CustomError } from "../../../utils/CustomError";
-import { ChatUseCase } from "../../domain/interfaces/use-cases/chat-Service/chat-IUsecase";
+import { CustomError } from "../../utils/customError"; 
+import { IChatUseCase } from "../../domain/interfaces/use-cases/chatIUsecase"; 
 import { Request, Response,NextFunction } from 'express';
 import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
-import { sendSuccessResponse } from "../../../utils/ReponseHandler";
+import { sendSuccessResponse } from "../../utils/reponseHandler"; 
 
 
 export class ChatController {
-    constructor(private chatUseCase: ChatUseCase) {}
+    constructor(private chatUseCase: IChatUseCase) {}
     
     async createConversation(req: Request, res: Response,next:NextFunction): Promise<void> {
         try {
             assertHasUser(req);
 
-            const{userId}= req.params;
+            const{userId,appoinmentId}= req.params;
             const doctorId  = req.user.id as string;
             if (!userId) {
                 throw new CustomError('Missing user ID', 400);
             }
 
-            const conversationId = await this.chatUseCase.createConverstation(doctorId,userId);
-            sendSuccessResponse(res,conversationId,'Getting chats for the user was successful');
+            const result = await this.chatUseCase.createConverstation(doctorId,userId,appoinmentId);
+            sendSuccessResponse(res,result,'Getting chats for the user was successful');
         } catch (error) {
             next(error)
         }
@@ -34,6 +34,7 @@ export class ChatController {
             }
 
             const chats = await this.chatUseCase.getChatsForUser(userId);
+            console.log("chats of the cuurent user",chats);
             sendSuccessResponse(res,chats,'Getting chats for the user was successful');
         } catch (error) {
             next(error)

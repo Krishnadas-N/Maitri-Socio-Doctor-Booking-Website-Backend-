@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { AdminDataSource } from "../../data/data-sources/mongodb/mongodb-admin-dataSource";
-import { AdminRepoImpl } from "../../domain/repositories/admin-repoImpl";
-import { AdminUsecaseImpl } from "../../domain/use-cases/Admin/admin-usecaseImpl";
+import { AdminDataSource } from "../../data/data-sources/mongodb/mongodbAdminDataSource"; 
+import { AdminRepository } from "../../domain/repositories/adminRepository"; 
+import { AdminUsecase } from "../../domain/use-cases/adminUsecase";
 import { AdminController } from "../controllers/adminController";
 import { authMiddleWare } from "./authRouterSetup";
 import { checkRolesAndPermissions } from "../../middlewares/roleBasedAuthMiddleware";
@@ -9,8 +9,8 @@ import { checkRolesAndPermissions } from "../../middlewares/roleBasedAuthMiddlew
 export const adminRouter = Router();
 
 const adminDataSource = new AdminDataSource();
-const adminRepository = new AdminRepoImpl(adminDataSource);
-const adminUsecase = new AdminUsecaseImpl(adminRepository);
+const adminRepository = new AdminRepository(adminDataSource);
+const adminUsecase = new AdminUsecase(adminRepository);
 const adminController = new AdminController(adminUsecase);
 
 adminRouter.post('/register',adminController.createAdmin.bind(adminController));

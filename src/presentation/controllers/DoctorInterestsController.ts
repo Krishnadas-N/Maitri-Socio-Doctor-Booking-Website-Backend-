@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import { IInterestedDoctorsUseCase } from "../../domain/interfaces/use-cases/UserService/IinterstedDoctors-usercase";
-import { CustomError } from "../../../utils/CustomError";
-import { sendSuccessResponse } from "../../../utils/ReponseHandler";
+import { IInterestedDoctorsUseCase } from "../../domain/interfaces/use-cases/interestedDoctorsIUsecase";
+import { CustomError } from "../../utils/customError"; 
+import { sendSuccessResponse } from "../../utils/reponseHandler"; 
 import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
 
 

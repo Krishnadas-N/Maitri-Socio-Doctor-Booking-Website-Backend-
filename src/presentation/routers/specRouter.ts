@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { DoctorServiceImpl } from "../../domain/use-cases/Specialization/specializationServiceImpl";
-import { IDoctorSpecializtionRepoImpl } from "../../domain/repositories/specialization-repository";
-import { MongoDbDoctorSpecializtionDataSource } from "../../data/data-sources/mongodb/mongodb-specialization-dataSource";
+import { DoctorServiceImpl } from "../../domain/use-cases/specializationUsecase";
+import { IDoctorSpecializtionRepoImpl } from "../../domain/repositories/specializationRepository";
+import { MongoDbDoctorSpecializtionDataSource } from "../../data/data-sources/mongodb/mongodbSpecializationDataSources";
 import { SpecializationController } from "../controllers/specializationController";
 import { checkRolesAndPermissions } from "../../middlewares/roleBasedAuthMiddleware";
 import { authMiddleWare } from "./authRouterSetup";

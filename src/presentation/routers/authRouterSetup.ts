@@ -1,18 +1,18 @@
-import { AdminDataSource } from "../../data/data-sources/mongodb/mongodb-admin-dataSource";
-import { MongoDbDoctorDataSourceImpl } from "../../data/data-sources/mongodb/mongodb-doctor-dataSource";
-import { MongoDbUserDataSource } from "../../data/data-sources/mongodb/mongodb-user-dataSource";
-import { AdminRepoImpl } from "../../domain/repositories/admin-repoImpl";
-import { IDoctorRepositoryImpl } from "../../domain/repositories/doctor-repository";
-import { UserAuthenticationRepoImpl } from "../../domain/repositories/user-repository";
+import { AdminDataSource } from "../../data/data-sources/mongodb/mongodbAdminDataSource";
+import { MongoDbDoctorDataSourceImpl } from "../../data/data-sources/mongodb/mongodbDoctorDataSource";
+import { MongoDbUserDataSource } from "../../data/data-sources/mongodb/mongodbUserDataSource";
+import { AdminRepository } from "../../domain/repositories/adminRepository";
+import { IDoctorRepositoryImpl } from "../../domain/repositories/doctorRepository";
+import { UserRepository } from "../../domain/repositories/userRepository";
 import { AuthMiddleware } from "../../middlewares/jwtAuthenticationMiddleware";
 
 
 
 const adminDataSource = new AdminDataSource();
-const adminRepository = new AdminRepoImpl(adminDataSource);
+const adminRepository = new AdminRepository(adminDataSource);
 
 const userDataSource = new MongoDbUserDataSource()
-const userRepositoryImpl = new UserAuthenticationRepoImpl(userDataSource)
+const userRepositoryImpl = new UserRepository(userDataSource)
 
 const doctorDataSource = new MongoDbDoctorDataSourceImpl();
 const doctorRepo = new IDoctorRepositoryImpl(doctorDataSource);

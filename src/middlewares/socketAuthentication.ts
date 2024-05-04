@@ -1,6 +1,6 @@
 // socket.io.ts
 import { Socket } from 'socket.io';
-import { CustomError } from '../../utils/CustomError'; // Assuming CustomError is defined elsewhere
+import { CustomError } from '../utils/customError';  // Assuming CustomError is defined elsewhere
 import { Payload } from '../models/payload.model';
 import passport from 'passport';
 

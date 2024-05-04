@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { sendSuccessResponse } from "../../../utils/ReponseHandler";
-import { IPostUsecase } from "../../domain/interfaces/use-cases/Post-Service/Post-usecase";
+import { sendSuccessResponse } from "../../utils/reponseHandler"; 
+import { IPostUsecase } from "../../domain/interfaces/use-cases/postIUsecase";
 import { Media } from "../../domain/entities/POST";
-import { CustomError } from "../../../utils/CustomError";
+import { CustomError } from "../../utils/customError"; 
 import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
 import { userType } from "../../models/users.model";
 

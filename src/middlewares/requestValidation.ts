@@ -1,6 +1,6 @@
 import { body, validationResult } from "express-validator";
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { CustomError } from "../../utils/CustomError";
+import { CustomError } from "../utils/customError"; 
 
 export const SignupValidateUser:RequestHandler[] =[
     body('profilePic').optional().isString(),

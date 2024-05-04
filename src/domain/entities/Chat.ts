@@ -1,11 +1,11 @@
-import { objectId } from "../../models/common-models";
+import { objectId } from "../../models/common.models";
 
 export class Conversation {
     constructor(
       public members: Member[],
       public isGroupChat: boolean,
       public groupName?: string,
-      public groupDescription?: string,
+      public groupDescritption?: string,
       public lastUpdate?: Date,
       public isClosed?: boolean
     ) {}

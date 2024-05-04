@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { ChatModelDataSource } from '../../data/data-sources/mongodb/mongodb-Chat-datasource';
-import { ChatRepositoryImpl } from '../../domain/repositories/chat-RepositoryImpl';
-import { ChatUseCaseImpl } from '../../domain/use-cases/chatService/chat-UseCaseImpl';
+import { ChatModelDataSource } from '../../data/data-sources/mongodb/mongodbChatDataSource';
+import { ChatRepositoryImpl } from '../../domain/repositories/chatRepository';
+import { ChatUseCaseImpl } from '../../domain/use-cases/chatUsecase';
 import { ChatController } from '../controllers/chatController';
 import { authMiddleWare } from './authRouterSetup';
 import { checkRolesAndPermissions } from '../../middlewares/roleBasedAuthMiddleware';
@@ -14,9 +14,9 @@ const chatController = new ChatController(chatUseImpl);
 
 // Define routes
 
-chatRouter.get('/get-conversationId/:userId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),chatController.createConversation.bind(chatController));
+chatRouter.get('/get-conversationId/:userId/:appoinmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),chatController.createConversation.bind(chatController));
 
-chatRouter.get('/chats',chatController.getChatsForUser.bind(chatController));
+chatRouter.get('/chats',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),chatController.getChatsForUser.bind(chatController));
 
 chatRouter.get('/get-conversation/:convId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),chatController.getConversation.bind(chatController))
 

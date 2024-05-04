@@ -1,10 +1,10 @@
-import { ChatUseCase } from "../../../domain/interfaces/use-cases/chat-Service/chat-IUsecase";
+import { IChatUseCase } from "../../../domain/interfaces/use-cases/chatIUsecase"; 
 import { Socket, Namespace } from "socket.io";
 import authenticateSocket from "../../../middlewares/socketAuthentication";
 
 export class ChatSocketController {
   constructor(
-    private chatUseCase: ChatUseCase,
+    private chatUseCase: IChatUseCase,
     private readonly chatNamespace: Namespace
   ) {}
   name: string = "";
@@ -101,6 +101,15 @@ export class ChatSocketController {
         socket.on("connect_error", (error) => {
           console.log("////////////////////////////////////////////////////////////=====>",error.message);
         });
+
+      socket.on('join-room',(roomId,userId)=>{
+        socket.join(`private room ${roomId}`);
+        
+        socket.to(`private room ${roomId}`).emit('user-connected',userId);
+        socket.on('disconnect', () =>{
+          socket.to(`private room ${roomId}`).emit('user-disconnected',userId)
+        })
+      })
 
       socket.on("disconnect", () => {
         console.log("A user disconnected from the chat namespace");

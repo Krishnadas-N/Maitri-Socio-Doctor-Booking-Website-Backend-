@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { AdminUseCaseInterface } from '../../domain/interfaces/use-cases/Admin-Service/Admin-usecase';
-import { CustomError } from '../../../utils/CustomError';
-import Admin from '../../domain/entities/Admin';
-import { sendSuccessResponse } from '../../../utils/ReponseHandler';
+import { IAdminUseCase } from '../../domain/interfaces/use-cases/adminIUsecase';
+import { CustomError } from '../../utils/customError'; 
+import { Admin } from '../../domain/entities/Admin'; 
+import { sendSuccessResponse } from '../../utils/reponseHandler';
 
 export class AdminController {
-    constructor(private readonly adminUseCase: AdminUseCaseInterface) {}
+    constructor(private readonly adminUseCase: IAdminUseCase) {}
 
     async createAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {

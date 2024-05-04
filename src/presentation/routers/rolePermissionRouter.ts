@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { RoleModelImpl } from "../../data/data-sources/mongodb/mongodb-rolePermission-dataSource";
-import { RoleRepository } from "../../domain/repositories/RoleRepository";
-import { RoleUseCase } from "../../domain/use-cases/Role-Permission/RoleUseCase";
+import { RoleModelImpl } from "../../data/data-sources/mongodb/mongodbRolePermissionDataSource";
+import { RoleRepository } from "../../domain/repositories/rolePermissionRepository";
+import { RoleUseCase } from "../../domain/use-cases/roleUsecase";
 import { RoleController } from "../controllers/roleController";
 export const roleRouter = Router();
 

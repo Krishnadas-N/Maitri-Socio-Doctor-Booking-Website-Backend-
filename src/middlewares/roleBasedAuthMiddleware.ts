@@ -1,11 +1,12 @@
 
 import { NextFunction, Request, Response } from 'express';
-import { CustomError } from '../../utils/CustomError';
+import { CustomError } from '../utils/customError'; 
+import { assertHasUser } from './requestValidationMiddleware';
 
 export const checkRolesAndPermissions = (requiredRoles: string[], requiredPermission: string) => {
-    return async (req: any, res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
         try {
-        
+      assertHasUser(req);
       const user = req.user;
       console.log("Log form Auth ROle",req.user,user);
       if (!user || !req.user) {

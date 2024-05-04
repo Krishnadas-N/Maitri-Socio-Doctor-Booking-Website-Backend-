@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { sendSuccessResponse } from "../../../utils/ReponseHandler";
-import { IConsultationUsecase } from "../../domain/interfaces/use-cases/Consultation-service/IConsultation-service";
+import { sendSuccessResponse } from "../../utils/reponseHandler"; 
+import { IConsultationUsecase } from "../../domain/interfaces/use-cases/consultationIUsecase";
 import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
-import { CustomError } from "../../../utils/CustomError";
-import { findDoctorsQueryParams } from "../../models/Consultation.model";
+import { CustomError } from "../../utils/customError"; 
+import { findDoctorsQueryParams } from "../../models/consultation.model";
 
 export class ConsultationController{
     constructor(
@@ -122,11 +122,11 @@ export class ConsultationController{
             const appoinmentId = req.params.appointmentId as string;
             const userId = req.user.id;
             console.log(userId);
-            const status = req.body.status as string; // Assuming req.body.status is a string
+            const status = req.body.status as string; 
             if (status !== 'Cancelled') {
                 throw new CustomError('Invalid Status', 400);
             }
-            const data = await this.consultationUseCase.changeAppoinmentStatus(appoinmentId,'Cancelled');
+            const data = await this.consultationUseCase.userAppoinmentCancellation(appoinmentId,'Cancelled',userId as string);
             return  sendSuccessResponse(res, data,"Appoinment status changed successfully");
         } catch (error) {
             console.error('Error fetching While Editing the  User:', error);

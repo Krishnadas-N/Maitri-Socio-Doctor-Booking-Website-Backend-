@@ -1,10 +1,10 @@
 import { Request, Response,NextFunction } from 'express';
-import { IRoleUseCase } from '../../domain/interfaces/use-cases/Role-Service/IRoleUseCase'; 
-import { CustomError } from '../../../utils/CustomError';
-import { sendSuccessResponse } from '../../../utils/ReponseHandler';
+import { IRolePermissionUseCase } from '../../domain/interfaces/use-cases/rolePermissionIUsecase'; 
+import { CustomError } from '../../utils/customError'; 
+import { sendSuccessResponse } from '../../utils/reponseHandler'; 
 
 export class RoleController {
-    constructor(private roleUseCase: IRoleUseCase) {}
+    constructor(private roleUseCase: IRolePermissionUseCase) {}
 
     async createRole(req: Request, res: Response,next:NextFunction): Promise<void> {
         try {
