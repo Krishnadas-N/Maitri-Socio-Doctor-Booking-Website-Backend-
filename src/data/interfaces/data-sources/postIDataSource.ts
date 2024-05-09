@@ -21,4 +21,6 @@ export interface PostModelIDataSource{
     getDoctorPosts(doctorId:string):Promise<Post[]>;
     editDoctorPost(doctorId:string, postId:string, title:string, content:string, tags:string[]):Promise<{title:string, content:string, tags:string[]}>
     deletePost(doctorId:string,postId:string):Promise<void>;
+    toggleSavedPost(userId: string, postId: string, userType: string):Promise<boolean>;
+    getSavedPosts(userId: string): Promise<Post[]|[]>;
 }

@@ -9,6 +9,7 @@ import Doctor from "../../../domain/entities/Doctor";
 import { doctorsResponseModel } from "../../../models/common.models";
 import dotenv from 'dotenv';
 import { WalletDataSource } from "./mongodbWalletDataSource";
+import notificationModel from "./models/notificationModel";
 dotenv.config();
 
 
@@ -16,7 +17,7 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
   constructor(private readonly walletModel: WalletDataSource) {}
   async makeAppoinment(userId: string,doctorId: string,appoinmentData: makeAppoinmentReqModel): Promise<string> {
     try {
-      if (
+        if (
         !Types.ObjectId.isValid(userId) ||
         !Types.ObjectId.isValid(doctorId)
       ) {
@@ -37,6 +38,7 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       const consultationFee = doctorDetails.consultationFee.find(
         (data) => data.type === appoinmentData.typeofConsultaion
       );
+
       if (!consultationFee) {
         throw new CustomError("Consultation type fee not found.", 404);
       }
@@ -51,15 +53,16 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       });
 
       await appointment.save();
-      return appointment._id;
-    } catch (err: any) {
+     return appointment._id;
+     } catch (err) {
       if (err instanceof CustomError) {
-        throw err;
+          throw err;
       } else {
-        throw new CustomError(
-          err.message || "Error while making an appointment",
-          500
-        );
+          const castedError = err as Error;
+          throw new CustomError(
+              castedError.message || "Error while making an appointment",
+              500
+          );
       }
     }
   }
@@ -104,17 +107,20 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
         throw new CustomError("Appoinment is not Found", 404);
       }
       return appointment;
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof CustomError) {
         throw err;
       } else {
+        const castedError = err as Error
         throw new CustomError(
-          err.message || "Error while making an appointment",
+          castedError.message || "Error while making an appointment",
           500
         );
       }
     }
   }
+
+  
   async findAppoinmentById(id: string): Promise<Appointment> {
     try {
       const appointment = (await appointmentModel.findOne({
@@ -125,12 +131,13 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
         throw new CustomError("No Appointment found with the given ID", 404);
       }
       return appointment;
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof CustomError) {
         throw err;
       } else {
+        const castedError = err as Error
         throw new CustomError(
-          err.message || "Error while making an appointment",
+          castedError.message || "Error while making an appointment",
           500
         );
       }
@@ -163,18 +170,20 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
         status: "Success",
       };
       await appointment.save();
-    } catch (err: any) {
+    
+    } catch (err: unknown) {
       if (err instanceof CustomError) {
         throw err;
       } else {
+        const castedError = err as Error
         throw new CustomError(
-          err.message || "Error while making an appointment",
+          castedError.message || "Error while making an appointment",
           500
         );
       }
     }
   }
-  async updatePaymentToSuccess(orderId: string): Promise<string> {
+  async updatePaymentToSuccess(orderId: string): Promise<{appoinmentId:string,notificationId:string}> {
     try {
       const appoinment = await appointmentModel.findOneAndUpdate(
         { "payment.transactionId": orderId },
@@ -184,13 +193,25 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       if (!appoinment) {
         throw new CustomError("Appoinment Not Found Caused an error ", 422);
       }
-      return appoinment._id;
-    } catch (err: any) {
-      console.error('Error updating payment status to "Paid":', err);
-      throw new CustomError(
-        err.message || "Error while making an appointment",
-        500
-      );
+      const notification = new notificationModel({
+        sender: appoinment.patient,
+          senderModel: 'User',
+          title:'New Appoinment',
+          receivers: [{ receiverId: appoinment.doctor, receiverModel: 'Doctor' }],
+          message: `New appointment scheduled for ${appoinment.date.toDateString()} at ${appoinment.slot}`,
+      });
+     await notification.save();
+      return {appoinmentId:appoinment._id,notificationId:notification._id.toString()};
+    }catch (err: unknown) {
+      if (err instanceof CustomError) {
+        throw err;
+      } else {
+        const castedError = err as Error
+        throw new CustomError(
+          castedError.message || "Error while making an appointment",
+          500
+        );
+      }
     }
   }
 
@@ -358,19 +379,25 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
         totalCount,
         totalPages,
       };
-    } catch (err: any) {
-      console.error('Error updating payment status to "Paid":', err);
-      throw new CustomError(
-        err.message || "Error while making an appointment",
-        500
-      );
+    } catch (err: unknown) {
+      if (err instanceof CustomError) {
+        throw err;
+      } else {
+        const castedError = err as Error
+        throw new CustomError(
+          castedError.message || "Error while making an appointment",
+          500
+        );
+      }
     }
   }
 
   async changeAppoinmentStatus(
     appoinmentId: string,
-    status: string
-  ): Promise<Appointment> {
+    status: string,
+    userId:string,
+    userType:string
+  ): Promise<{appointment:Appointment,notificationId:string}> {
     try {
       const appointment = (await appointmentModel.findOneAndUpdate(
         { _id: appoinmentId },
@@ -381,45 +408,76 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       if (!appointment) {
         throw new CustomError("Appoinment Not Found Caused an error ", 422);
       }
-      return appointment;
-    } catch (err: any) {
-      console.error('Error updating payment status to "Paid":', err);
-      throw new CustomError(
-        err.message || "Error while making an appointment",
-        500
-      );
+
+   // Create notification data
+      const receiverModel = userType === 'Doctor' ? 'User' : 'Doctor';
+      const receiverId = userType === 'Doctor' ? appointment.patient : appointment.doctor
+      const message = `${receiverModel}  appointment ${appointment?._id?.toString()}  status changed to ${status}`;
+      const notificationData = {
+          sender: userId,
+          senderModel: userType,
+          receivers: [{ receiverId: receiverId, receiverModel: receiverModel }],
+          title:`Appoinment ${status}`,
+          message: message,
+          readBy: [],
+      };
+
+      // Save the notification
+      const notification = await notificationModel.create(notificationData);
+
+
+
+      return {appointment,notificationId:notification._id.toString()};
+    }catch (err: unknown) {
+      if (err instanceof CustomError) {
+        throw err;
+      } else {
+        const castedError = err as Error
+        throw new CustomError(
+          castedError.message || "Error while making an appointment",
+          500
+        );
+      }
     }
   }
 
   async getAvailableSlots(doctorId: string, date: Date): Promise<string[]> {
     try {
-      console.log("Log form available slots", date);
+      console.log("Log form available slots",doctorId, date);
       if (!Types.ObjectId.isValid(doctorId)) {
         throw new CustomError("Invalid Doctor ID", 400);
       }
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
+      
+      const newDate = new Date(date);
+      const startOfDay = new Date(Date.UTC(newDate.getUTCFullYear(), newDate.getUTCMonth(), newDate.getUTCDate()));
+      const endOfDay = new Date(Date.UTC(newDate.getUTCFullYear(), newDate.getUTCMonth(), newDate.getUTCDate(), 23, 59, 59, 999));
+
 
       const appointments = await appointmentModel.find({
         doctor: doctorId,
         date: { $gte: startOfDay, $lte: endOfDay },
-        paymentStatus: { $ne: "Paid" }
+        paymentStatus: { $eq: "Paid" }
     });
 
+
+
+      console.log("Logging appointments:", appointments);
     const slots: string[] = [];
     for (let appointment of appointments) {
         slots.push(appointment.slot);
     }
     console.log("Slots Booked ",slots)
     return slots;
-    } catch (err: any) {
-      console.error('Error updating payment status to "Paid":', err);
-      throw new CustomError(
-        err.message || "Error while making an appointment",
-        500
-      );
+    } catch (err: unknown) {
+      if (err instanceof CustomError) {
+        throw err;
+      } else {
+        const castedError = err as Error
+        throw new CustomError(
+          castedError.message || "Error while making an appointment",
+          500
+        );
+      }
     }
   }
 

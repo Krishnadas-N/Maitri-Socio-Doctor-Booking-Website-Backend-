@@ -296,4 +296,46 @@ export class PostController {
           next(error);
         }
     }
+
+    async toggleSavePost(req: Request, res: Response,next:NextFunction) {
+        try {
+            const postId = req.params.postId as string;
+            
+            assertHasUser(req);
+            const userType = req.user.roles[0].roleName
+            const userId = req.user.id;
+            console.log("Doctor id ",userId);
+             await this.postUsecase.toggleSavedPost(userId as string,postId,userType);
+            return sendSuccessResponse(res, {}, 'Post Saved or Unsaved SuccessFully .');
+        } catch (error) {
+          next(error);
+        }
+    }
+
+    async getSavedPostsOfUsers(req: Request, res: Response,next:NextFunction) {
+        try {
+            assertHasUser(req);
+            const userId = req.user.id;
+            console.log("Doctor id ",userId);
+             await this.postUsecase.getSavedPostsofUser(userId as string);
+            return sendSuccessResponse(res, {}, 'Post Saved or Unsaved SuccessFully .');
+        } catch (error) {
+          next(error);
+        }
+    }
+
+    async getPostUploadedByDoctor(req: Request, res: Response,next:NextFunction) {
+        try {
+            
+            assertHasUser(req);
+            const {doctorId} = req.params;
+            console.log("Doctor id ",doctorId);
+            const result = await this.postUsecase.getDoctorPosts(doctorId as string);
+            console.log("Post gets by doctor",result);
+            return sendSuccessResponse(res, result, 'Reply Deleted SuccessFully Deleted.');
+        } catch (error) {
+          next(error);
+        }
+    }
+
 }

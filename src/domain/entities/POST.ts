@@ -67,7 +67,12 @@ export class Media {
         this.url = url;
     }
 }
-
+export class SavedPost {
+  constructor(
+    public userId: string | Types.ObjectId,
+    public createdAt: Date = new Date()
+  ) {}
+}
 export class Post {
     _id?: string | Types.ObjectId;
     doctorId: string | Types.ObjectId;
@@ -82,6 +87,7 @@ export class Post {
     isBlocked?: boolean;
     isArchived?: boolean;
     isLikedByUser?: boolean;
+    savedBy?:SavedPost[]
     constructor(
       doctorId: string,
       title: string,
@@ -92,7 +98,8 @@ export class Post {
       likes?: Like[],
       comments?: Comment[],
       reportedBy?: Report[],
-      isBlocked: boolean = false,
+      savedBy?:SavedPost[],
+    isBlocked: boolean = false,
     isArchived: boolean = false,
     ) {
       this.doctorId = doctorId;
@@ -106,6 +113,7 @@ export class Post {
       this.reportedBy = reportedBy;
       this.isBlocked = isBlocked;
       this.isArchived = isArchived;
+      this.savedBy = savedBy
     }
   }
   

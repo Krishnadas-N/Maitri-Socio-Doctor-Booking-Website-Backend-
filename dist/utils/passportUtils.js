@@ -28,17 +28,22 @@ const jwt = __importStar(require("jsonwebtoken"));
 const fs = __importStar(require("fs"));
 const PRIV_KEY = fs.readFileSync('id_rsa_priv.pem', 'utf8');
 function issueJWT(user) {
-    const _id = user._id;
-    const expiresIn = '1d';
+    console.log(PRIV_KEY);
+    const _id = user._id || '';
+    const issuedAt = Math.floor(Date.now() / 1000);
+    const expiration = issuedAt + 24 * 60 * 60;
+    const defaultRole = { roleId: '6612457293c66989fc111447', roleName: 'User', permissions: ['Read'] };
     const payload = {
-        sub: _id,
-        role: user.role,
-        iat: Date.now()
+        id: _id,
+        roles: user.roles || defaultRole,
+        iat: Date.now(),
+        exp: expiration
     };
-    const signedToken = jwt.sign(payload, PRIV_KEY, { expiresIn: expiresIn, algorithm: 'RS256' });
+    console.log(payload);
+    const signedToken = jwt.sign(payload, PRIV_KEY, { algorithm: 'RS256' });
     return {
         token: signedToken,
-        expiresIn: expiresIn
+        expiresIn: expiration
     };
 }
 exports.issueJWT = issueJWT;

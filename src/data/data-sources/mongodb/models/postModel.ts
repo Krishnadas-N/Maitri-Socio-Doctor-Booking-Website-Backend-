@@ -86,7 +86,16 @@ const ReportSchema = new mongoose.Schema({
 });
 
 
-
+const savedPostSchema = new mongoose.Schema({
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  });
+  
 const PostSchema: Schema = new mongoose.Schema<Post>({
     doctorId: {
          type: Schema.Types.ObjectId, 
@@ -117,7 +126,8 @@ const PostSchema: Schema = new mongoose.Schema<Post>({
     isArchived:{
         type: Boolean,
         default: false
-    }
+    },
+    savedBy:[savedPostSchema]
   },{
     timestamps:true
   });

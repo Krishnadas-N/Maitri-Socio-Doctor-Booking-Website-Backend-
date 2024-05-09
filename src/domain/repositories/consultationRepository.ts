@@ -58,7 +58,7 @@ export class ConsultationRepoImpl implements IConsultationRepository{
         }
     }
 
-    async verifyPayment(orderId: string, paymentId: string, razorpaySignature: string): Promise<string> {
+    async verifyPayment(orderId: string, paymentId: string, razorpaySignature: string): Promise<{appoinmentId:string,notificationId:string}> {
         try {
             console.log('razorpay',orderId,paymentId,razorpaySignature);
             const body = orderId + '|' + paymentId;
@@ -88,8 +88,8 @@ export class ConsultationRepoImpl implements IConsultationRepository{
    async  getAppoinmentsOfUsers(userId: string,page:number,pageSize:number): Promise<userAppoinmentsResponseModel> {
     return this.consultationDataSource.getAppoinmentsOfUsers(userId,page,pageSize);
     }
-    async changeAppoinmentStatus(appoinmentId: string, status: string): Promise<Appointment> {
-        return  await this.consultationDataSource.changeAppoinmentStatus(appoinmentId,status);
+    async changeAppoinmentStatus(appoinmentId: string, status: string,userId:string,userType:string): Promise<{appointment:Appointment,notificationId:string}> {
+        return  await this.consultationDataSource.changeAppoinmentStatus(appoinmentId,status,userId,userType);
     }
 
 

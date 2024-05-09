@@ -41,4 +41,7 @@ export interface  IPostsRepository{
     editPost(doctorId:string, postId:string, title:string, content:string, tags:string[]):Promise<{title:string, content:string, tags:string[]}>;
 
     deletePost(doctorId:string,postId:string):Promise<void>;
-}
+
+    toggleSavedPost(userId:string,postId:string,userType:string):Promise<boolean>;
+    getSavedPosts(userId: string): Promise<Post[]|[]>;
+}   

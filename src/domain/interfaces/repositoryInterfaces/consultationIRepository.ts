@@ -7,10 +7,10 @@ export interface IConsultationRepository {
     makeDoctorAppoinment(userId:string,doctorId:string,appoinmentData:makeAppoinmentReqModel):Promise<string>;
     getAppoinment(appointmentId: string): Promise<Appointment>;
     createBookingPayment(appointmentId: string,paymentMethod:PaymentModel):Promise<{responseId:string,keyId:string,amount:number}> ;
-    verifyPayment(orderId: string, paymentId: string, razorpaySignature: string): Promise<string>;
+    verifyPayment(orderId: string, paymentId: string, razorpaySignature: string): Promise<{appoinmentId:string,notificationId:string}>;
     getAppoinmentsOfUsers(userId:string,page:number,pageSize:number):Promise<userAppoinmentsResponseModel>;
     getAppoinmentsOfDoctors(doctorId:string,page:number,pageSize:number):Promise<doctorAppoinmentsResponseModel>;
-    changeAppoinmentStatus(appoinmentId:string,status:string):Promise<Appointment>;
+    changeAppoinmentStatus(appoinmentId:string,status:string,userId:string,userType:string):Promise<{appointment:Appointment,notificationId:string}>;
     getAvailableSlots(doctorId:string, date:Date):Promise<string[]>;
     getDoctors(queryData:findDoctorsQueryParams):Promise<doctorsResponseModel>;
     userAppoinmentCancellation(appoinmentId:string,status:string,userId:string):Promise<Appointment>;

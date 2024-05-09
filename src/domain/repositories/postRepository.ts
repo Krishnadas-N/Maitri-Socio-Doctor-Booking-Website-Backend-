@@ -125,5 +125,11 @@ export class PostRepository implements IPostsRepository {
     //     return !!result;
     // }
 
+    async toggleSavedPost(userId: string, postId: string, userType: string): Promise<boolean> {
+        return this.postRepoDataScource.toggleSavedPost(userId,postId,userType)
+    }
 
+    async getSavedPosts(userId: string): Promise<Post[] | []> {
+        return this.postRepoDataScource.getSavedPosts(userId)
+    }
 }

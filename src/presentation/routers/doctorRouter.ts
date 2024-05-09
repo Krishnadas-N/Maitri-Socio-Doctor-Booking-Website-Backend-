@@ -15,6 +15,10 @@ import { ConsultationRepoImpl } from "../../domain/repositories/consultationRepo
 import { ConsultationUseCaseImpl } from "../../domain/use-cases/consultationUsecase";
 import { ConsultationController } from "../controllers/consultationController";
 import { WalletDataSource } from "../../data/data-sources/mongodb/mongodbWalletDataSource";
+import { NotificationDataSource } from "../../data/data-sources/mongodb/mongodbNotificationDataSource";
+import { NotificationRepository } from "../../domain/repositories/notificationRepository";
+import { NotificationUsecase } from "../../domain/use-cases/notifyUsecase";
+import { NotificationController } from "../controllers/notificationController";
 export const doctorRouter = Router();
 
 const doctorDataSource = new MongoDbDoctorDataSourceImpl();
@@ -28,6 +32,10 @@ const consultationRepo = new ConsultationRepoImpl(ConsultaionDataSource);
 const consultationUsecase = new ConsultationUseCaseImpl(consultationRepo);
 const consultationController = new ConsultationController(consultationUsecase);
 
+const notificationDataSource = new NotificationDataSource();
+const notificationRepository = new NotificationRepository(notificationDataSource);
+const notificationUsecase = new NotificationUsecase(notificationRepository);
+const notifcationController = new NotificationController(notificationUsecase);
 
 doctorRouter.post('/register/basic-info',registerBasicInfo(doctorServices));
 
@@ -47,7 +55,7 @@ doctorRouter.get('/get-doctors',authMiddleWare.isAuthenticated.bind(authMiddleWa
 
 doctorRouter.put('/change-status/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Admin'], 'WRITE'),chnageStatus(doctorServices));
 
-doctorRouter.get('/get-currentDocotor',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Doctor'], 'READ'),getCurrentDoctor(doctorServices))
+doctorRouter.get('/get-currentDoctor',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Doctor'], 'READ'),getCurrentDoctor(doctorServices))
 
 doctorRouter.patch('/change-profile-pic',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Doctor'], 'READ'),upload.single('profilePic'),uploadToCloudinary,updateDoctorProfilePic(doctorServices))
 
@@ -60,6 +68,7 @@ doctorRouter.put('/change-appoinmentStatus/:appointmentId',authMiddleWare.isAuth
 
 // doctorRouter.get('/get-booked-slots',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),getBookedSlots(doctorServices));
 
+doctorRouter.get('/get-notification',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),notifcationController.getNotificationOfUser.bind(notifcationController))
 
 
 export default doctorRouter;

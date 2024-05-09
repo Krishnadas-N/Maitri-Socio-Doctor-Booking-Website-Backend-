@@ -16,6 +16,7 @@ export class User {
         public isVerified?:boolean,
         public resetToken ?:string | null,
         public roles?:string[] | RoleDetails[],
+        public refreshToken?:string
     ) {}
     toJson(): any {
         return {

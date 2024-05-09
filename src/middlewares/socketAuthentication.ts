@@ -6,7 +6,6 @@ import passport from 'passport';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 const authenticateSocket = (socket: Socket, next: Function) => {
-    console.log("Socket authentication called ",socket);
   passport.authenticate('jwt', (err:Error, payload:Payload, info:any) => {
     if (err) return next(err);
   
@@ -18,7 +17,7 @@ const authenticateSocket = (socket: Socket, next: Function) => {
     if (payload.exp && payload.exp < now) {
       return next(new CustomError('Token has expired', 401));
     }
-    console.log("Socket Authenticated 😊😊😊😊",payload)
+    console.log(payload,"payload Socket Authenticated 😊😊😊😊")
     socket.data.user = payload; // Attach user data to socket
     next();
   })(socket.request, {}, next);

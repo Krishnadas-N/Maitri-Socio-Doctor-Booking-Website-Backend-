@@ -22,7 +22,7 @@ export interface Consultation extends Document {
   }
 
 const consultationSchema = new mongoose.Schema<Consultation>({
-    patient: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true },
+    patient: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     doctor: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', required: true },
     date: { type: Date, required: true },
     duration: { type: Number, required: true }, // Duration in minutes

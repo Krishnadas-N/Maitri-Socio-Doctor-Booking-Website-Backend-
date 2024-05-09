@@ -8,7 +8,7 @@ import { IMedicalRecord, User } from "../entities/User";
 import { IUserRepository } from "../interfaces/repositoryInterfaces/userIRepository";
 import { IUserUseCase } from "../interfaces/use-cases/userIUsecase";
 import { PasswordUtil } from "../../utils/passwordUtils";
-import { issueJWT } from "../../utils/passportUtils";
+import { issueJWT, refreshAccessToken } from "../../utils/passportUtils";
 import { OtpRepository } from "../interfaces/repositoryInterfaces/otpIRepository";
 import { generateToken } from "../../utils/tokenizeDataHelper";
 
@@ -18,13 +18,8 @@ export class UserUseCase implements IUserUseCase {
     private readonly otpRepository: OtpRepository
   ) {}
 
-  async login(
-    email: string,
-    password: string
-  ): Promise<UserLoginResponse | null> {
-    console.log("Log from use cases (userLogin)");
+  async login( email: string,password: string ): Promise<UserLoginResponse | null> {
     const user = await this.userRepository.findByEmail(email);
-    console.log(user);
     if (!user) {
       throw new CustomError("No user Found", 404);
     }
@@ -39,14 +34,13 @@ export class UserUseCase implements IUserUseCase {
       throw new CustomError("Invalid password", 409);
     }
     console.log(email, password);
-    if (user && user._id) {
+      if (user && user._id) {
       console.log(email, password);
-      const tokenData = issueJWT({
-        _id: user._id.toString(),
-        roles: user.roles || [],
-      });
-      console.log(tokenData);
-      return { user, token: tokenData.token };
+      const refreshToken  = refreshAccessToken({ _id: user._id.toString(), roles: user.roles || [],});
+      const tokenData = issueJWT({ _id: user._id.toString(), roles: user.roles || [],});
+      console.log(tokenData,refreshToken);
+      this.userRepository.saveRefreshToken(email,refreshToken)
+      return { user, token: tokenData.token ,revokeAcessToken:refreshToken };
     } else {
       throw new CustomError("Id is not found in User", 404);
     }
@@ -229,4 +223,39 @@ export class UserUseCase implements IUserUseCase {
       );
     }
   }
+
+  async getUserByRefreshToken(refreshToken: string): Promise<string> {
+    try {
+        if (!refreshToken) {
+            throw new CustomError("Invalid refresh Token", 400);
+        }
+
+        const user = await this.userRepository.getUserByRefreshToken(refreshToken);
+        if (!user) {
+            throw new CustomError('No User Found for this token', 403);
+        }
+
+        if (!user.isVerified) {
+            throw new CustomError("User is Not Verified", 403);
+        }
+
+        if (user && user._id) {
+            const tokenData = issueJWT({ _id: user._id.toString(), roles: user.roles || [] });
+            return tokenData.token as string;
+        }else{
+          throw new CustomError('Unable to create the new token',400)
+        }
+       
+     } catch (error) {
+        if (error instanceof CustomError) {
+            throw error;
+        }
+        const castedError = error as Error;
+        throw new CustomError(
+            castedError.message || "Error while retrieving user by refresh token",
+            500
+        );
+    }
+ }
+
 }

@@ -60,6 +60,9 @@ roles: {
   type: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
   default: ['6612457293c66989fc111447'], // Set the default role(s) here
 },
+refreshToken:{
+  type: String 
+}
 }, 
 { timestamps: true });
 

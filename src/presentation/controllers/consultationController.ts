@@ -3,7 +3,7 @@ import { sendSuccessResponse } from "../../utils/reponseHandler";
 import { IConsultationUsecase } from "../../domain/interfaces/use-cases/consultationIUsecase";
 import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
 import { CustomError } from "../../utils/customError"; 
-import { findDoctorsQueryParams } from "../../models/consultation.model";
+import { findDoctorsQueryParams } from "../../models/consultation.model"; 
 
 export class ConsultationController{
     constructor(
@@ -67,9 +67,9 @@ export class ConsultationController{
     async verifyWebhook(req: Request, res: Response,next:NextFunction): Promise<void> {
         try {
             const { orderId, paymentId, razorpaySignature } = req.body;
-            const appoinmentId = await this.consultationUseCase.verifyWebhook(orderId, paymentId, razorpaySignature);
-            return  sendSuccessResponse(res, appoinmentId,"Appoinment Successfully saved");
-        } catch (error: any) {
+            const data = await this.consultationUseCase.verifyWebhook(orderId, paymentId, razorpaySignature);
+            return  sendSuccessResponse(res, data,"Appoinment Successfully saved");
+        } catch (error) {
             next(error)
         }
     }
@@ -108,8 +108,9 @@ export class ConsultationController{
             assertHasUser(req);
             const appoinmentId = req.params.appointmentId as string;
             const userId = req.user.id;
+            const userType = req.user.roles[0].roleName
             console.log(userId);
-            const data = await this.consultationUseCase.changeAppoinmentStatus(appoinmentId,req.body.status);
+            const data = await this.consultationUseCase.changeAppoinmentStatus(appoinmentId,req.body.status,userId as string,userType);
             return  sendSuccessResponse(res, data,"Appoinment status changed successfully");
         } catch (error) {
             console.error('Error fetching While Editing the  User:', error);

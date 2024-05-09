@@ -272,4 +272,40 @@ export class MongoDbUserDataSource implements userModelIDataSource {
             }
         }
       }
+
+      async saveRefreshToken(email: string, refreshToken: string): Promise<void> {
+        try {
+            const user = await userModel.findOneAndUpdate(
+                { email: email },
+                { $set: { refreshToken: refreshToken } }
+            );
+            if (!user) {
+                throw new CustomError('User Not Found', 404);
+            }
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error; // Type assertion
+                throw new CustomError(castedError.message || 'Failed to findByEmail', 500);
+            }
+        }}
+        async getUserByRefreshToken( refreshToken: string): Promise<User> {
+            try {
+                const user = await userModel.findOne({refreshToken})
+                
+                if (!user) {
+                    throw new CustomError('User Not Found', 404);
+                }
+                console.log("getting user by refresh token",user)
+                return user as unknown as User;
+            } catch (error:unknown) {
+                if (error instanceof CustomError) {
+                    throw error;
+                } else {
+                    const castedError = error as Error; // Type assertion
+                    throw new CustomError(castedError.message || 'Failed to findByEmail', 500);
+                }
+            }
+        }
 }

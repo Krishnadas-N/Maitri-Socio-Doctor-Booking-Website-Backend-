@@ -189,5 +189,21 @@ export class UserController{
         }
     }
 
+    async getUserTokenByRefreshing(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const refreshToken = req.headers['authorization'];
+            const token = await this.userUseCase.getUserByRefreshToken(refreshToken  as string);
+              if (!token) {
+                throw new CustomError('Failed to invoke a new token ',400)
+              }
+            return sendSuccessResponse(res,token,"New Token generated Successfully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
+
+
 
 }

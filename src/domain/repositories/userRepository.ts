@@ -168,4 +168,11 @@ export class UserRepository implements IUserRepository {
     async getMedicalRecords(userId: string): Promise<IMedicalRecord> {
           return this.dataSource.getMedicalRecords(userId);
       }
+
+    async getUserByRefreshToken(refreshToken: string): Promise<User> {
+          return this.dataSource.getUserByRefreshToken(refreshToken)
+      }
+     async saveRefreshToken(email: string, refreshToken: string): Promise<void> {
+          return this.dataSource.saveRefreshToken(email,refreshToken)
+      }
 }

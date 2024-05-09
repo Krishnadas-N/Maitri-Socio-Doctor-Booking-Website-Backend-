@@ -12,6 +12,7 @@ export class Appointment {
   createdAt: Date;
   paymentStatus: 'Pending' | 'Paid' | 'Refunded';
   payment: Payment;
+  _id?:string | objectId;
   consultationLink?:string;
 
   constructor(
@@ -26,6 +27,7 @@ export class Appointment {
     createdAt: Date,
     paymentStatus: 'Pending' | 'Paid' | 'Refunded',
     payment: Payment,
+    _id?:string,
     consultationLink?:string
   ) {
     this.patient = patient;
@@ -39,6 +41,7 @@ export class Appointment {
     this.createdAt = createdAt;
     this.paymentStatus = paymentStatus;
     this.payment = payment;
+    this._id =  _id;
     this.consultationLink =consultationLink;
   }
 }

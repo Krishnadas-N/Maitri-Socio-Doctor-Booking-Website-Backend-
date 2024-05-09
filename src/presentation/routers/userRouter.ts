@@ -13,7 +13,7 @@ import { checkRolesAndPermissions } from "../../middlewares/roleBasedAuthMiddlew
 import { InterestedDoctorsRepoImpl } from "../../domain/repositories/interestedDoctorsRepository" 
 import { InterestedDoctorsDataSource } from "../../data/data-sources/mongodb/mongodbInterestedDataSource" 
 import { InterestedDoctors } from "../../domain/use-cases/InterestedDoctorsUsecase" 
-import { addToInterest, getInterests, removeInterest } from "../controllers/doctorInterestsController" 
+import { addToInterest, getInterests, removeInterest  } from "../controllers/doctorInterestsController" 
 import { upload, uploadToCloudinary } from "../../config/uploadMiddleWare" 
 import { ConsultaionModel } from "../../data/data-sources/mongodb/mongodbConsultationDataSource" 
 import { ConsultationRepoImpl } from "../../domain/repositories/consultationRepository" 
@@ -23,6 +23,10 @@ import { WalletDataSource } from "../../data/data-sources/mongodb/mongodbWalletD
 import { WalletRepository } from "../../domain/repositories/walletRepository" 
 import { walletUseCase } from "../../domain/use-cases/walletUsecase" 
 import { WalletController } from "../controllers/walletController" 
+import { NotificationDataSource } from "../../data/data-sources/mongodb/mongodbNotificationDataSource"
+import { NotificationUsecase } from "../../domain/use-cases/notifyUsecase"
+import { NotificationRepository } from "../../domain/repositories/notificationRepository"
+import { NotificationController } from "../controllers/notificationController"
 export const userRouter = Router();
 
 const userRepositoryImpl = new UserRepository(new MongoDbUserDataSource())
@@ -38,6 +42,11 @@ const consultaionDataSource = new ConsultaionModel(new WalletDataSource());
 const consultationRepo = new ConsultationRepoImpl(consultaionDataSource);
 const consultationUsecase = new ConsultationUseCaseImpl(consultationRepo);
 const consultationController = new ConsultationController(consultationUsecase);
+
+const notificationDataSource = new NotificationDataSource();
+const notificationRepository = new NotificationRepository(notificationDataSource);
+const notificationUsecase = new NotificationUsecase(notificationRepository);
+const notifcationController = new NotificationController(notificationUsecase);
 
 const walletRepo = new WalletRepository(new WalletDataSource());
 const walletUsecase = new walletUseCase(walletRepo);
@@ -93,6 +102,11 @@ userRouter.get('/get-wallet',authMiddleWare.isAuthenticated.bind(authMiddleWare)
 userRouter.post('/medical-records',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),upload.single('file'),uploadToCloudinary,userController.addUserMedicalRecord.bind(userController));
 
 userRouter.get('/medical-records',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),userController.getUserMedicalRecords.bind(userController));
+
+userRouter.get('/refresh-token',userController.getUserTokenByRefreshing.bind(userController))
+
+
+userRouter.get('/get-notifications',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),notifcationController.getNotificationOfUser.bind(notifcationController))
 
 
 export default userRouter;

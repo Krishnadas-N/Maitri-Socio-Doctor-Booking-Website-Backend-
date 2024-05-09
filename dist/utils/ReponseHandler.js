@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendErrorResponse = exports.sendSuccessResponse = void 0;
-const CustomError_1 = require("./CustomError");
+const customError_1 = require("./customError");
 const sendSuccessResponse = (res, data, message) => {
     console.log("Log from success Response", data);
     const responseData = {
@@ -27,7 +27,7 @@ exports.sendErrorResponse = sendErrorResponse;
 // Global error handler middleware
 const errorHandler = (err, req, res) => {
     console.log("Error Handler Comes In");
-    if (err instanceof CustomError_1.CustomError) {
+    if (err instanceof customError_1.CustomError) {
         console.log("Custom Error:");
         console.error(err);
         (0, exports.sendErrorResponse)(res, err.message, err.status);

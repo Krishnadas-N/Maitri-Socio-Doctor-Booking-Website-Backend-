@@ -213,7 +213,7 @@ export class PostUsecase implements IPostUsecase {
     }catch (error:any) {
         console.error('Error archiving post:', error);
         throw new CustomError(error.message || 'Error archiving post:', 500);
-    }
+    } 
     } 
 
    async findPostById(id: string, userId: string): Promise<postsReponseModel | null> {
@@ -244,5 +244,31 @@ export class PostUsecase implements IPostUsecase {
             throw new Error(`Failed to fetch post details: ${error.message}`);
         }  
     }
+
+    async toggleSavedPost(userId: string, postId: string, userType: string): Promise<boolean> {
+        try {
+            if (!userId || !postId || !userType) {
+                throw new CustomError('Invalid input parameters.',400);
+            }
     
+            if (userType !== 'Doctor' && userType !== 'User') {
+                throw new CustomError('Invalid userType. Must be "Doctor" or "User".',400);
+            }
+    
+            return this.postRepository.toggleSavedPost(userId,postId,userType); // Successfully toggled saved status
+        } catch (error:any) {
+            throw new CustomError(error.message || 'Error archiving post:', 500);
+        } 
+    }
+    
+   async getSavedPostsofUser(userId: string): Promise<Post[] | []> {
+    try {
+        if (!userId) {
+            throw new CustomError('Invalid input parameters.',400);
+        }
+        return this.postRepository.getSavedPosts(userId); // Successfully toggled saved status
+    } catch (error:any) {
+        throw new CustomError(error.message || 'Error archiving post:', 500);
+    } 
+    }
 }

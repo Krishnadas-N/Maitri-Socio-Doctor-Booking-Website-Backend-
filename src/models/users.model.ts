@@ -11,6 +11,7 @@ export type objectId = ObjectId;
 export interface UserLoginResponse{
     user:User,
     token:string
+    revokeAcessToken:string;
 }
 
 

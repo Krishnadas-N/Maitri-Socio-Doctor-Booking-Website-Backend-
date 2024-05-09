@@ -37,4 +37,8 @@ export interface IPostUsecase {
 
     findPostById(id: string,userId:string): Promise<postsReponseModel | null>;
     deletePost(doctorId:string,postId:string):Promise<void>;
+
+    toggleSavedPost(userId:string,postId:string,userType:string):Promise<boolean>;
+    
+    getSavedPostsofUser(userId: string): Promise<Post[]|[]>
 }

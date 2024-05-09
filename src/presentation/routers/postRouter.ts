@@ -48,4 +48,10 @@ postRouter.delete('/comment/reply/delete',authMiddleWare.isAuthenticated.bind(au
 
 postRouter.get('/get-doctor-posts',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),postController.getDoctorPosts.bind(postController))
 
+postRouter.get('/get-doctor-post/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),postController.getPostUploadedByDoctor.bind(postController))
+
+postRouter.post('/p/:postId/toggle-save',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),postController.toggleSavePost.bind(postController))
+
+postRouter.get('/p/get-saved-posts',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),postController.getSavedPostsOfUsers.bind(postController))
+
 export default postRouter;

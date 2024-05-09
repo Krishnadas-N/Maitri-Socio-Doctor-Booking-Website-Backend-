@@ -14,4 +14,5 @@ export interface IUserUseCase{
     changeUserPassword(userId:string):Promise<void>;
     addMedicalRecord(userId: string, fileUrl: string, title: string, description: string): Promise<IMedicalRecord | null>;
     getUserMedicalRecords(userId: string): Promise<IMedicalRecord>;
+    getUserByRefreshToken( refreshToken: string): Promise<string>;
 }

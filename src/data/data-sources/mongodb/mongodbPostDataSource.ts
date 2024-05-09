@@ -1,5 +1,5 @@
 import mongoose, { Aggregate } from "mongoose";
-import { Comment, Post, Reply, Report } from "../../../domain/entities/POST";
+import { Comment, Post, Reply, Report, SavedPost } from "../../../domain/entities/POST";
 import { PostModelIDataSource } from "../../interfaces/data-sources/postIDataSource";
 import { postModel } from "./models/postModel";
 import { CustomError } from "../../../utils/customError";
@@ -554,5 +554,67 @@ export class MongoDbPostDataSource implements PostModelIDataSource{
                 throw new CustomError('Error editing the post: ' + err.message,500)
             }
           }
+    }
+    async  toggleSavedPost(userId: string, postId: string, userType: string): Promise<boolean> {
+        try {
+            if (!mongoose.Types.ObjectId.isValid(postId) || !mongoose.Types.ObjectId.isValid(userId)) {
+                throw new CustomError('Invalid postId or userId', 400);
+            }
+    
+            console.log(userType);
+    
+            const result = await postModel.findById(postId);
+            if (!result) {
+                throw new CustomError('Post not found', 404);
+            }
+    
+            const index = result.savedBy?.findIndex((x: SavedPost) => x.userId.toString() === userId.toString());
+            console.log("///////////////////////==========",index);
+        // If the user is not already saved the post, add the user to savedBy array
+        if (index !== undefined && index === -1) {
+            if (!result.savedBy) {
+                result.savedBy = [{ userId: userId, createdAt: new Date(Date.now()) }];
+            } else {
+                result.savedBy?.push({ userId: userId, createdAt: new Date(Date.now()) });
+            }
+        } else {
+            // If the user is already saved the post, remove the user from savedBy array
+            const indexToSplice = index as number; // Type assertion
+            console.log("indexToSplice",indexToSplice);
+            result.savedBy?.splice(indexToSplice, 1);
+        }
+
+        // Save the updated post
+        await result.save();
+        console.log("saved post ",result);
+        return true;
+        } catch (err:any) {
+            if (err instanceof CustomError) {
+                throw err;
+            } else {
+                throw new CustomError('Error editing the post: ' + err.message, 500);
+            }
+        }
+    }
+
+    async  getSavedPosts(userId: string): Promise<Post[]|[]> {
+        try {
+            // Validate user ID
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+                throw new CustomError('Invalid userId', 400);
+            }
+    
+            // Find saved posts by userId
+            const savedPosts = await postModel.find({ savedBy: { $elemMatch: { userId } } });
+    
+            return savedPosts;
+        } catch (error) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                console.error('Error fetching saved posts:', error);
+                throw new CustomError('Error fetching saved posts', 500);
+            }
+        }
     }
 }

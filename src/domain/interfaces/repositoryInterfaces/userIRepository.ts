@@ -16,5 +16,7 @@ export interface IUserRepository {
     changeUserProfilePic(userId:string,image:string):Promise<void>;
     sendUserChangePasswordLink(userId:string):Promise<void>;
     addMedicalRecord(userId: string, fileUrl: string, title: string, description: string): Promise<IMedicalRecord | null>;
-    getMedicalRecords(userId: string): Promise<IMedicalRecord>
+    getMedicalRecords(userId: string): Promise<IMedicalRecord>;
+    saveRefreshToken(email:string,refreshToken:string):Promise<void>;
+    getUserByRefreshToken( refreshToken: string): Promise<User> ;
 }

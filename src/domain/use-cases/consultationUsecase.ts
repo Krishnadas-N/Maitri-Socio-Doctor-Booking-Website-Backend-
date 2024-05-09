@@ -29,11 +29,12 @@ export class ConsultationUseCaseImpl implements IConsultationUsecase{
             }
 
             return this.consultationRepo.makeDoctorAppoinment(userId,doctorId,appoinmentData)
-        }catch(err:any){
+        }catch(err:unknown){
             if(err instanceof CustomError){
                 throw err
             }else{
-                throw new CustomError(err.message ||'Error while make an appoinment',500);
+                const castedError = err as Error
+                throw new CustomError(castedError.message ||'Error while make an appoinment',500);
             }
         }
     }
@@ -68,7 +69,7 @@ export class ConsultationUseCaseImpl implements IConsultationUsecase{
         }
     }
     
-    async verifyWebhook(orderId: string, paymentId: string, razorpaySignature: string): Promise<string> {
+    async verifyWebhook(orderId: string, paymentId: string, razorpaySignature: string): Promise<{appoinmentId:string,notificationId:string}> {
         try {
             if (!orderId || !paymentId || !razorpaySignature) {
                 throw new CustomError('No Appointment Id, Payment Id, or Razorpay Signature is Provided', 400);
@@ -112,7 +113,7 @@ export class ConsultationUseCaseImpl implements IConsultationUsecase{
          }  
     }
 
-   async  changeAppoinmentStatus(appoinmentId: string, status: string): Promise<Appointment> {
+   async  changeAppoinmentStatus(appoinmentId: string, status: string,userId:string,userType:string): Promise<{appointment:Appointment,notificationId:string}> {
     try{
         if(!appoinmentId){
             throw new CustomError('Appoinment Id is Not Provided',400)
@@ -120,7 +121,7 @@ export class ConsultationUseCaseImpl implements IConsultationUsecase{
         if (!allowedStatuses.includes(status)) {
             throw new CustomError('Invalid appointment status', 400);
         }
-        return this.consultationRepo.changeAppoinmentStatus(appoinmentId,status);
+        return this.consultationRepo.changeAppoinmentStatus(appoinmentId,status,userId,userType);
     }catch(err:any){
          if(err instanceof CustomError){
              throw err

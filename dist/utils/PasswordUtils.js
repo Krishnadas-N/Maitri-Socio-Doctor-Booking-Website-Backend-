@@ -15,14 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PasswordUtil = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 class PasswordUtil {
-    static HashPassword(password) {
+    static hashPassword(password) {
         return __awaiter(this, void 0, void 0, function* () {
             const saltRounds = 10;
             const hashedPassword = yield bcryptjs_1.default.hash(password, saltRounds);
             return hashedPassword;
         });
     }
-    static ComparePasswords(password, passwordHash) {
+    static comparePasswords(password, passwordHash) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(password, passwordHash);
             const passwordMatches = yield bcryptjs_1.default.compare(password, passwordHash);
