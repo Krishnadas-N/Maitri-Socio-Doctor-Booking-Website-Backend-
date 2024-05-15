@@ -2,7 +2,7 @@ import { Model, Types } from 'mongoose';
 import { IPostsRepository } from '../interfaces/repositoryInterfaces/postIRepository'; 
 import { Comment, Post, Reply, Report } from '../entities/POST';
 import { CustomError } from '../../utils/customError'; 
-import { PostSearchError, postsReponseModel } from '../../models/post.models';
+import {  postsReponseModel } from '../../models/post.models';
 import { PostModelIDataSource } from '../../data/interfaces/data-sources/postIDataSource'; 
 import { userType } from '../../models/users.model';
 
@@ -21,24 +21,42 @@ export class PostRepository implements IPostsRepository {
         try {
             const post = await this.postRepoDataScource.findById(id,userId);
             return post;
-        } catch (error:any) {
-            throw new Error(`Failed to fetch post details: ${error.message}`);
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
 
     async getAllPosts(page: number, limit: number,userId:string, query?: string): Promise<postsReponseModel[]> {
         try{
         return await this.postRepoDataScource.getAllPosts(page, limit,userId, query)
-        } catch (error:any) {
-            throw new CustomError(error.message || PostSearchError.SearchFailed, 500);
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
 
     async likePost(postId: string, userId: string,userType:userType): Promise<Post | null> {
         try{
             return  await this.postRepoDataScource.likePost(postId,userId,userType);
-            } catch (error:any) {
-                throw new CustomError(error.message || PostSearchError.SearchFailed, 500);
+            }catch (error:unknown) {
+                if (error instanceof CustomError) {
+                    throw error;
+                } else {
+                    const castedError = error as Error
+              console.error('Unexpected error:', error);
+              throw new CustomError(castedError.message || 'Internal server error',500);
+                }
             }
        
     }
@@ -46,8 +64,14 @@ export class PostRepository implements IPostsRepository {
     async commentOnPost(postId: string, comment: Comment): Promise<Comment | null> {
         try{
         return await this.postRepoDataScource.commentOnPost(postId, comment);
-        }catch(error:any){
-            throw new CustomError(error.message || 'Error while Saving Comment On database',500)
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
 
@@ -57,9 +81,14 @@ export class PostRepository implements IPostsRepository {
                 throw new Error('Invalid parameters for replying to comment');
             }
             return await this.postRepoDataScource.replyToComment(postId, commentId, reply);
-        } catch (error:any) {
-            console.error('Error replying to comment:', error);
-            throw new CustomError(error.message || 'Error  while saving reply comment on Database',500)
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
 

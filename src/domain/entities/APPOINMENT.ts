@@ -1,5 +1,11 @@
 import { objectId } from "../../models/users.model";
 
+interface CancellationRequest {
+  status: 'Pending' | 'Accepted' | 'Rejected'; 
+  reason: string;
+  createdAt: Date;
+}
+
 export class Appointment {
   patient: objectId;
   doctor: objectId;
@@ -14,6 +20,11 @@ export class Appointment {
   payment: Payment;
   _id?:string | objectId;
   consultationLink?:string;
+  prescription?:{
+    file:string,
+    title:string
+  };
+cancellationRequests?: CancellationRequest; 
 
   constructor(
     patient: objectId,
@@ -28,7 +39,12 @@ export class Appointment {
     paymentStatus: 'Pending' | 'Paid' | 'Refunded',
     payment: Payment,
     _id?:string,
-    consultationLink?:string
+    consultationLink?:string,
+    prescription?:{
+      file:string,
+      title:string
+    },
+    cancellationRequests?: CancellationRequest
   ) {
     this.patient = patient;
     this.doctor = doctor;
@@ -43,6 +59,8 @@ export class Appointment {
     this.payment = payment;
     this._id =  _id;
     this.consultationLink =consultationLink;
+    this.prescription = prescription,
+    this.cancellationRequests =cancellationRequests
   }
 }
 

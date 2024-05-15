@@ -1,5 +1,6 @@
 import { LoginResponse } from "../../../models/docotr.authenticationModel";
-import Doctor from "../../entities/Doctor";
+import { DashBoardDataResponse } from "../../../models/doctors.model";
+import Doctor, { Follower, Review } from "../../entities/Doctor";
 
 export interface IDoctorUsecase{
     registerBasicInfoUseCase(doctor:Partial<Doctor>):Promise<string>;
@@ -14,4 +15,8 @@ export interface IDoctorUsecase{
     getDoctorById(id:string):Promise<Doctor | null> ;
     changeProfilePic(doctorId:string,image:string):Promise<void>;
     saveSelectedSlots(doctorId: string, selectedSlots: { date: Date, slots: string[] }[]): Promise<Doctor>;
+    getSimilarProfiles(specializationId:string):Promise<Doctor[]>;
+    followOrUnfollowDoctors(doctorId: string, userId: string,userType:'Doctor'|'User'): Promise<Follower[]>;
+    addReviewAndRating(doctorId: string, userId: string, rating: number, comment: string): Promise<Review>;
+    getDoctorDashboardDetails(doctorId: string):Promise<DashBoardDataResponse> 
 }

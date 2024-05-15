@@ -11,3 +11,9 @@ export interface doctorsResponseModel{
     totalCount: number;
     totalPages: number;
   }
+
+export interface TransactionDetailsByWeek {
+    startDate: string;
+    credit: number;
+    debit: number;
+}

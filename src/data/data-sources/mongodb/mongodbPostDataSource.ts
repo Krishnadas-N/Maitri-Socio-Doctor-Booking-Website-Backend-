@@ -606,7 +606,7 @@ export class MongoDbPostDataSource implements PostModelIDataSource{
     
             // Find saved posts by userId
             const savedPosts = await postModel.find({ savedBy: { $elemMatch: { userId } } });
-    
+            console.log("savedPosts",savedPosts);
             return savedPosts;
         } catch (error) {
             if (error instanceof CustomError) {

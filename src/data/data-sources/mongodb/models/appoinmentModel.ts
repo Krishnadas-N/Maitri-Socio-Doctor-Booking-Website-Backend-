@@ -1,5 +1,12 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+
+interface CancellationRequest {
+  status: 'Pending' | 'Accepted' | 'Rejected'; 
+  reason: string;
+  createdAt: Date;
+}
+
 interface Appointment extends Document {
   patient: mongoose.Types.ObjectId;
   doctor: mongoose.Types.ObjectId;
@@ -18,6 +25,11 @@ interface Appointment extends Document {
     status: 'Success'| 'Failed';
     };
   consultationLink?:string;
+  prescription?:{
+    file:string,
+    title:string
+  },
+  cancellationRequests?: CancellationRequest; 
 }
 
 const appointmentSchema = new mongoose.Schema<Appointment>({
@@ -43,7 +55,17 @@ const appointmentSchema = new mongoose.Schema<Appointment>({
   consultationLink:{
     type:String
    },
-
+   prescription:{
+    file:{
+      type:String
+    },
+    title:String
+   },
+   cancellationRequests: {
+    status: { type: String, enum: ['Pending', 'Accepted', 'Rejected'], default: 'Pending' },
+    reason: { type: String },
+    createdAt: { type: Date, default: Date.now }
+  }
 },
 {
   timestamps:true

@@ -17,6 +17,18 @@ const AvailabilitySchema = new mongoose.Schema({
   endTime: String,
 });
 
+const FollowerSchema = new mongoose.Schema({
+  userId: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    refPath: 'userModel',
+  },
+  userModel: {
+    type: String,
+    required: true,
+    enum: ['User', 'Doctor'],
+  },
+});
 
 
 const DoctorSchema = new mongoose.Schema<Doctor>({
@@ -111,7 +123,7 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
     type: Date,
     default: Date.now,
   },
-  followers: [String],
+  followers: [FollowerSchema],
   isVerified: {
     type: Boolean,
     default: false,
@@ -124,12 +136,6 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
   maxPatientsPerDay: {
     type: Number,
     default: 10, // Example value, adjust according to your needs
-  },
-  rating: {
-    type: Number,
-    min: 0,
-    max: 5,
-    default: 0,
   },
   isProfileComplete: {
     type: Boolean,

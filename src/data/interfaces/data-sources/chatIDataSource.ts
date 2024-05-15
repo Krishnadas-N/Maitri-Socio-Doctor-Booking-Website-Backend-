@@ -10,4 +10,5 @@ export interface IChatModelIDataSource {
     saveMessage(senderId: string, message: string, conversationId: string, receiverId: string,userType: string): Promise<Message>;
     getConversation(convId:string):Promise<Conversation> ;
     getMessages(convId:string):Promise<Message[]>;
+    toggleConversation(convId:string,doctorId:string):Promise<Conversation>
   }

@@ -1,10 +1,13 @@
 import mongoose from "mongoose";
 import { CustomError } from "../../../utils/customError"; 
-import Doctor, { Address, Availability, Education, Review } from "../../../domain/entities/Doctor";
+import Doctor, { Address, Availability, Education, Follower, Review } from "../../../domain/entities/Doctor";
 import { IDoctorModelIDataSource } from "../../interfaces/data-sources/doctorIDataSources";
 import {doctorModel} from "./models/doctorModel";
 import {roleModel} from "./models/roleModel";
 import { RoleDetails } from "../../../domain/entities/Admin";
+import { ReviewModel } from "./models/ReviewAndRatingModel";
+import { appointmentModel } from "./models/appoinmentModel";
+import { DashBoardDataResponse, DashboardData, TypeOfAppointmentData } from "../../../models/doctors.model";
 
 
 export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
@@ -19,7 +22,7 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
         try {
           const newDoctor = new doctorModel(doctor);
           const savedDoctor = await newDoctor.save();
-        console.log(savedDoctor)
+          console.log(savedDoctor)
           const doctorId = savedDoctor._id; // Adjust this according to your schema
       
           if (!doctorId) {
@@ -27,9 +30,14 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
           }
       
           return doctorId;
-        } catch (err:any) {
-          throw new CustomError(err.message || 'Error on saving Doctor basic info to database', 500);
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          throw new CustomError(castedError.message || 'Error on saving Doctor basic info to database', 500);
         }
+       }
       }
       
 
@@ -133,13 +141,14 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
             doctor.password = password;
             doctor.resetToken = null;
             await doctor.save();
-        } catch (error:any) {
-        if (error instanceof CustomError) {
-            throw error;
-          }
-      
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
           console.error('Unexpected error:', error);
-          throw new Error(error.message || 'Internal server error');
+          throw new Error(castedError.message || 'Internal server error');
+            }
         }
         }
     
@@ -154,14 +163,15 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
             }
             doctor.resetToken = token;
              await doctor.save()
-            } catch (error:any) {
+            }  catch (error:unknown) {
                 if (error instanceof CustomError) {
                     throw error;
-                  }
-              
-                  console.error('Unexpected error:', error);
-                  throw new Error(error.message || 'Internal server error');
+                } else {
+                    const castedError = error as Error
+              console.error('Unexpected error:', error);
+              throw new Error(castedError.message || 'Internal server error');
                 }
+            }
             
         }
     
@@ -212,14 +222,15 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
                             .exec();
 
             return doctors;
-        }catch(error:any){
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
-              }
-          
-              console.error('Unexpected error:', error);
-              throw new Error(error.message || 'Internal server error');
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
+        }
         }
     
    async changeStatusofDoctor(id: string): Promise<Doctor> {
@@ -242,14 +253,15 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
         doctor.isBlocked = !doctor.isBlocked;
         await doctor.save();
          return  doctor
-    }catch(error:any){
+    }catch (error:unknown) {
         if (error instanceof CustomError) {
             throw error;
-          }
-      
-          console.error('Unexpected error:', error);
-          throw new Error(error.message || 'Internal server error');
+        } else {
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
         }
+    }
     }
     async changeProfilePic(doctorId:string,image:string):Promise<void>{
         await doctorModel.updateOne({_id:doctorId}, {$set:{profilePic:image}}); 
@@ -262,11 +274,13 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
                 throw new CustomError('Doctor not found', 403);
             }
             return doctor;
-        } catch (error: any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to save selected slots', 500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }
@@ -279,11 +293,13 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
                 permissions: role.permissions // Assuming your roleModel has a 'permissions' field
             }));
             return roleDetails;
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }
@@ -297,7 +313,6 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
         const address = doctorData.address ? new Address(doctorData.address.state, doctorData.address.city, doctorData.address.zipcode, doctorData.address.country) : doctorData.address;
         const education = doctorData.education ? doctorData.education.map(edu => new Education(edu.degree, edu.institution, edu.year)) : [];
         const availability = doctorData.availability ? doctorData.availability.map(avail => new Availability(avail.dayOfWeek, avail.startTime, avail.endTime, avail.isAvailable)) : [];
-        const reviews = doctorData.reviews ? doctorData.reviews.map(review => new Review(review.patientName, review.comment, review.rating, review.createdAt)) : [];
     
         const doctor = new Doctor(
             doctorData._id,
@@ -326,9 +341,7 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
             doctorData.createdAt,
             doctorData.updatedAt,
             doctorData.followers,
-            doctorData.rating,
             doctorData.isBlocked,
-            reviews,
             doctorData.isProfileComplete,
             doctorData.resetToken,
             doctorData.selectedSlots
@@ -338,6 +351,178 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
     }
     
    
+    async getSimilarProfiles(specializationId:string):Promise<Doctor[]>{
+        try{
+          const doctors = await doctorModel.find({specialization:specializationId}).populate('specialization').select('firstName lastName specialization profilePic followers');
+          console.log("Doctors from similar profiles",doctors);
+          return doctors
+        } catch (error: unknown) {
+          if (error instanceof CustomError) {
+              throw error;
+          } else {
+              const castedError = error as Error;
+              console.error("Error in getSimilarProfiles:", castedError);
+              throw new CustomError(
+                  castedError.message || "Error while getting similar profiles",
+                  500
+              );
+          }
+      }
+      }
+
+      async followOrUnfollowDoctors(doctorId: string, userId: string,userType:'Doctor'|'User'): Promise<Follower[]> {
+        try {
+            const doctor = await doctorModel.findById(doctorId);
+            
+            if (!doctor) {
+                throw new CustomError("Invalid DoctorId", 400);
+            }
+            if(!doctor?.followers){
+                doctor.followers =[]  
+            }
+            const index = doctor?.followers.findIndex((follower:Follower) => follower.userId.toString() === userId) || -1
     
-      
+            if (index === -1) {
+                doctor.followers.push({ userId, userModel: userType });
+            } else {
+                doctor.followers.splice(index, 1);
+            }
+            await doctor.save();
+            return  doctor.followers;
+        } catch (error) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                console.error("Error in followOrUnfollowDoctors:", error);
+                throw new CustomError("Error while following/unfollowing doctor", 500);
+            }
+        }
+    }
+    
+    async addReview(doctorId: string, userId: string, rating: number, comment: string): Promise<Review> {
+        try {
+            const doctor = await doctorModel.findById(doctorId);
+            if (!doctor) {
+                throw new CustomError("Doctor not found",404);
+            }
+            const appointment = await appointmentModel.findOne({ doctor: doctorId, patient: userId,status:'Completed' });
+            if (!appointment) {
+                throw new CustomError("No appointment found for this user with the doctor", 400);
+            }
+    
+            const review = new ReviewModel({
+                doctor: doctorId,
+                patientName: userId,
+                rating,
+                comment
+            });
+    
+            const savedReview = await review.save();
+    
+            return savedReview;
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+                console.error("Error in followOrUnfollowDoctors:", castedError);
+                throw new CustomError(castedError.message || "Error adding review: ", 500);
+            }
+        }
+    }
+
+    async  getDoctorDashboardDetails(doctorId: string):Promise<DashBoardDataResponse> {
+        try {
+            const currentDate = new Date();
+            const startDate = new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1);
+            const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1); // Include current month
+
+            const statistics = await appointmentModel.aggregate([
+            {
+                $match: {
+                doctor: new mongoose.Types.ObjectId(doctorId),
+                date: { $gte: startDate, $lt: endDate }
+                }
+            },
+            {
+                $group: {
+                _id: { month: { $month: '$date' } },
+                totalAppointments: { $sum: 1 },
+                completedAppointments: {
+                    $sum: { $cond: [{ $eq: ['$status', 'Completed'] }, 1, 0] }
+                },
+                cancelledAppointments: {
+                    $sum: { $cond: [{ $eq: ['$status', 'Cancelled'] }, 1, 0] }
+                },
+                distinctPatients: { $addToSet: '$patient' } ,
+                }
+            },
+            {
+                $project: {
+                _id: 0,
+                month: '$_id.month',
+                totalAppointments: 1,
+                completedAppointments: 1,
+                cancelledAppointments: 1,
+                totalPatients: { $size: '$distinctPatients' } 
+                }
+            },
+            ]);
+            const typeOfAppointmentData= await appointmentModel.aggregate([
+                {
+                    $match: {
+                    doctor: new mongoose.Types.ObjectId(doctorId),
+                    date: { $gte: startDate, $lt: endDate }
+                    }
+                },
+                {
+                  $group: {
+                    _id: "$typeOfAppointment",
+                    count: { $sum: 1 }
+                  }
+                },
+                {
+                  $sort: { _id: 1 } 
+                }
+              ])
+              const typeOfAppointments: Record<string, number> = {};
+              typeOfAppointmentData.forEach((item: TypeOfAppointmentData) => {
+                typeOfAppointments[item._id] = item.count;
+            });
+            const allAppointmentTypes = ["video", "chat", "clinic"]; 
+            allAppointmentTypes.forEach(appointmentType => {
+                if (!Object.prototype.hasOwnProperty.call(typeOfAppointments, appointmentType)) {
+                    typeOfAppointments[appointmentType] = 0; 
+                }
+            });
+                        console.log("statistics",statistics)
+            const  totalPatients = statistics[0].totalPatients || 0;
+            const dashboardData: DashboardData = {};
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+         
+            for (let i = 1; i <= 12; i++) {
+            const monthName = monthNames[i - 1];
+            const matchingStat = statistics.find(stat => stat.month === i);
+
+            dashboardData[monthName] = {
+               
+                totalAppointments: matchingStat ? matchingStat.totalAppointments : 0,
+                completedAppointments: matchingStat ? matchingStat.completedAppointments : 0,
+                cancelledAppointments: matchingStat ? matchingStat.cancelledAppointments : 0
+            };
+            }
+            console.log("dashboardData",dashboardData,"totalPatients",totalPatients)
+            return {dashboardData:dashboardData,totalPatients, typeOfAppointments: typeOfAppointments };
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+                console.error("Error in getDoctorDashboardDetails:", error);
+                throw new CustomError(castedError.message || "Error fetching doctor dashboard details", 500);
+            }
+        }
+    }
+   
 }

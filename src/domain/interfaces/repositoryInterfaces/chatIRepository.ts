@@ -10,4 +10,5 @@ export interface IChatRepository {
     closeChat(chatId: string, doctorId: string): Promise<void>;
     getConversation(convId:string):Promise<Conversation> 
     saveMessage(senderId: string, message: string, conversationId: string, receiverId: string,userType: string): Promise<Message>;
+    toggleConversation(convId:string,doctorId:string):Promise<Conversation>
 }

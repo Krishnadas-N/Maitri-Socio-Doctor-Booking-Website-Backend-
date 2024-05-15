@@ -15,10 +15,16 @@ export class ChatSocketController {
         this.chatNamespace.use(authenticateSocket);
         console.log("user connected ");
 
-        socket.on('add user', (userId) => {
-          connectedUsers.push({ userId,socketId: socket.id });
-          console.log('User added to connectedUsers:', connectedUsers);
-      });
+        socket.on('add users', (userId) => {
+          const userExists = connectedUsers.some(user => user.userId === userId);
+          if (!userExists) {
+              connectedUsers.push({ userId, socketId: socket.id });
+              console.log('User added to connectedUsers: 😊🎉🌟👍🏽💡🔥🚀', connectedUsers);
+          } else {
+              console.log('User already exists in connectedUsers: 😊🎉🌟👍🏽💡🔥🚀', connectedUsers);
+          }
+            });
+      
 
       socket.on("getChats", async () => {
         try {
@@ -52,7 +58,7 @@ export class ChatSocketController {
             );
             const senderSocketId = connectedUsers.find(user => user.userId === senderId)?.socketId;
             const recipientSocketId = connectedUsers.find(user => user.userId === recipientId)?.socketId;
-            console.log("senderSocketId recipientSocketId",senderSocketId,recipientSocketId);
+            console.log("senderSocketId recipientSocketId",senderSocketId,recipientSocketId,connectedUsers);
             if (senderSocketId) {
                 this.chatNamespace.to(senderSocketId).emit("new message", response);
             }

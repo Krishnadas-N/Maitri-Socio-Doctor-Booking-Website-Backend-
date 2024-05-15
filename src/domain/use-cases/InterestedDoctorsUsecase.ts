@@ -8,22 +8,26 @@ export  class InterestedDoctors implements IInterestedDoctorsUseCase{
    async addInterestForUser(userId: string, doctorId: string): Promise<InterestedDoctor> {
         try{
             return await this.interestedDoctorsRepo.addInterest(userId, doctorId);
-        }catch(err:any){
-            if(err instanceof CustomError){
-                throw err
-            }else{
-                throw new CustomError(err.message||'INTEREST_ADD_FAIL',409 )
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }
     async getUserInterestsForUser(userId: string): Promise<InterestedDoctor> {
         try{
             return await this.interestedDoctorsRepo.getUserInterests(userId)
-        }catch(err:any){
-            if(err instanceof CustomError){
-                throw err
-            }else{
-                throw new CustomError(err.message||'INTEREST_Get_FAIL',409 )
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }
@@ -31,11 +35,13 @@ export  class InterestedDoctors implements IInterestedDoctorsUseCase{
     async removeInterestForUser(userId: string, doctorId: string): Promise<void> {
         try{
             await this.interestedDoctorsRepo.removeInterest(userId,doctorId)
-        }catch(err:any){
-            if(err instanceof CustomError){
-                throw err
-            }else{
-                throw new CustomError(err.message||'INTEREST_REMOVE_FAIL',409 )
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }

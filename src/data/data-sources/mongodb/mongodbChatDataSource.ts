@@ -51,11 +51,12 @@ export class ChatModelDataSource implements IChatModelIDataSource {
         const constulationLink = await ConsultaionModel.createConsultaionLink(newConversation._id.toString(),appoinmentId)
         return {convId:newConversation._id.toString(),consultationLink:constulationLink};
       }
-    } catch (error: any) {
+    }catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
       } else {
-        throw new CustomError(error.message || "Internal Server", 500);
+          const castedError = error as Error
+        throw new CustomError(castedError.message || "Internal Server", 500);
       }
     }
   }
@@ -72,11 +73,12 @@ export class ChatModelDataSource implements IChatModelIDataSource {
 
       return chats;
 
-    } catch (error: any) {
+    } catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
       } else {
-        throw new CustomError(error.message || "Internal Server", 500);
+          const castedError = error as Error
+        throw new CustomError(castedError.message || "Internal Server", 500);
       }
     }
   }
@@ -120,7 +122,7 @@ export class ChatModelDataSource implements IChatModelIDataSource {
         throw new CustomError("Missing required parameters", 400);
       }
 
-      const senderModel = userType === 'doctor' ? 'Doctor' : userType === 'user' ? 'User' : null;
+      const senderModel = userType === 'Doctor' ? 'Doctor' : userType === 'User' ? 'User' : null;
       if (!senderModel) {
         throw new CustomError(`Invalid user type ${userType}`, 400);
       }
@@ -139,11 +141,12 @@ export class ChatModelDataSource implements IChatModelIDataSource {
       });
       
       return await newMessage.save();
-    } catch (error: any) {
+    } catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
       } else {
-        throw new CustomError(error.message || "Internal Server", 500);
+          const castedError = error as Error
+        throw new CustomError(castedError.message || "Internal Server", 500);
       }
     }
   }
@@ -162,11 +165,12 @@ export class ChatModelDataSource implements IChatModelIDataSource {
       }
       console.log(conv);
       return conv as unknown as Conversation;
-    } catch (error: any) {
+    }catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
       } else {
-        throw new CustomError(error.message || "Internal Server", 500);
+          const castedError = error as Error
+        throw new CustomError(castedError.message || "Internal Server", 500);
       }
     }
   }
@@ -178,13 +182,44 @@ export class ChatModelDataSource implements IChatModelIDataSource {
       
       messages.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
       return messages; 
-    } catch (error: any) {
+    }catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
       } else {
-        throw new CustomError(error.message || "Internal Server Error", 500);
+          const castedError = error as Error
+        throw new CustomError(castedError.message || "Internal Server Error", 500);
       }
     }  
   }
-  
+  async toggleConversation(convId:string,doctorId:string):Promise<Conversation>{
+    try {
+      if (!mongoose.Types.ObjectId.isValid(convId)) {
+        throw new CustomError("Invalid conversation id.", 400);
+      }
+      const conversation = await conversationModel.findById(convId);
+      if (!conversation) {
+        throw new CustomError('Conversation not found', 404);
+      }
+      const unauthorizedMember = conversation.members.find(member => {
+        return member.memberType === 'Doctor' && member.member.toString() !== doctorId;
+    });
+    if (unauthorizedMember) {
+        console.log('Unauthorized user cannot change the status');
+        throw new CustomError('Unauthorized user cannot change the status', 404);
+    }
+      // Toggle the isClosed status
+      conversation.isClosed = !conversation.isClosed;
+      await conversation.save();
+
+      console.log(`Conversation ${conversation._id} is now ${conversation.isClosed ? 'closed' : 'open'}`);
+      return conversation as unknown as Conversation;
+    }catch (error:unknown) {
+      if (error instanceof CustomError) {
+          throw error;
+      } else {
+          const castedError = error as Error
+        throw new CustomError(castedError.message || "Internal Server Error", 500);
+      }
+    }  
+  }
 }

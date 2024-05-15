@@ -10,12 +10,27 @@ export class WalletController{
     async getUserWallet(req: Request, res: Response,next:NextFunction){
         try {
             assertHasUser(req);
+            const page = parseInt(req.query.page as string) || 1;
+            const pageSize = parseInt(req.query.pageSize as string) || 6;
             const userId = req.user.id as string;
-            const wallet = await this.walletUsecase.getWallet(userId );
-            return  sendSuccessResponse(res, wallet,"Wallet reterived successFully");
+            const data = await this.walletUsecase.getWallet(userId,page,pageSize );
+            return  sendSuccessResponse(res, data,"Wallet reterived successFully");
         } catch (error) {
             console.error('Error fetching While Editing the  User:', error);
            next(error)
         }
     }
+
+    async getTransactionGraphDetails(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const userId = req.user.id as string;
+            const data = await this.walletUsecase.detailsOftransactionperWeek(userId)
+            return  sendSuccessResponse(res, data,"Wallet reterived successFully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
+
 }

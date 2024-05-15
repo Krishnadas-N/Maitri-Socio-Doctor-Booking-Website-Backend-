@@ -108,13 +108,14 @@ export class MongoDbUserDataSource implements userModelIDataSource {
         user.password = password;
         user.resetToken = null;
         await user.save();
-    } catch (error:any) {
-    if (error instanceof CustomError) {
-        throw error;
-      }
-  
+    } catch (error:unknown) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            const castedError = error as Error
       console.error('Unexpected error:', error);
-      throw new Error(error.message || 'Internal server error');
+      throw new CustomError(castedError.message || 'Internal server error',500);
+        }
     }
     }
 
@@ -130,14 +131,15 @@ export class MongoDbUserDataSource implements userModelIDataSource {
         }
         user.resetToken = token;
          await user.save()
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
-              }
-          
-              console.error('Unexpected error:', error);
-              throw new Error(error.message || 'Internal server error');
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
+        }
         
     }
     async getAllUsers(searchQuery: string, page: number, pageSize: number): Promise<UsersWithTotalCount> {
@@ -222,11 +224,13 @@ export class MongoDbUserDataSource implements userModelIDataSource {
                 permissions: role.permissions // Assuming your RoleModel has a 'permissions' field
             }));
             return roleDetails;
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }
@@ -251,11 +255,13 @@ export class MongoDbUserDataSource implements userModelIDataSource {
           const savedRecord = await newRecord.save();
       
           return savedRecord as unknown as IMedicalRecord;
-        }  catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
       }
@@ -264,14 +270,32 @@ export class MongoDbUserDataSource implements userModelIDataSource {
         try {
             const userMedicalRecords = await medicalRecordModel.find({userId});
             return userMedicalRecords as unknown as IMedicalRecord;
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
       }
+
+   
+
+      async deleteMedicalRecord(recordId: string, userId: string): Promise<void> {
+        try {
+           await medicalRecordModel.findOneAndDelete({ userId, _id: recordId });
+        } catch (error: unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                console.error('Unexpected error:', error);
+                throw new CustomError((error as Error).message || 'Internal server error', 500);
+            }
+        }
+    }
+    
 
       async saveRefreshToken(email: string, refreshToken: string): Promise<void> {
         try {

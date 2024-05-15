@@ -1,4 +1,5 @@
-import Doctor from "../../entities/Doctor";
+import { DashBoardDataResponse } from "../../../models/doctors.model";
+import Doctor, { Follower, Review } from "../../entities/Doctor";
 
 export interface  IDoctorRepository {
     findDoctorByEmail(email: string): Promise<Doctor | null>;
@@ -14,7 +15,10 @@ export interface  IDoctorRepository {
     changeStatusofDoctor(id:string):Promise<Doctor>;
     changeProfilePic(doctorId:string,image:string):Promise<void>;
     saveSelectedSlots(doctorId: string, selectedSlots: { date: Date, slots: string[] }[]): Promise<Doctor>;
-   
+    getSimilarProfiles(specializationId:string):Promise<Doctor[]>;
+    followOrUnfollowDoctors(doctorId: string, userId: string,userType:'Doctor'|'User'): Promise<Follower[]>;
+    addReview(doctorId: string, userId: string, rating: number, comment: string): Promise<Review>;
+    getDoctorDashboardDetails(doctorId: string):Promise<DashBoardDataResponse> 
 }
 
 

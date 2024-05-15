@@ -38,15 +38,16 @@ const interestsDoctorsDataSource =  new InterestedDoctorsDataSource()
 const IntersetedDoctorsRepo = new InterestedDoctorsRepoImpl(interestsDoctorsDataSource);
 const InterestedDoctorsUseCase = new InterestedDoctors(IntersetedDoctorsRepo);
 
-const consultaionDataSource = new ConsultaionModel(new WalletDataSource());
-const consultationRepo = new ConsultationRepoImpl(consultaionDataSource);
-const consultationUsecase = new ConsultationUseCaseImpl(consultationRepo);
-const consultationController = new ConsultationController(consultationUsecase);
-
 const notificationDataSource = new NotificationDataSource();
 const notificationRepository = new NotificationRepository(notificationDataSource);
 const notificationUsecase = new NotificationUsecase(notificationRepository);
 const notifcationController = new NotificationController(notificationUsecase);
+
+
+const consultaionDataSource = new ConsultaionModel(new WalletDataSource());
+const consultationRepo = new ConsultationRepoImpl(consultaionDataSource);
+const consultationUsecase = new ConsultationUseCaseImpl(consultationRepo,notificationRepository);
+const consultationController = new ConsultationController(consultationUsecase);
 
 const walletRepo = new WalletRepository(new WalletDataSource());
 const walletUsecase = new walletUseCase(walletRepo);
@@ -91,7 +92,7 @@ userRouter.post('/verify-payment/:appointmentId',authMiddleWare.isAuthenticated.
 userRouter.get('/get-appoinments',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getUserAppoinments.bind(consultationController));
 
 
-userRouter.put('/change-appoinment-status/:appointmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.changeAppoinmentStatusByUser.bind(consultationController));
+userRouter.put('/cancel-appoinment/:appointmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.userRequestToCancelAppoinment.bind(consultationController));
 
 userRouter.get('/get-booked-slots/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getDoctorAvailableSlots.bind(consultationController));
 
@@ -107,6 +108,13 @@ userRouter.get('/refresh-token',userController.getUserTokenByRefreshing.bind(use
 
 
 userRouter.get('/get-notifications',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),notifcationController.getNotificationOfUser.bind(notifcationController))
+
+
+userRouter.delete('/delete-medical-record/:recordId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),userController.deleteMedicalRecord.bind(userController))
+
+
+userRouter.get('/get-userPrescriptions',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getPrescriptionsOfUser.bind(consultationController))
+
 
 
 export default userRouter;

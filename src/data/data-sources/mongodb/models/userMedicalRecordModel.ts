@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 interface IMedicalRecord extends Document {
+    mId:string,
     userId: mongoose.Types.ObjectId;
     fileUrl: string;
     title: string;
@@ -9,7 +10,7 @@ interface IMedicalRecord extends Document {
 }
 
 const MedicalRecordSchema: Schema = new Schema({
-  _id: { type: String, default: generateFancyId, unique: true },
+  mId:{ type: String,default: generateFancyId , unique: true },
  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true }, 
   fileUrl: { type: String, required: true },
   title: { type: String, required: true },

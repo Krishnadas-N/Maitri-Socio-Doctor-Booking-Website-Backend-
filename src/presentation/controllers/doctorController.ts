@@ -29,9 +29,10 @@ export function registerBasicInfo(doctorService: IDoctorUsecase) {
 }
 
 export function registerProfessionalInfo(doctorService: IDoctorUsecase) {
-    return async function (req: any, res: Response, next: NextFunction) {
+    return async function (req: Request, res: Response, next: NextFunction) {
         try {
-            const doctorId = req.user.id || ''
+            assertHasUser(req)
+            const doctorId = req.user.id as string
             if(!doctorId){
                 throw new CustomError('Doctor is not authenticated',401)
             }
@@ -69,9 +70,10 @@ export function registerProfessionalInfo(doctorService: IDoctorUsecase) {
 }
 
 export function registerAdditionalInfo(doctorService: IDoctorUsecase) {
-    return async function (req: any, res: Response, next: NextFunction) {
+    return async function (req: Request, res: Response, next: NextFunction) {
         try {
-            const doctorId = req.user.id
+            assertHasUser(req)
+            const doctorId = req.user.id as string
             console.log("additional Info ",req.body,req.body.consultationFee);
           const doctorData=  await doctorService.RegisterAdditionalInfoUseCase(
                req.body
@@ -249,7 +251,77 @@ export function saveSelectedSlots(doctorService: IDoctorUsecase) {
             next(error);
         }
     };
+    
+}
+
+export function getSimilarProfilesOfDoctors(doctorService: IDoctorUsecase) {
+    return async function (req: Request, res: Response, next: NextFunction) {
+        console.log("getCurrentDoctor   ",req.body);
+        try {
+            assertHasUser(req);
+            const {specializationId} = req.params;
+            console.log(specializationId)
+            if (!specializationId) {
+                throw new CustomError('specializationId is not defined', 403);
+            }
+            const doctor = await doctorService.getSimilarProfiles(specializationId)
+            return sendSuccessResponse(res, doctor, "Doctor slots saved successfully");
+        } catch (error) {
+            next(error);
+        }
+    };
+    
 }
 
 
+export function followOrUnfollowDoctors(doctorService: IDoctorUsecase) {
+    return async function (req: Request, res: Response, next: NextFunction) {
+        console.log("getCurrentDoctor   ",req.body);
+        try {
+            assertHasUser(req);
+            const {doctorId} = req.params;
+            const userId = req.user.id as string;
+            const userType = req.user.roles[0].roleName
+            if (userType !== 'Doctor' && userType !== 'User') {
+                throw new CustomError('Innvalid UserRole', 400);
+              }
+            console.log(doctorId,userType,userId)
+            const result = await doctorService.followOrUnfollowDoctors(doctorId,userId,userType)
+            return sendSuccessResponse(res, result, "Doctor slots saved successfully");
+        } catch (error) {
+            next(error);
+        }
+    };
+    
+}
 
+export function addReviewAndRatingOfDoctors(doctorService: IDoctorUsecase) {
+    return async function (req: Request, res: Response, next: NextFunction) {
+        console.log("getCurrentDoctor   ",req.body);
+        try {
+            assertHasUser(req);
+            const {doctorId} = req.params;
+            const userId = req.user.id as string;
+            const {comment,rating} = req.body;
+            const result = await doctorService.addReviewAndRating(doctorId,userId,rating,comment)
+            return sendSuccessResponse(res, result, "Doctor slots saved successfully");
+        } catch (error) {
+            next(error);
+        }
+    };
+}
+    
+
+export function getDoctorDashBoardDetails(doctorService: IDoctorUsecase) {
+    return async function (req: Request, res: Response, next: NextFunction) {
+        console.log("getCurrentDoctor   ",req.body);
+        try {
+            assertHasUser(req);
+            const doctorId = req.user.id as string;
+            const result = await doctorService.getDoctorDashboardDetails(doctorId)
+            return sendSuccessResponse(res, result, "Doctor dashboard  details fetched successfully");
+        } catch (error) {
+            next(error);
+        }
+    };
+}

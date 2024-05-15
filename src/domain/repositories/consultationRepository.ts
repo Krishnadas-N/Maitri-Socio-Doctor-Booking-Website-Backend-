@@ -8,6 +8,7 @@ dotenv.config();
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { doctorsResponseModel } from "../../models/common.models";
+import { stripeClient } from "../../config/stripeConfig";
 
 
 export class ConsultationRepoImpl implements IConsultationRepository{
@@ -32,10 +33,12 @@ export class ConsultationRepoImpl implements IConsultationRepository{
         return this.consultationDataSource.getAppoinment(appointmentId);
     }
 
-   async createBookingPayment(appointmentId: string, paymentMethod: PaymentModel): Promise<{responseId:string,keyId:string,amount:number}> {
-        try{
+   async createBookingPayment(appointmentId: string, paymentMethod: PaymentModel,token?:any): Promise<{responseId:string,keyId:string,amount:number}> {
+      try{
+             const appoinment = await this.consultationDataSource.findAppoinmentById(appointmentId);
+            if(paymentMethod==='Razorpay'){
             const razorpay = this.makeInstance();
-            const appoinment = await this.consultationDataSource.findAppoinmentById(appointmentId);
+
             if(!appoinment){
                 throw new CustomError("Appointment not found",404);
             }
@@ -47,14 +50,40 @@ export class ConsultationRepoImpl implements IConsultationRepository{
                 payment_capture: 1 // Auto capture
               };
             const response = await razorpay.orders.create(options);
-           await this.consultationDataSource.savePaymentDetails(appointmentId,appoinment.amount,paymentMethod,response.id)
+            await this.consultationDataSource.savePaymentDetails(appointmentId,appoinment.amount,paymentMethod,response.id)
             return {responseId:response.id,keyId:process.env.RAZORPAY_KEY_ID as string,amount:appoinment.amount};
-        }catch(err:any){
-            if (err instanceof CustomError) {
-                throw err;
+       
+             }else if(paymentMethod==='Stripe'){
+                if(!token){
+                    throw new CustomError("Token is Missing",400)
+                }
+
+                const customer = await stripeClient.customers.create({
+                    email: "test@email.com",
+                    source: token.id
+                  });
+                  console.log("customer===>",customer);
+                  const charge = await stripeClient.charges.create({
+                    amount: appoinment.amount, // Amount in cents
+                    description: "Test Purchase using express and Node",
+                    currency: "INR",
+                    customer: customer.id,
+                  });
+
+                  console.log("charge====>",charge)
+                  await this.consultationDataSource.savePaymentDetails(appointmentId, appoinment.amount, paymentMethod, charge.id);
+
+                  return {responseId:charge.id,keyId:process.env.RAZORPAY_KEY_ID as string,amount:appoinment.amount};
+             }
+             throw new Error('Method not implemented')
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
             } else {
-                throw new CustomError(err.message || 'Error while making an appointment', 500);
-            } 
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
 
@@ -72,12 +101,14 @@ export class ConsultationRepoImpl implements IConsultationRepository{
                 
             }
            return await this.consultationDataSource.updatePaymentToSuccess(orderId)
-        } catch(err:any){
-            if (err instanceof CustomError) {
-                throw err;
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
             } else {
-                throw new CustomError(err.message || 'Error while making an appointment', 500);
-            } 
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
 
@@ -105,4 +136,19 @@ export class ConsultationRepoImpl implements IConsultationRepository{
         return await this.consultationDataSource.appoinmentCancellation(appoinmentId,status,userId)
     }
 
+   async savePrescriptionOfPatient(appoinmentId: string, prescriptionFile: string, title: string, doctorId: string): Promise<void> {
+     await this.consultationDataSource.savePrescriptionOfPatient(appoinmentId,prescriptionFile,title,doctorId)
+    }
+
+    async requestToCancelAppoinment(appointmentId: string, userId: string, reason: string): Promise<{ appointment: Appointment; notificationId: string; }> {
+        return await this.consultationDataSource.requestToCancelAppoinment(appointmentId,userId,reason);
+    }
+
+    async appoinmentCancellationRequestStatus(appoinmentId: string, status: string, doctorId: string, ): Promise<Appointment> {
+        return await this.consultationDataSource.appoinmentCancellationRequestStatus(appoinmentId,status,doctorId,);
+    }
+
+   async getAppointmentsWithPrescriptions(userId: string): Promise<Appointment[]> {
+        return await this.consultationDataSource.getAppointmentsWithPrescriptions(userId);
+    }
 }

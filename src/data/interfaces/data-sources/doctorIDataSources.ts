@@ -1,4 +1,5 @@
-import Doctor from "../../../domain/entities/Doctor";
+import Doctor, { Follower, Review } from "../../../domain/entities/Doctor";
+import { DashBoardDataResponse, DashboardData } from "../../../models/doctors.model";
 
 export interface IDoctorModelIDataSource{
     DbsaveBasicInfo(doctor: Partial<Doctor>): Promise<string>;
@@ -14,4 +15,8 @@ export interface IDoctorModelIDataSource{
     changeStatusofDoctor(id:string):Promise<Doctor>;
     changeProfilePic(doctorId:string,image:string):Promise<void>;
     saveSelectedSlots(doctorId: string, selectedSlots: { date: Date, slots: string[] }[]): Promise<Doctor>;
+    getSimilarProfiles(specializationId:string):Promise<Doctor[]>;
+    followOrUnfollowDoctors(doctorId: string, userId: string,userType:'Doctor'|'User'): Promise<Follower[]>;
+    addReview(doctorId: string, userId: string, rating: number, comment: string): Promise<Review>;
+    getDoctorDashboardDetails(doctorId: string):Promise<DashBoardDataResponse> 
 }

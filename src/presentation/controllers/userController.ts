@@ -203,7 +203,18 @@ export class UserController{
            next(error)
         }
     }
-
-
+    
+    async deleteMedicalRecord(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const userId = req.user.id as string
+            const {recordId} = req.params
+            await this.userUseCase.deleteMedicalRecord(recordId,userId) 
+            return sendSuccessResponse(res,{},"Record deleted Successfully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
 
 }

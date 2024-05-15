@@ -32,4 +32,8 @@ export class ChatRepositoryImpl implements IChatRepository {
    async getConversationMessages(convId: string): Promise<Message[]> {
         return this.dataSource.getMessages(convId)
     }
+
+    async toggleConversation(convId: string, doctorId: string): Promise<Conversation> {
+        return this.dataSource.toggleConversation(convId,doctorId) 
+     }
 }

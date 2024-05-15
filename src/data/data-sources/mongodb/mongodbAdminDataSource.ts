@@ -24,12 +24,9 @@ export class AdminDataSource implements adminModelIDataSource{
             updatedAt: admin.updatedAt
         });
         await newAdmin.save();
-    } catch (error:any) {
-        if (error.code === 11000) {
-            throw new CustomError('Username or email already exists',409);
-        } else {
-            throw new CustomError(error.message || 'Failed to create admin',500);
-        }
+    } catch (error:unknown) {
+        const castedError = error as Error
+        throw new CustomError(castedError.message || 'Failed to create admin',500);
     }
     }
 
@@ -43,11 +40,12 @@ export class AdminDataSource implements adminModelIDataSource{
             } else {
                 return null;
             }
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByUsername',500);
+                const castedError = error as Error
+                throw new CustomError(castedError.message || 'Failed to findByUsername',500);
             }
         }
     }
@@ -62,11 +60,12 @@ export class AdminDataSource implements adminModelIDataSource{
         } else {
             return null;
         }
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+                throw new CustomError(castedError.message || 'Failed to findByemail',500);
             }
         }
     }
@@ -82,11 +81,12 @@ export class AdminDataSource implements adminModelIDataSource{
         } else {
             return null;
         }
-        } catch (error:any) {
+        }  catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+                throw new CustomError(castedError.message || 'Failed to findByemail',500);
             }
         }
     }
@@ -101,11 +101,12 @@ export class AdminDataSource implements adminModelIDataSource{
                 permissions: role.permissions // Assuming your roleModel has a 'permissions' field
             }));
             return roleDetails;
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+                throw new CustomError(castedError.message || 'Failed to findByemail',500);
             }
         }
     }

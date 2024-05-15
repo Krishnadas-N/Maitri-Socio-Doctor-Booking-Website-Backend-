@@ -85,4 +85,15 @@ export class ChatController {
             next(error)
         }
     }
+    async toggleConverstionStatus(req: Request, res: Response,next:NextFunction): Promise<void> {
+        try {
+            assertHasUser(req)
+            const { convId }= req.params;
+            const doctorId = req.user.id as string
+            const converstation = await this.chatUseCase.toggleConversationStatus(convId,doctorId)
+            sendSuccessResponse(res,converstation,'converstation status changed successfully');
+        } catch (error) {
+            next(error)
+        }
+    }
 }

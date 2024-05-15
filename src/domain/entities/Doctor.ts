@@ -1,5 +1,5 @@
-import { ObjectId } from "mongodb";
 import { RoleDetails } from "./Admin";
+import { objectId } from "../../models/users.model";
 
 export class Address {
     constructor(
@@ -12,7 +12,8 @@ export class Address {
 
 export class Review {
     constructor(
-      public patientName: string,
+      public doctor :string | objectId,
+      public patientName: string | objectId,
       public comment: string,
       public rating: number,
       public createdAt: Date = new Date()
@@ -44,6 +45,11 @@ class consultationFee{
   ) {}
   }
 
+ export interface Follower {
+    userId: objectId | string;
+    userModel: 'User' | 'Doctor';
+  }
+
 class Doctor {
     constructor(
       public _id: string,
@@ -55,7 +61,7 @@ class Doctor {
       public password:string,
       public phone: number,
       public address: Address,
-      public specialization: string | ObjectId,
+      public specialization: string | objectId,
       public education: Education[],
       public experience: string,
       public certifications: string[],
@@ -71,11 +77,8 @@ class Doctor {
       public registrationStepsCompleted :number,
       public createdAt?: Date,
       public updatedAt?: Date,
-      public followers?: string[],
-      public rating ?: number,
-      
+      public followers?: Follower[],
       public isBlocked?:boolean,
-      public reviews?: Review[],
       public isProfileComplete?: boolean,
       public resetToken ?:string | null,
       public selectedSlots?:[{
@@ -126,14 +129,7 @@ class Doctor {
           isVerified: this.isVerified,
           typesOfConsultation: this.typesOfConsultation,
           maxPatientsPerDay: this.maxPatientsPerDay,
-          rating: this.rating,
           isBlocked: this.isBlocked,
-          reviews: this.reviews?.map(review => ({
-              patientName: review.patientName,
-              comment: review.comment,
-              rating: review.rating,
-              createdAt: review.createdAt
-          })),
           isProfileComplete: this.isProfileComplete,
           resetToken: this.resetToken,
           selectedSlots:this.selectedSlots,

@@ -7,7 +7,8 @@ import { findDoctorsQueryParams } from "../../models/consultation.model";
 
 export class ConsultationController{
     constructor(
-        private consultationUseCase:IConsultationUsecase
+        private consultationUseCase:IConsultationUsecase,
+        
     ) {
     }
 
@@ -54,9 +55,10 @@ export class ConsultationController{
         try {
             assertHasUser(req);
             const {paymentMethod} = req.body;
+            const token = req.body.token ? req.body.token:null
             const {appoinmentId} = req.params
             console.log(req.body);
-            const data = await this.consultationUseCase.createOrder(appoinmentId as string,paymentMethod);
+            const data = await this.consultationUseCase.createOrder(appoinmentId as string,paymentMethod,token);
             return  sendSuccessResponse(res, data,"Appoinment Successfully saved");
         } catch (error) {
             console.error('Error fetching While Editing the  User:', error);
@@ -148,6 +150,63 @@ export class ConsultationController{
             console.log(userId);
             const data = await this.consultationUseCase.getDoctorAvailableSlots(doctorId,date)
             return  sendSuccessResponse(res, data,"Doctor Slots are Fetched successfully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
+
+   async savePrescriptionOfPatients(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const {appoinmentId} =  req.params
+            const doctorId = req.user.id as string;
+            const prescriptionurl = req.body.cloudinaryUrls[0]
+            const {title} =req.body
+             await this.consultationUseCase.savePrescriptionOfPatient(appoinmentId,prescriptionurl,title,doctorId)
+            return  sendSuccessResponse(res, {},"Doctor Slots are Fetched successfully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
+
+    async userRequestToCancelAppoinment(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const {appointmentId} =  req.params
+            const userId = req.user.id as string;
+            const {reason} =req.body
+            console.log(appointmentId,userId,reason);
+            const data = await this.consultationUseCase.userRequestToCancelAppoinment(appointmentId,userId,reason)
+            return  sendSuccessResponse(res, data,"Appoinment cancellation Request submitted Succesfully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
+
+    async ChangeStatusOfappoinmentCancellationRequest(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const {appointmentId} =  req.params
+            const doctorId = req.user.id as string;
+            const {status} =req.body
+            console.log(appointmentId,doctorId,status);
+            const data = await this.consultationUseCase.ChangeStatusOfappoinmentCancellationRequest(appointmentId,status,doctorId)
+            return  sendSuccessResponse(res, data,"Appoinment cancellation Request submitted Succesfully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
+
+    async getPrescriptionsOfUser(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const userId = req.user.id as string;
+            const data = await this.consultationUseCase.getAppointmentsWithPrescriptions(userId)
+            return  sendSuccessResponse(res, data,"Appoinment cancellation Request submitted Succesfully");
         } catch (error) {
             console.error('Error fetching While Editing the  User:', error);
            next(error)

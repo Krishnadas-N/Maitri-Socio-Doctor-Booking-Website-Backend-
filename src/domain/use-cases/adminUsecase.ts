@@ -12,11 +12,13 @@ export class AdminUsecase implements IAdminUseCase{
     async createAdmin(admin: Admin): Promise<void> {
         try {
             await this.repository.create(admin);
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }
@@ -44,11 +46,13 @@ export class AdminUsecase implements IAdminUseCase{
                 throw new CustomError('Id is not found in Admin',404)
               }
             
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }
@@ -57,11 +61,13 @@ export class AdminUsecase implements IAdminUseCase{
         try {
             const admin = await this.repository.findByEmail(email);
             return admin;
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }
@@ -70,11 +76,13 @@ export class AdminUsecase implements IAdminUseCase{
         try {
             const admin = await this.repository.findById(id);
             return admin;
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }
@@ -83,11 +91,13 @@ export class AdminUsecase implements IAdminUseCase{
         try {
             const admin = await this.repository.findByUsername(userName);
             return admin;
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to findByemail',500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }

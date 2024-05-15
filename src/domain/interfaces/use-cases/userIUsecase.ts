@@ -15,4 +15,5 @@ export interface IUserUseCase{
     addMedicalRecord(userId: string, fileUrl: string, title: string, description: string): Promise<IMedicalRecord | null>;
     getUserMedicalRecords(userId: string): Promise<IMedicalRecord>;
     getUserByRefreshToken( refreshToken: string): Promise<string>;
+    deleteMedicalRecord(recordId: string, userId: string): Promise<void> 
 }

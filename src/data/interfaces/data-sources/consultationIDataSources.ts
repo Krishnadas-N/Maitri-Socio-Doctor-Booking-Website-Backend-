@@ -1,6 +1,7 @@
 import { Appointment } from '../../../domain/entities/APPOINMENT';
 import {doctorAppoinmentsResponseModel, findDoctorsQueryParams, makeAppoinmentReqModel, userAppoinmentsResponseModel} from '../../../models/consultation.model'
 import { doctorsResponseModel } from '../../../models/common.models';
+import Doctor from '../../../domain/entities/Doctor';
 
 export interface IConsultationModelIDataSource{
     makeAppoinment(userId:string,doctorId:string,appoinmentData:makeAppoinmentReqModel):Promise<string>;
@@ -14,4 +15,8 @@ export interface IConsultationModelIDataSource{
     getAvailableSlots(doctorId:string, date:Date):Promise<string[]>;
     getAllDoctors(filters:findDoctorsQueryParams):Promise<doctorsResponseModel>;
     appoinmentCancellation(appoinmentId:string,status:string,userId:string):Promise<Appointment>;
+    savePrescriptionOfPatient(appoinmentId: string, prescriptionFile: string, title: string, doctorId: string): Promise<void>;
+    requestToCancelAppoinment(appointmentId: string, userId: string, reason: string): Promise<{appointment:Appointment,notificationId:string}>;
+    appoinmentCancellationRequestStatus(appoinmentId: string, status: string, doctorId:string): Promise<Appointment>;
+    getAppointmentsWithPrescriptions(userId: string): Promise<Appointment[]> 
 }

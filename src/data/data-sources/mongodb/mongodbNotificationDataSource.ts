@@ -10,12 +10,13 @@ export class NotificationDataSource implements NotificationModeIDataSource {
         try {
             const notification = await notificationModel.findById(notificationId);
             return notification ? notification : null;
-        }catch(err:unknown){
-            if(err instanceof CustomError){
-                throw err
-            }else{
-                const castedError = err as Error
-                throw new CustomError(castedError.message || 'Error while fetching the notification',500)
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }
@@ -25,7 +26,7 @@ export class NotificationDataSource implements NotificationModeIDataSource {
             const notifications = await notificationModel.find({'receivers.receiverId':userId})
             .populate('sender')
             .populate('receivers.receiverId')
-            .populate('readBy.reader');
+            .populate('readBy.reader').sort({createdAt:-1});
             console.log(userId,"notitfications of the user",notifications)
             return notifications;
         }catch(err:unknown){
@@ -37,5 +38,29 @@ export class NotificationDataSource implements NotificationModeIDataSource {
             }
         }
     }
+
+    async createNotification(sender: string, senderModel: string, title:string,receivers: { receiverId: string, receiverModel: string }[], message: string): Promise<INotification> {
+        try {
+            const notificationData = {
+                sender: sender,
+                senderModel: senderModel,
+                receivers: receivers,
+                title:title, 
+                message: message
+            };
+    
+            const newNotification = await notificationModel.create(notificationData);
+    
+            return newNotification;
+        } catch (err: unknown) {
+            if (err instanceof CustomError) {
+                throw err;
+            } else {
+                const castedError = err as Error;
+                throw new CustomError(castedError.message || 'Error while creating the notification', 500);
+            }
+        }
+    }
+    
    
-}
+}      

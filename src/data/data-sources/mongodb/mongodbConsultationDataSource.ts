@@ -10,6 +10,7 @@ import { doctorsResponseModel } from "../../../models/common.models";
 import dotenv from 'dotenv';
 import { WalletDataSource } from "./mongodbWalletDataSource";
 import notificationModel from "./models/notificationModel";
+import { User } from "../../../domain/entities/User";
 dotenv.config();
 
 
@@ -144,10 +145,7 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
     }
   }
 
-  async savePaymentDetails(
-    appointmentId: string,
-    appoinmentAmount: number,
-    paymentMethod:
+  async savePaymentDetails(appointmentId: string,appoinmentAmount: number,paymentMethod:
       | "Credit Card"
       | "Debit Card"
       | "PayPal"
@@ -193,14 +191,41 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       if (!appoinment) {
         throw new CustomError("Appoinment Not Found Caused an error ", 422);
       }
-      const notification = new notificationModel({
-        sender: appoinment.patient,
-          senderModel: 'User',
-          title:'New Appoinment',
-          receivers: [{ receiverId: appoinment.doctor, receiverModel: 'Doctor' }],
-          message: `New appointment scheduled for ${appoinment.date.toDateString()} at ${appoinment.slot}`,
-      });
-     await notification.save();
+
+      const adminId = process.env.Admin_Id as string;
+      const paymentAmount = appoinment.payment.amount;
+      const adminPercentage = 0.1; // 10%
+      const adminAmount = paymentAmount * adminPercentage;
+      const doctorAmount = paymentAmount - adminAmount;
+      
+      await Promise.all([
+        this.walletModel.refundCancellationAmountToUser(appoinment.doctor.toString(), doctorAmount),
+        this.walletModel.refundCancellationAmountToUser(adminId, adminAmount)
+      ]);
+
+      const [notification, adminNotification, doctorNotification] = await Promise.all([
+        Promise.resolve(notificationModel.create({
+            sender: appoinment.patient,
+            senderModel: 'User',
+            title: 'New Appointment',
+            receivers: [{ receiverId: appoinment.doctor, receiverModel: 'Doctor' }],
+            message: `New appointment scheduled for ${appoinment.date.toDateString()} at ${appoinment.slot}`,
+        })),
+        Promise.resolve(notificationModel.create({
+            sender: appoinment.patient,
+            senderModel: 'User',
+            title: 'Appointment Payment',
+            receivers: [{ receiverId: adminId, receiverModel: 'Admin' }],
+            message: `An amount of ${adminAmount} has been credited to your account as payment for an appointment scheduled by ${appoinment.patient} on ${appoinment.date.toDateString()}.`,
+        })),
+        Promise.resolve(notificationModel.create({
+            sender: appoinment.patient,
+            senderModel: 'User',
+            title: 'Appointment Payment',
+            receivers: [{ receiverId: appoinment.doctor, receiverModel: 'Doctor' }],
+            message: `An amount of ${adminAmount} has been credited to your account as payment for an appointment scheduled by ${appoinment.patient} on ${appoinment.date.toDateString()} at ${appoinment.slot}.`,
+        }))
+    ]);
       return {appoinmentId:appoinment._id,notificationId:notification._id.toString()};
     }catch (err: unknown) {
       if (err instanceof CustomError) {
@@ -312,13 +337,17 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
         totalCount,
         totalPages,
       };
-    } catch (err: any) {
-      console.error('Error updating payment status to "Paid":', err);
+    } catch (error:unknown) {
+      if (error instanceof CustomError) {
+          throw error;
+      } else {
+          const castedError = error as Error
       throw new CustomError(
-        err.message || "Error while making an appointment",
+        castedError.message || "Error while making an appointment",
         500
       );
     }
+  }
   }
 
   async getAppoinmentsOfUsers(userId: string,page:number,pageSize:number): Promise<userAppoinmentsResponseModel> {
@@ -399,6 +428,7 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
     userType:string
   ): Promise<{appointment:Appointment,notificationId:string}> {
     try {
+      console.log(userType);
       const appointment = (await appointmentModel.findOneAndUpdate(
         { _id: appoinmentId },
         { $set: { status: status } },
@@ -410,12 +440,12 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       }
 
    // Create notification data
-      const receiverModel = userType === 'Doctor' ? 'User' : 'Doctor';
-      const receiverId = userType === 'Doctor' ? appointment.patient : appointment.doctor
-      const message = `${receiverModel}  appointment ${appointment?._id?.toString()}  status changed to ${status}`;
+      const receiverModel = 'User';
+      const receiverId = appointment.patient ;
+      const message = `Doctor changed Your appointment ${appointment?._id?.toString()}  status  to ${status}`;
       const notificationData = {
           sender: userId,
-          senderModel: userType,
+          senderModel: 'Doctor',
           receivers: [{ receiverId: receiverId, receiverModel: receiverModel }],
           title:`Appoinment ${status}`,
           message: message,
@@ -440,6 +470,48 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       }
     }
   }
+
+  async requestToCancelAppoinment(appointmentId: string, userId: string, reason: string): Promise<{appointment:Appointment,notificationId:string}> {
+    try {
+        const appointment = await appointmentModel.findById(appointmentId).populate('patient');
+        if (!appointment) {
+            throw new CustomError('Appointment not found',404);
+        }
+
+        if (appointment.patient._id.toString() !== userId.toString()) {
+          throw new CustomError('You are not authorized to cancel this appointment', 403);
+      }
+
+        appointment.cancellationRequests={
+            status: 'Pending',
+            reason,
+            createdAt: new Date(),
+        };
+        await appointment.save();
+        const patient = appointment.patient as unknown as User; 
+        console.log("patient Details",patient);
+        const notification = new notificationModel({
+            sender: userId,
+            senderModel: 'User',
+            receivers: [{ receiverId: appointment.doctor, receiverModel: 'Doctor' }],
+            title: `Appointment Cancellation Request`,
+            message: `Patient ${patient.firstName} ${patient?.lastName} has requested to cancel the appointment. Reason: ${reason}`,
+        });
+
+        await notification.save();
+        return {appointment:appointment as unknown as Appointment,notificationId:notification._id.toString()}
+      }catch (err: unknown) {
+        if (err instanceof CustomError) {
+          throw err;
+        } else {
+          const castedError = err as Error
+          throw new CustomError(
+            castedError.message || "Error while making an appointment",
+            500
+          );
+        }
+      }}
+
 
   async getAvailableSlots(doctorId: string, date: Date): Promise<string[]> {
     try {
@@ -635,14 +707,18 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       await appointmentModel.findByIdAndUpdate(appoinmentId, { consultationLink });
 
       return consultationLink as string;
-    } catch (err: any) {
-      console.error('Error updating payment status to "Paid":', err);
+    } catch (error:unknown) {
+      if (error instanceof CustomError) {
+          throw error;
+      } else {
+          const castedError = error as Error
       throw new CustomError(
-        err.message || "Error while making an appointment",
+        castedError.message || "Error while making an appointment",
         500
       );
     }
   }
+ }
   
   async appoinmentCancellation(appoinmentId: string, status: string, userId: string): Promise<Appointment> {
     try {
@@ -663,17 +739,111 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       const wallet = await this.walletModel.refundCancellationAmountToUser(userId, refundAmount);
       console.log("wallet",wallet);
       await appointment.save();
-  
       return appointment as unknown as Appointment;
-    } catch (err: any) {
-      console.error('Error updating appointment status:', err);
+     }catch (error:unknown) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            const castedError = error as Error
       throw new CustomError(
-        err.message || "Error while updating appointment status",
+        castedError.message || "Error while updating appointment status",
         500
       );
     }
   }
+}
   
+
+async savePrescriptionOfPatient(appoinmentId: string, prescriptionFile: string, title: string, doctorId: string): Promise<void> {
+  try {
+      const appointment = await appointmentModel.findOneAndUpdate({ _id: appoinmentId, doctor: doctorId }, {
+          $set: {
+              prescription: {
+                  file: prescriptionFile,
+                  title: title
+              }
+          }
+      });
+      
+      if (!appointment) {
+          throw new CustomError("Appointment not found", 404);
+      }
+  } catch (error: unknown) {
+      if (error instanceof CustomError) {
+          throw error;
+      } else {
+          const castedError = error as Error;
+          throw new CustomError(
+              castedError.message || "Error while saving prescription",
+              500
+          );
+      }
+  }
+}
+
+async appoinmentCancellationRequestStatus(appoinmentId: string, status: string, doctorId:string): Promise<Appointment> {
+  try {
+    const appointment = await appointmentModel.findOneAndUpdate(
+      { _id: appoinmentId,doctor:doctorId },
+      { $set: { 
+        cancellationRequests:
+        {
+          status:status,
+        }  } },
+      { new: true }
+    );
+
+    if (!appointment) {
+      throw new CustomError("Appointment Not Found", 422);
+    }
+
   
-  
+    // Calculate refund amounts
+    const userRefundAmount = appointment.amount * 0.7;
+    const doctorRefundAmount = appointment.amount * 0.1;
+    const adminRefundAmount = appointment.amount * 0.1;
+
+    // Update payment status to 'Refunded'
+    appointment.status = 'Cancelled'
+    appointment.paymentStatus = 'Refunded';
+
+    // Refund amounts to respective wallets
+    const adminId = process.env.Admin_Id as string;
+    const userWallet = await this.walletModel.refundCancellationAmountToUser(appointment.patient.toString(), userRefundAmount);
+    const doctorWallet = await this.walletModel.refundCancellationAmountToUser(doctorId, doctorRefundAmount);
+    const adminWallet = await this.walletModel.refundCancellationAmountToUser(adminId, adminRefundAmount);
+
+    console.log("wallet",userWallet,"docotorWaller",doctorWallet,"adminWallet",adminWallet);
+    await appointment.save();
+    return appointment as unknown as Appointment;
+   }catch (error:unknown) {
+      if (error instanceof CustomError) {
+          throw error;
+      } else {
+          const castedError = error as Error
+    throw new CustomError(
+      castedError.message || "Error while updating appointment status",
+      500
+    );
+  }
+}
+}
+    async  getAppointmentsWithPrescriptions(userId: string): Promise<Appointment[]> {
+      try {
+          // Find appointments and populate the doctor and prescription fields
+          const appointmentsWithPrescriptions = await appointmentModel.find({ patient: userId })
+          .populate('doctor')
+          .select('doctor date prescription')
+          .exec();
+          return appointmentsWithPrescriptions as unknown as Appointment[];
+      } catch (error: unknown) {
+          if (error instanceof CustomError) {
+              throw error;
+          } else {
+              const castedError = error as Error;
+              console.error('Unexpected error:', error);
+              throw new CustomError(castedError.message || 'Internal server error', 500);
+          }
+      }
+    }
 }

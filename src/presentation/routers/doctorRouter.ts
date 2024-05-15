@@ -5,7 +5,7 @@ import { MongoDbDoctorDataSourceImpl } from "../../data/data-sources/mongodb/mon
 import { IDoctorRepositoryImpl } from "../../domain/repositories/doctorRepository";
 import { MongoDbOtpDataSource } from "../../data/data-sources/mongodb/mongodbOtpDataSource";
 import { OTPRepsositoryImpl } from "../../domain/repositories/otpRepository";
-import { VerifyProfile, chnageStatus, forgotPassword, getCurrentDoctor, getDoctorById, getDoctors, login, registerAdditionalInfo, registerBasicInfo, registerProfessionalInfo, resetPassword, saveSelectedSlots, updateDoctorProfilePic } from "../controllers/doctorController";
+import { VerifyProfile, addReviewAndRatingOfDoctors, chnageStatus, followOrUnfollowDoctors, forgotPassword, getCurrentDoctor, getDoctorById, getDoctorDashBoardDetails, getDoctors, getSimilarProfilesOfDoctors, login, registerAdditionalInfo, registerBasicInfo, registerProfessionalInfo, resetPassword, saveSelectedSlots, updateDoctorProfilePic } from "../controllers/doctorController";
 import { upload, uploadToCloudinary } from "../../config/uploadMiddleWare";
 import { DoctorUseCaseImpl } from "../../domain/use-cases/doctorUsecase";
 import { authMiddleWare } from "./authRouterSetup";
@@ -19,6 +19,9 @@ import { NotificationDataSource } from "../../data/data-sources/mongodb/mongodbN
 import { NotificationRepository } from "../../domain/repositories/notificationRepository";
 import { NotificationUsecase } from "../../domain/use-cases/notifyUsecase";
 import { NotificationController } from "../controllers/notificationController";
+import { WalletRepository } from "../../domain/repositories/walletRepository";
+import { walletUseCase } from "../../domain/use-cases/walletUsecase";
+import { WalletController } from "../controllers/walletController";
 export const doctorRouter = Router();
 
 const doctorDataSource = new MongoDbDoctorDataSourceImpl();
@@ -26,16 +29,20 @@ const doctorRepo = new IDoctorRepositoryImpl(doctorDataSource);
 const otpRepositoryImpl =  new OTPRepsositoryImpl(new MongoDbOtpDataSource())
 const doctorServices = new DoctorUseCaseImpl(doctorRepo,otpRepositoryImpl);
 
-
-const ConsultaionDataSource = new ConsultaionModel(new WalletDataSource());
-const consultationRepo = new ConsultationRepoImpl(ConsultaionDataSource);
-const consultationUsecase = new ConsultationUseCaseImpl(consultationRepo);
-const consultationController = new ConsultationController(consultationUsecase);
-
 const notificationDataSource = new NotificationDataSource();
 const notificationRepository = new NotificationRepository(notificationDataSource);
 const notificationUsecase = new NotificationUsecase(notificationRepository);
 const notifcationController = new NotificationController(notificationUsecase);
+
+const ConsultaionDataSource = new ConsultaionModel(new WalletDataSource());
+const consultationRepo = new ConsultationRepoImpl(ConsultaionDataSource);
+const consultationUsecase = new ConsultationUseCaseImpl(consultationRepo,notificationRepository);
+const consultationController = new ConsultationController(consultationUsecase);
+
+const walletRepo = new WalletRepository(new WalletDataSource());
+const walletUsecase = new walletUseCase(walletRepo);
+const walletController = new WalletController(walletUsecase);
+
 
 doctorRouter.post('/register/basic-info',registerBasicInfo(doctorServices));
 
@@ -69,6 +76,24 @@ doctorRouter.put('/change-appoinmentStatus/:appointmentId',authMiddleWare.isAuth
 // doctorRouter.get('/get-booked-slots',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),getBookedSlots(doctorServices));
 
 doctorRouter.get('/get-notification',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),notifcationController.getNotificationOfUser.bind(notifcationController))
+
+
+doctorRouter.get('/get-similar-profiles/:specializationId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),getSimilarProfilesOfDoctors(doctorServices))
+
+doctorRouter.get('/toggle-follow/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),followOrUnfollowDoctors(doctorServices))
+
+
+doctorRouter.post('/add-review-rating/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),addReviewAndRatingOfDoctors(doctorServices))
+
+doctorRouter.post('/add-prescritption/:appoinmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),upload.single('prescription'),uploadToCloudinary,consultationController.savePrescriptionOfPatients.bind(consultationController))
+
+doctorRouter.put('/change-cancel-request-status/:appointmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),consultationController.ChangeStatusOfappoinmentCancellationRequest.bind(consultationController))
+
+doctorRouter.get('/get-wallet',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),walletController.getUserWallet.bind(walletController))
+
+doctorRouter.get('/get-transaction-graphdetails',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),walletController.getTransactionGraphDetails.bind(walletController))
+
+doctorRouter.get('/get-doctor-dashboarddetails',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),getDoctorDashBoardDetails(doctorServices))
 
 
 export default doctorRouter;

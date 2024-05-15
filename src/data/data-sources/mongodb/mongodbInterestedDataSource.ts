@@ -21,8 +21,14 @@ export class InterestedDoctorsDataSource implements InterestedDoctorsModelIDataS
             interestedDoctor.doctorIds.push({ doctorId: doctorId, dateAdded: new Date() })
             await interestedDoctor.save();
             return interestedDoctor.toObject();
-        } catch (error:any) {
-            throw new CustomError(error.message||"Failed to add doctor to interests",500);
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
 
@@ -48,8 +54,14 @@ export class InterestedDoctorsDataSource implements InterestedDoctorsModelIDataS
 
             console.log(interests,"Log from Interests database");
             return interests;
-        } catch (error:any) {
-            throw new CustomError(error.message||"Failed to get interests",500);
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
 
@@ -66,8 +78,14 @@ export class InterestedDoctorsDataSource implements InterestedDoctorsModelIDataS
             if (!interest) {
                 throw new CustomError("Interest not found",404);
             }
-        } catch (error:any) {
-            throw new CustomError(error.message||"Failed to remove interest",500);
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
 }

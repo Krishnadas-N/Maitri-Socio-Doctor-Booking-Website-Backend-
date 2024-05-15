@@ -77,12 +77,15 @@ export class UserUseCase implements IUserUseCase {
         throw new CustomError("Email is Not Found", 404);
       }
       return this.userRepository.setResetToken(email);
-    } catch (error: any) {
+    } catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-      throw new CustomError(error.message || "Error In forgotPassword", 500);
-    }
+  }
   }
 
   async setResetPassword(token: string, password: string): Promise<void> {
@@ -91,12 +94,15 @@ export class UserUseCase implements IUserUseCase {
         throw new CustomError("Token or Password  is not provided", 400);
       }
       await this.userRepository.findResetTokenAndSavePassword(token, password);
-    } catch (error: any) {
+    } catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-      throw new CustomError(error.message || "Error In forgotPassword", 500);
-    }
+  }
   }
 
   async getAllUsers(
@@ -106,42 +112,42 @@ export class UserUseCase implements IUserUseCase {
   ): Promise<UsersWithTotalCount> {
     try {
       return await this.userRepository.getAllUsers(page, pageSize, searchQuery);
-    } catch (error: any) {
+    } catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-      throw new CustomError(
-        error.message || "Error In Fetching all Users",
-        500
-      );
-    }
+  }
   }
   async BlockOrUnblockUser(id: string): Promise<User> {
     try {
       return await this.userRepository.toggleBlockUser(id);
-    } catch (error: any) {
+    } catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-      throw new CustomError(
-        error.message || "Error In While Changing the status of the User",
-        500
-      );
-    }
+  }
   }
 
   async editUserProfile(userId: string, data: EditProfileDto): Promise<User> {
     try {
       return await this.userRepository.updateUserProfile(userId, data);
-    } catch (error: any) {
+    }catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-      throw new CustomError(
-        error.message || "Error In While Changing the status of the User",
-        500
-      );
-    }
+  }
   }
 
   async changeProfilePic(userId: string, image: string): Promise<void> {
@@ -153,15 +159,15 @@ export class UserUseCase implements IUserUseCase {
         throw new CustomError("Image Is Not Provided", 422);
       }
       return await this.userRepository.changeUserProfilePic(userId, image);
-    } catch (error: any) {
+    }catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-      throw new CustomError(
-        error.message || "Error In While Changing the status of the User",
-        500
-      );
-    }
+  }
   }
 
   async changeUserPassword(userId: string): Promise<void> {
@@ -170,15 +176,15 @@ export class UserUseCase implements IUserUseCase {
         throw new CustomError("Invalid UserId ", 403);
       }
       await this.userRepository.sendUserChangePasswordLink(userId);
-    } catch (error: any) {
+    }catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-      throw new CustomError(
-        error.message || "Error In While Changing the status of the User",
-        500
-      );
-    }
+  }
   }
 
   async addMedicalRecord(
@@ -196,15 +202,15 @@ export class UserUseCase implements IUserUseCase {
       );
 
       return medicalRecord;
-    } catch (error: any) {
+    }catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-      throw new CustomError(
-        error.message || "Error In While Changing the status of the User",
-        500
-      );
-    }
+  }
   }
 
   async getUserMedicalRecords(userId: string): Promise<IMedicalRecord> {
@@ -213,15 +219,15 @@ export class UserUseCase implements IUserUseCase {
         userId
       );
       return medicalRecords;
-    } catch (error: any) {
+    } catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-      throw new CustomError(
-        error.message || "Error In While Changing the status of the User",
-        500
-      );
-    }
+  }
   }
 
   async getUserByRefreshToken(refreshToken: string): Promise<string> {
@@ -257,5 +263,23 @@ export class UserUseCase implements IUserUseCase {
         );
     }
  }
+
+    async deleteMedicalRecord(recordId: string, userId: string): Promise<void> {
+      try {
+        if(!recordId || !userId){
+          throw new CustomError("invalid arguments",400);
+        }
+      await this.userRepository.deleteMedicalRecord(recordId,userId);
+    } catch (error) {
+      if (error instanceof CustomError) {
+          throw error;
+      }
+      const castedError = error as Error;
+      throw new CustomError(
+          castedError.message || "Error while retrieving user by refresh token",
+          500
+      );
+  }
+    }
 
 }

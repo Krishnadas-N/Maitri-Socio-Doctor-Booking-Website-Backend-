@@ -98,14 +98,15 @@ export class UserRepository implements IUserRepository {
         throw new CustomError("Id is Not FOund", 404);
       }
       return await this.dataSource.findById(id);
-    } catch (error: any) {
+    } catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-
-      console.error("Unexpected error:", error);
-      throw new Error(error.message || "Internal server error");
-    }
+  }
   }
   async updateUserProfile(userId: string, data: EditProfileDto): Promise<User> {
     try {
@@ -113,27 +114,29 @@ export class UserRepository implements IUserRepository {
         throw new CustomError("User Id is Not FOund", 404);
       }
       return await this.dataSource.editProfile(userId, data);
-    } catch (error: any) {
+    }catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-
-      console.error("Unexpected error:", error);
-      throw new Error(error.message || "Internal server error");
-    }
+  }
   }
 
   async changeUserProfilePic(userId: string, image: string): Promise<void> {
     try {
         await this.dataSource.changeProfilePic(userId,image);
-    } catch (error: any) {
+    } catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-
-      console.error("Unexpected error:", error);
-      throw new Error(error.message || "Internal server error");
-    }
+  }
   }
 
   async sendUserChangePasswordLink(userId: string): Promise<void> {
@@ -150,14 +153,15 @@ export class UserRepository implements IUserRepository {
   
       const resetPasswordLink = `${process.env.UserResetPasswordLink}${resetToken}`;
       await this.sendResetPasswordLinkEmail(user.email, resetPasswordLink);
-    } catch (error: any) {
+    } catch (error:unknown) {
       if (error instanceof CustomError) {
-        throw error;
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
       }
-  
-      console.error("Unexpected error:", error);
-      throw new Error(error.message || "Internal server error");
-    }
+  }
   }
 
 
@@ -174,5 +178,9 @@ export class UserRepository implements IUserRepository {
       }
      async saveRefreshToken(email: string, refreshToken: string): Promise<void> {
           return this.dataSource.saveRefreshToken(email,refreshToken)
+      }
+
+     async deleteMedicalRecord(recordId: string, userId: string): Promise<void> {
+          return this.dataSource.deleteMedicalRecord(recordId,userId)
       }
 }

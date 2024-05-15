@@ -11,7 +11,7 @@ const notificationSchema: Schema = new Schema<INotification>({
     },
     senderModel: {
         type: String,
-        enum: ['User', 'Doctor'],
+        enum: ['User', 'Doctor','Admin'],
         required: true
     },
     receivers: [{

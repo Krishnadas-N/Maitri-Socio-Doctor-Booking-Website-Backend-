@@ -37,13 +37,15 @@ export class ChatUseCaseImpl implements IChatUseCase {
                 throw new CustomError( 'Invalid data provided', 400);
             }
             return this.repository.createConverstation(doctorId, patientId,appoinmentId);
-        }  catch (error: any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
-              throw error;
+                throw error;
             } else {
-              throw new CustomError(error.message || "Internal Server", 500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
-          }
+        }
     }
 
    async getConversation(convId: string): Promise<Conversation> {
@@ -52,13 +54,15 @@ export class ChatUseCaseImpl implements IChatUseCase {
             throw new CustomError( 'Invalid Conversation id provided', 400);
         }
         return this.repository.getConversation(convId);
-       } catch (error: any) {
+       }catch (error:unknown) {
             if (error instanceof CustomError) {
-              throw error;
+                throw error;
             } else {
-              throw new CustomError(error.message || "Internal Server", 500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
-          }
+        }
     }
 
     async getIndividualMessages(convId: string): Promise<Message[]> {
@@ -67,12 +71,31 @@ export class ChatUseCaseImpl implements IChatUseCase {
             throw new CustomError( 'Invalid parameter provided', 400);
                 }
                 return this.repository.getConversationMessages(convId)
-            } catch (error: any) {
-            if (error instanceof CustomError) {
-            throw error;
-            } else {
-            throw new CustomError(error.message || "Internal Server", 500);
+            } catch (error:unknown) {
+                if (error instanceof CustomError) {
+                    throw error;
+                } else {
+                    const castedError = error as Error
+              console.error('Unexpected error:', error);
+              throw new CustomError(castedError.message || 'Internal server error',500);
+                }
             }
+}
+
+toggleConversationStatus(convId: string, doctorId: string): Promise<Conversation> {
+    try{
+        if(!convId ){
+            throw new CustomError( 'Invalid Conversation id provided', 400);
         }
+        return this.repository.toggleConversation(convId,doctorId);
+       }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
+        } 
 }
 }

@@ -1,5 +1,5 @@
 import { CustomError } from "../../utils/customError"; 
-import Doctor from "../entities/Doctor";
+import Doctor, { Follower, Review } from "../entities/Doctor";
 import { IDoctorRepository } from "../interfaces/repositoryInterfaces/doctorIRepository";
 import { IDoctorUsecase } from "../interfaces/use-cases/doctorUsecase";
 import { OtpRepository } from "../interfaces/repositoryInterfaces/otpIRepository";
@@ -7,6 +7,7 @@ import { LoginResponse } from "../../models/docotr.authenticationModel";
 import { generateToken } from "../../utils/tokenizeDataHelper";
 import { PasswordUtil } from "../../utils/passwordUtils";
 import { issueJWT } from "../../utils/passportUtils";
+import { DashBoardDataResponse } from "../../models/doctors.model";
 
 
 export class DoctorUseCaseImpl implements IDoctorUsecase{
@@ -39,42 +40,45 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
       }else{
           throw new CustomError("Missing Email Field ",406)
       }
-  } catch (error:any) {
-      if (error instanceof CustomError) {
-          throw error; 
-      } else {
-          console.error("An unexpected error occurred:", error);
-          throw new CustomError(error.message||"An unexpected error occurred.", 500);
-      }
-  }
+  } catch (error:unknown) {
+    if (error instanceof CustomError) {
+        throw error;
+    } else {
+        const castedError = error as Error
+  console.error('Unexpected error:', error);
+  throw new CustomError(castedError.message || 'Internal server error',500);
+    }
+}
   }
 
   async registerProfessionalInfoUseCase(doctorData: Partial<Doctor>,doctorId:string): Promise<Partial<Doctor> | null> {
       try {
           console.log(doctorId)
           return await this.doctorRepository.saveProfessionalInfo(doctorData,doctorId);
-      }catch (error:any) {
-              if (error instanceof CustomError) {
-                  throw error; 
-              } else {
-                  console.error("An unexpected error occurred:", error);
-                  throw new CustomError(error.message||"An unexpected error occurred.", 500);
-              }
-          }
+      }catch (error:unknown) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
+        }
+    }
       }
       
 
   async RegisterAdditionalInfoUseCase(doctorData: Partial<Doctor>,doctorId:string): Promise<Partial<Doctor> | null> {
       try {
          return await this.doctorRepository.saveAdditionalInfo(doctorData,doctorId);
-      }catch (error:any) {
-              if (error instanceof CustomError) {
-                  throw error; 
-              } else {
-                  console.error("An unexpected error occurred:", error);
-                  throw new CustomError(error.message||"An unexpected error occurred.", 500);
-              }
-          }
+      }catch (error:unknown) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
+        }
+    }
       
   }
  
@@ -100,14 +104,15 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
             }else{
               throw new CustomError('Id is not found in Doctor',404)
             }
-      }catch (error:any) {
-              if (error instanceof CustomError) {
-                  throw error; 
-              } else {
-                  console.error("An unexpected error occurred:", error);
-                  throw new CustomError(error.message||"An unexpected error occurred.", 500);
-              }
-          }
+      }catch (error:unknown) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
+        }
+    }
   }
   async forgotPassword(email: string): Promise<void> {
       try {
@@ -115,12 +120,15 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
              throw new CustomError('Email is Not Found',404)
          }
         return this.doctorRepository.setResetToken(email);
-     } catch (error:any) {
-         if (error instanceof CustomError) {
-             throw error;
-         }
-         throw new CustomError(error.message || 'Error In forgotPassword', 500);
-     }
+     } catch (error:unknown) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
+        }
+    }
      }
  
     async  setResetPassword(token: string, password: string): Promise<void> {
@@ -129,12 +137,15 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
              throw new CustomError('Token or Password  is not provided',400);
          }
          await this.doctorRepository.findResetTokenAndSavePassword(token,password);
-     } catch (error:any) {
-         if (error instanceof CustomError) {
-             throw error;
-         }
-         throw new CustomError(error.message || 'Error In forgotPassword', 500);
-     }
+     } catch (error:unknown) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
+        }
+    }
     }
 
     async AcceptDoctorProfile(id: string): Promise<Doctor> {
@@ -143,26 +154,30 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
               throw new CustomError('Id  is not provided',400);
           }
           return await this.doctorRepository.AcceptDoctorProfile(id);
-      } catch (error:any) {
-          if (error instanceof CustomError) {
-              throw error;
-          }
-          throw new CustomError(error.message || 'Error In Accepting Doctor Profile', 500);
-      }
+      } catch (error:unknown) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
+        }
+    }
     }
 
     async GetDoctors(page: number , searchQuery: string, itemsPerPage: number ): Promise<Doctor[]> {
         try{
             return await this.doctorRepository.GetDoctors(page, searchQuery,itemsPerPage);
 
-        }catch(error:any){
+        }catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
-              }
-          
-              console.error('Unexpected error:', error);
-              throw new Error(error.message || 'Internal server error');
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
+        }
     }
 
    async changeDoctorStatus(id: string): Promise<Doctor> {
@@ -172,14 +187,15 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
         }
         return await this.doctorRepository.changeStatusofDoctor(id);
 
-    }catch(error:any){
+    }catch (error:unknown) {
         if (error instanceof CustomError) {
             throw error;
-          }
-      
-          console.error('Unexpected error:', error);
-          throw new Error(error.message || 'Internal server error');
+        } else {
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
         }
+    }
     }
 
     async getDoctorById(id: string): Promise<Doctor | null> {
@@ -189,14 +205,15 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
             }
             return await this.doctorRepository.findDoctorById(id);
     
-        }catch(error:any){
+        }catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
-              }
-          
-              console.error('Unexpected error:', error);
-              throw new Error(error.message || 'Internal server error');
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
+        }
     }
     async changeProfilePic(doctorId: string, image: string): Promise<void> {
         try {
@@ -207,14 +224,14 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
             throw new CustomError("Image Is Not Provided", 422);
           }
           return await this.doctorRepository.changeProfilePic(doctorId, image);
-        } catch (error: any) {
-          if (error instanceof CustomError) {
-            throw error;
-          }
-          throw new CustomError(
-            error.message || "Error In While Changing the status of the User",
-            500
-          );
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
       }
 
@@ -227,15 +244,87 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
             throw new CustomError("Slots is  is not provided", 404);
           }
           return await this.doctorRepository.saveSelectedSlots(doctorId, selectedSlots);
-        } catch (error: any) {
-          if (error instanceof CustomError) {
-            throw error;
-          }
-          throw new CustomError(
-            error.message || "Error In While Changing the status of the User",
-            500
-          );
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
+      }
+
+     async getSimilarProfiles(specializationId: string): Promise<Doctor[]> {
+        try {
+            if (!specializationId) {
+              throw new CustomError("specializationId  is not Defined", 404);
+            }
+          
+            return await this.doctorRepository.getSimilarProfiles(specializationId);
+          } catch (error:unknown) {
+              if (error instanceof CustomError) {
+                  throw error;
+              } else {
+                  const castedError = error as Error
+            console.error('Unexpected error:', error);
+            throw new CustomError(castedError.message || 'Internal server error',500);
+              }
+          }
+      }
+
+     async followOrUnfollowDoctors(doctorId: string, userId: string, userType: "Doctor" | "User"): Promise<Follower[]> {
+        try {
+            if (!doctorId || !userId || !userType) {
+              throw new CustomError("Doctor Id or UserId or UserRole  is not Defined", 400);
+            }
+          
+            return await this.doctorRepository.followOrUnfollowDoctors(doctorId ,userId ,userType);
+          } catch (error:unknown) {
+              if (error instanceof CustomError) {
+                  throw error;
+              } else {
+                  const castedError = error as Error
+            console.error('Unexpected error:', error);
+            throw new CustomError(castedError.message || 'Internal server error',500);
+              }
+          }
+      }
+
+     async addReviewAndRating(doctorId: string, userId: string, rating: number, comment: string): Promise<Review> {
+        try {
+            if (!doctorId || !userId || !rating) {
+              throw new CustomError("Doctor Id or UserId or rating  is not Defined", 400);
+            }
+          
+            return await this.doctorRepository.addReview(doctorId,userId,rating,comment);
+          } catch (error:unknown) {
+              if (error instanceof CustomError) {
+                  throw error;
+              } else {
+                  const castedError = error as Error
+            console.error('Unexpected error:', error);
+            throw new CustomError(castedError.message || 'Internal server error',500);
+              }
+          }
+      }
+
+     async getDoctorDashboardDetails(doctorId: string): Promise<DashBoardDataResponse> {
+        try {
+            if (!doctorId) {
+              throw new CustomError("Doctor Id  is not Defined", 400);
+            }
+          
+            return await this.doctorRepository.getDoctorDashboardDetails(doctorId)
+          } catch (error:unknown) {
+              if (error instanceof CustomError) {
+                  throw error;
+              } else {
+                  const castedError = error as Error
+            console.error('Unexpected error:', error);
+            throw new CustomError(castedError.message || 'Internal server error',500);
+              }
+          }
       }
 
     //   async getDoctorBookedSlots(date: Date): Promise<string[]> {

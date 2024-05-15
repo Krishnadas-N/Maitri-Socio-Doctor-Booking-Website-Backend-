@@ -1,6 +1,7 @@
 import {otpModel} from "./models/otpModel";
 import { OtpModelIDataSource } from "../../interfaces/data-sources/otpIDataSource";
 import { OTP } from "../../../domain/entities/OTP";
+import { CustomError } from "../../../utils/customError";
 
 export class MongoDbOtpDataSource implements OtpModelIDataSource{
     constructor(){}
@@ -16,9 +17,14 @@ export class MongoDbOtpDataSource implements OtpModelIDataSource{
                 const savedOTP = await otp.save();
                 return savedOTP._id.toString(); // Return the ID of the newly created OTP document
             }
-        } catch (error) {
-            console.error("Error saving OTP:", error);
-            throw error;
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
     
@@ -38,18 +44,28 @@ export class MongoDbOtpDataSource implements OtpModelIDataSource{
                 const otpDoc = await otpModel.findById(id).exec();
                 console.log(otpDoc);
                 return otpDoc ? otpDoc.toObject() as OTP : null;
-            } catch (error) {
-                console.error("Error finding OTP by email:", error);
-                throw error;
+            } catch (error:unknown) {
+                if (error instanceof CustomError) {
+                    throw error;
+                } else {
+                    const castedError = error as Error
+              console.error('Unexpected error:', error);
+              throw new CustomError(castedError.message || 'Internal server error',500);
+                }
             }
         }
         
         async updateStatus(email:string):Promise<void>{
             try {
               await otpModel.updateOne({ email },{$set:{status:'USED'}});
-            } catch (error) {
-                console.error("Error finding OTP by email:", error);
-                throw error;
+            }catch (error:unknown) {
+                if (error instanceof CustomError) {
+                    throw error;
+                } else {
+                    const castedError = error as Error
+              console.error('Unexpected error:', error);
+              throw new CustomError(castedError.message || 'Internal server error',500);
+                }
             }
         }
     

@@ -317,8 +317,8 @@ export class PostController {
             assertHasUser(req);
             const userId = req.user.id;
             console.log("Doctor id ",userId);
-             await this.postUsecase.getSavedPostsofUser(userId as string);
-            return sendSuccessResponse(res, {}, 'Post Saved or Unsaved SuccessFully .');
+         const posts =   await this.postUsecase.getSavedPostsofUser(userId as string);
+            return sendSuccessResponse(res,posts, 'Post Saved or Unsaved SuccessFully .');
         } catch (error) {
           next(error);
         }

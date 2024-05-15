@@ -24,4 +24,8 @@ chatRouter.post('/chats/:chatId/close', chatController.closeChat.bind(chatContro
 
 chatRouter.post('/chats/send', chatController.sendMessage.bind(chatController));
 
+chatRouter.put('/toggle-conversation/:convId', authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),chatController.toggleConverstionStatus.bind(chatController));
+
+
+
 export default chatRouter;

@@ -13,4 +13,7 @@ export class NotificationRepository implements INotificationRepository{
     async getNotificationsOfReceiver(userId: string): Promise<INotification[]> {
         return this.notificationDataSource.getNotificationOfReceiver(userId);
     }
+    createNotification(sender: string, senderModel: string, title: string, receivers: { receiverId: string; receiverModel: string; }[], message: string): Promise<INotification> {
+        return this.notificationDataSource.createNotification(sender,senderModel,title,receivers,message)
+    }
 }

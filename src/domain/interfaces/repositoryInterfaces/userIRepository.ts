@@ -19,4 +19,5 @@ export interface IUserRepository {
     getMedicalRecords(userId: string): Promise<IMedicalRecord>;
     saveRefreshToken(email:string,refreshToken:string):Promise<void>;
     getUserByRefreshToken( refreshToken: string): Promise<User> ;
+    deleteMedicalRecord(recordId: string, userId: string): Promise<void> ;
 }

@@ -52,6 +52,6 @@ postRouter.get('/get-doctor-post/:doctorId',authMiddleWare.isAuthenticated.bind(
 
 postRouter.post('/p/:postId/toggle-save',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),postController.toggleSavePost.bind(postController))
 
-postRouter.get('/p/get-saved-posts',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),postController.getSavedPostsOfUsers.bind(postController))
+postRouter.get('/get-saved-posts',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),postController.getSavedPostsOfUsers.bind(postController))
 
 export default postRouter;

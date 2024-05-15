@@ -53,12 +53,15 @@ export class MongoDbDoctorSpecializtionDataSource implements SpecilaizationModel
         await doctorModel.updateMany({ specialization: doctorCategory._id }, { isBlocked: true });
     }
       return doctorCategory;
-    } catch (err: any) {
-      throw new CustomError(
-        err.message || "Error while Block the Specilalization in the databse",
-        404
-      );
-    }
+    } catch (error:unknown) {
+      if (error instanceof CustomError) {
+          throw error;
+      } else {
+          const castedError = error as Error
+    console.error('Unexpected error:', error);
+    throw new CustomError(castedError.message || 'Internal server error',500);
+      }
+  }
   }
   async findOne(id: string): Promise<DoctorSpecializtion | null> {
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -72,10 +75,14 @@ export class MongoDbDoctorSpecializtionDataSource implements SpecilaizationModel
       
     try {
       return await doctorCategoryModel.findOne({ name: regexPattern }).exec();
-  } catch (error:any) {
-      // Handle errors
-      console.error("Error while searching specialization by name:", error);
-      throw new CustomError(error.message || 'Error while searching specialization by name',500);
-  }
+  }catch (error:unknown) {
+    if (error instanceof CustomError) {
+        throw error;
+    } else {
+        const castedError = error as Error
+  console.error('Unexpected error:', error);
+  throw new CustomError(castedError.message || 'Internal server error',500);
+    }
+}
   }
 }

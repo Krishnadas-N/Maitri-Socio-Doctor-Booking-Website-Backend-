@@ -27,8 +27,14 @@ export class PostUsecase implements IPostUsecase {
         try {
             const post = await this.postRepository.create({ doctorId, title, content, media, tags });
             return post;
-        } catch (error:any) {
-            throw new Error(error.message || PostCreationError.CreationFailed);
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
 
@@ -86,11 +92,13 @@ export class PostUsecase implements IPostUsecase {
             }
 
             return reportedPost;
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
-                throw error; 
+                throw error;
             } else {
-                throw new CustomError(error.message || 'Internal server error', 500); 
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }
     }
@@ -117,24 +125,28 @@ export class PostUsecase implements IPostUsecase {
 
             const updatedReply = await this.postRepository.editReply(postId, commentId, replyId, content,userType);
             return updatedReply;
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to edit reply', 500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
         }  
     }
     async editComment(postId: string, commentId: string, content: string,userType:userType): Promise<Comment | null> {
         try {
         return await this.postRepository.editComment(postId, commentId, content,userType);
-    } catch (error:any) {
+    } catch (error:unknown) {
         if (error instanceof CustomError) {
             throw error;
         } else {
-            throw new CustomError(error.message || 'Failed to edit reply', 500);
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
         }
-        }  
+    }
     }
 
     async deleteReply(postId: string, commentId: string,replyId: string): Promise<boolean> {
@@ -144,13 +156,15 @@ export class PostUsecase implements IPostUsecase {
             }
             const success = await this.postRepository.deleteReply(postId, commentId, replyId);
             return success;
-        } catch (error:any) {
+        } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
             } else {
-                throw new CustomError(error.message || 'Failed to edit reply', 500);
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
             }
-            }
+        }
     }
 
     async deleteComment(postId: string, commentId: string): Promise<boolean> {
@@ -163,8 +177,14 @@ export class PostUsecase implements IPostUsecase {
                 throw new CustomError('Failed to delete comment', 500);
             }
             return true;
-        } catch (error:any) {
-            throw new CustomError(error.message || 'Error deleting comment:', 500);
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
   
@@ -174,8 +194,14 @@ export class PostUsecase implements IPostUsecase {
                 throw new CustomError('Post ID is required', 400);
             }
             return await this.postRepository.blockPost(postId);
-        } catch (error:any) {
-            throw new CustomError(error.message || 'Error deleting comment:', 500);
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
     async archivePost(postId: string): Promise<Post | null> {
@@ -184,9 +210,14 @@ export class PostUsecase implements IPostUsecase {
                 throw new CustomError('Post ID is required', 400);
             }
             return await this.postRepository.archivePost(postId);
-        } catch (error:any) {
-            console.error('Error archiving post:', error);
-            throw new CustomError(error.message || 'Error archiving post:', 500);
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
     }
 
@@ -197,9 +228,14 @@ export class PostUsecase implements IPostUsecase {
                 throw new CustomError('Doctor ID is required', 400);
             }
             return await this.postRepository.getDoctorUploadedPosts(doctorId);
-        } catch (error:any) {
-            console.error('Error archiving post:', error);
-            throw new CustomError(error.message || 'Error archiving post:', 500);
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }
             
     }
@@ -210,10 +246,15 @@ export class PostUsecase implements IPostUsecase {
             throw new CustomError('Unautorized User',403)
         }
      return await this.postRepository.editPost(doctorId,postId,title,content,tags)
-    }catch (error:any) {
-        console.error('Error archiving post:', error);
-        throw new CustomError(error.message || 'Error archiving post:', 500);
-    } 
+    }catch (error:unknown) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
+        }
+    }
     } 
 
    async findPostById(id: string, userId: string): Promise<postsReponseModel | null> {
@@ -228,8 +269,14 @@ export class PostUsecase implements IPostUsecase {
         }
 
         return post;
-    } catch (error:any) {
-        throw new Error(`Failed to fetch post details: ${error.message}`);
+    }catch (error:unknown) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
+        }
     }  
     }
     
@@ -240,8 +287,14 @@ export class PostUsecase implements IPostUsecase {
             }
     
             return await this.postRepository.deletePost(doctorId,postId);
-        } catch (error:any) {
-            throw new Error(`Failed to fetch post details: ${error.message}`);
+        }catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
         }  
     }
 
@@ -256,9 +309,15 @@ export class PostUsecase implements IPostUsecase {
             }
     
             return this.postRepository.toggleSavedPost(userId,postId,userType); // Successfully toggled saved status
-        } catch (error:any) {
-            throw new CustomError(error.message || 'Error archiving post:', 500);
-        } 
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
+        }
     }
     
    async getSavedPostsofUser(userId: string): Promise<Post[] | []> {
@@ -267,8 +326,14 @@ export class PostUsecase implements IPostUsecase {
             throw new CustomError('Invalid input parameters.',400);
         }
         return this.postRepository.getSavedPosts(userId); // Successfully toggled saved status
-    } catch (error:any) {
-        throw new CustomError(error.message || 'Error archiving post:', 500);
-    } 
+    }catch (error:unknown) {
+        if (error instanceof CustomError) {
+            throw error;
+        } else {
+            const castedError = error as Error
+      console.error('Unexpected error:', error);
+      throw new CustomError(castedError.message || 'Internal server error',500);
+        }
+    }
     }
 }
