@@ -164,20 +164,7 @@ export function getDoctors(doctorService:IDoctorUsecase){
     }
 }
 
-export function chnageStatus(doctorService:IDoctorUsecase){
-    return async function (req:Request,res:Response,next:NextFunction){
-        try{
-            const doctorId = req.params.doctorId;
-            if(!doctorId){
-                throw new CustomError('Doctor Id is not Defined',403)
-            }
-              const doctor =await doctorService.changeDoctorStatus(doctorId)
-              return sendSuccessResponse(res,{doctor},"Doctor Fetched Success Fully",)
-           }catch(error){
-            next(error)
-           }
-    }
-}
+
 
 
 export function getDoctorById(doctorService:IDoctorUsecase){
@@ -297,13 +284,14 @@ export function followOrUnfollowDoctors(doctorService: IDoctorUsecase) {
 
 export function addReviewAndRatingOfDoctors(doctorService: IDoctorUsecase) {
     return async function (req: Request, res: Response, next: NextFunction) {
-        console.log("getCurrentDoctor   ",req.body);
+        console.log("Review Body   ",req.body);
         try {
             assertHasUser(req);
-            const {doctorId} = req.params;
+            console.log(req.params);
+            const {appoinmentId} = req.params;
             const userId = req.user.id as string;
-            const {comment,rating} = req.body;
-            const result = await doctorService.addReviewAndRating(doctorId,userId,rating,comment)
+            const {rating,review} = req.body;
+            const result = await doctorService.addReviewAndRating(appoinmentId,userId,rating,review)
             return sendSuccessResponse(res, result, "Doctor slots saved successfully");
         } catch (error) {
             next(error);
@@ -320,6 +308,20 @@ export function getDoctorDashBoardDetails(doctorService: IDoctorUsecase) {
             const doctorId = req.user.id as string;
             const result = await doctorService.getDoctorDashboardDetails(doctorId)
             return sendSuccessResponse(res, result, "Doctor dashboard  details fetched successfully");
+        } catch (error) {
+            next(error);
+        }
+    };
+}
+
+export function getDoctorReviews(doctorService: IDoctorUsecase) {
+    return async function (req: Request, res: Response, next: NextFunction) {
+        console.log(" getDoctorReviews  ",req.params);
+        try {
+            assertHasUser(req);
+            const {doctorId} = req.params;
+            const result = await doctorService.getReviewsOfDoctor(doctorId)
+            return sendSuccessResponse(res, result, "Doctor Reviews  details fetched successfully");
         } catch (error) {
             next(error);
         }

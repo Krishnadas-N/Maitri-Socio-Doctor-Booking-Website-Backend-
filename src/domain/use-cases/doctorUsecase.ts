@@ -180,23 +180,7 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
         }
     }
 
-   async changeDoctorStatus(id: string): Promise<Doctor> {
-    try{
-        if(!id){
-            throw new CustomError('Doctor Id is Not defined',400)
-        }
-        return await this.doctorRepository.changeStatusofDoctor(id);
-
-    }catch (error:unknown) {
-        if (error instanceof CustomError) {
-            throw error;
-        } else {
-            const castedError = error as Error
-      console.error('Unexpected error:', error);
-      throw new CustomError(castedError.message || 'Internal server error',500);
-        }
-    }
-    }
+   
 
     async getDoctorById(id: string): Promise<Doctor | null> {
         try{
@@ -291,13 +275,13 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
           }
       }
 
-     async addReviewAndRating(doctorId: string, userId: string, rating: number, comment: string): Promise<Review> {
+     async addReviewAndRating(appoinmentId: string, userId: string, rating: number, comment: string): Promise<Review> {
         try {
-            if (!doctorId || !userId || !rating) {
-              throw new CustomError("Doctor Id or UserId or rating  is not Defined", 400);
+            if (!appoinmentId || !userId || !rating) {
+              throw new CustomError("appoinmentId Id or UserId or rating  is not Defined", 400);
             }
           
-            return await this.doctorRepository.addReview(doctorId,userId,rating,comment);
+            return await this.doctorRepository.addReview(appoinmentId,userId,rating,comment);
           } catch (error:unknown) {
               if (error instanceof CustomError) {
                   throw error;
@@ -316,6 +300,24 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
             }
           
             return await this.doctorRepository.getDoctorDashboardDetails(doctorId)
+          } catch (error:unknown) {
+              if (error instanceof CustomError) {
+                  throw error;
+              } else {
+                  const castedError = error as Error
+            console.error('Unexpected error:', error);
+            throw new CustomError(castedError.message || 'Internal server error',500);
+              }
+          }
+      }
+
+     async getReviewsOfDoctor(doctorId: string): Promise<Review[]> {
+        try {
+            if (!doctorId) {
+              throw new CustomError("Doctor Id  is not Defined", 400);
+            }
+          
+            return await this.doctorRepository.getReviewsOfDoctor(doctorId)
           } catch (error:unknown) {
               if (error instanceof CustomError) {
                   throw error;

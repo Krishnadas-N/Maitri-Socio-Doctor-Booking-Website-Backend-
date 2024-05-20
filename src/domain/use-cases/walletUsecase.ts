@@ -44,4 +44,22 @@ export class walletUseCase implements IwalletUseCase{
         }
     } 
     }
+
+   async getBalanceOfWallet(userId: string): Promise<number> {
+      try{
+        if(!userId){
+            throw new CustomError("userId is not provided",400)
+        }    
+      
+        return this.walletRepo.getBalanceOfWallet(userId)
+      }catch (error:unknown) {
+          if (error instanceof CustomError) {
+              throw error;
+          } else {
+              const castedError = error as Error
+        console.error('Unexpected error:', error);
+        throw new CustomError(castedError.message || 'Internal server error',500);
+          }
+      } 
+    }
 }

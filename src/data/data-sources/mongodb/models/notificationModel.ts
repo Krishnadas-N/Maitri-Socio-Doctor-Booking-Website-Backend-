@@ -22,7 +22,7 @@ const notificationSchema: Schema = new Schema<INotification>({
         },
         receiverModel: {
             type: String,
-            enum: ['User', 'Doctor'],
+            enum: ['User', 'Doctor','Admin'],
             required: true
         }
     }],
@@ -42,7 +42,7 @@ const notificationSchema: Schema = new Schema<INotification>({
         },
         readerModel:{
             type: String,
-            enum: ['User', 'Doctor'],
+            enum: ['User', 'Doctor','Admin'],
             required: true
         },
         readAt: {

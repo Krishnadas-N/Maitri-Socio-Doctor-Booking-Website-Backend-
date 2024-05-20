@@ -14,4 +14,7 @@ export class WalletRepository implements IWalletRepository{
     async detailsOftransactionperWeek(doctorId: string): Promise<TransactionDetailsByWeek[]> {
         return this.walletModel.detailsOftransactionperWeek(doctorId)
     }
+   async getBalanceOfWallet(userId: string): Promise<number> {
+       return this.walletModel.getBalanceOfWallet(userId); 
+    }
 }

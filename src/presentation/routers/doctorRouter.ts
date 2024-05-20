@@ -5,7 +5,7 @@ import { MongoDbDoctorDataSourceImpl } from "../../data/data-sources/mongodb/mon
 import { IDoctorRepositoryImpl } from "../../domain/repositories/doctorRepository";
 import { MongoDbOtpDataSource } from "../../data/data-sources/mongodb/mongodbOtpDataSource";
 import { OTPRepsositoryImpl } from "../../domain/repositories/otpRepository";
-import { VerifyProfile, addReviewAndRatingOfDoctors, chnageStatus, followOrUnfollowDoctors, forgotPassword, getCurrentDoctor, getDoctorById, getDoctorDashBoardDetails, getDoctors, getSimilarProfilesOfDoctors, login, registerAdditionalInfo, registerBasicInfo, registerProfessionalInfo, resetPassword, saveSelectedSlots, updateDoctorProfilePic } from "../controllers/doctorController";
+import { VerifyProfile, addReviewAndRatingOfDoctors, followOrUnfollowDoctors, forgotPassword, getCurrentDoctor, getDoctorById, getDoctorDashBoardDetails, getDoctorReviews, getDoctors, getSimilarProfilesOfDoctors, login, registerAdditionalInfo, registerBasicInfo, registerProfessionalInfo, resetPassword, saveSelectedSlots, updateDoctorProfilePic } from "../controllers/doctorController";
 import { upload, uploadToCloudinary } from "../../config/uploadMiddleWare";
 import { DoctorUseCaseImpl } from "../../domain/use-cases/doctorUsecase";
 import { authMiddleWare } from "./authRouterSetup";
@@ -60,8 +60,6 @@ doctorRouter.patch('/verify-profile/:doctorId',authMiddleWare.isAuthenticated.bi
 
 doctorRouter.get('/get-doctors',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User','Admin',"Doctor"], 'READ'),getDoctors(doctorServices));
 
-doctorRouter.put('/change-status/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Admin'], 'WRITE'),chnageStatus(doctorServices));
-
 doctorRouter.get('/get-currentDoctor',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Doctor'], 'READ'),getCurrentDoctor(doctorServices))
 
 doctorRouter.patch('/change-profile-pic',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Doctor'], 'READ'),upload.single('profilePic'),uploadToCloudinary,updateDoctorProfilePic(doctorServices))
@@ -83,7 +81,7 @@ doctorRouter.get('/get-similar-profiles/:specializationId',authMiddleWare.isAuth
 doctorRouter.get('/toggle-follow/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor','User'], 'READ'),followOrUnfollowDoctors(doctorServices))
 
 
-doctorRouter.post('/add-review-rating/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),addReviewAndRatingOfDoctors(doctorServices))
+doctorRouter.post('/add-review-rating/:appoinmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),addReviewAndRatingOfDoctors(doctorServices))
 
 doctorRouter.post('/add-prescritption/:appoinmentId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),upload.single('prescription'),uploadToCloudinary,consultationController.savePrescriptionOfPatients.bind(consultationController))
 
@@ -94,6 +92,8 @@ doctorRouter.get('/get-wallet',authMiddleWare.isAuthenticated.bind(authMiddleWar
 doctorRouter.get('/get-transaction-graphdetails',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),walletController.getTransactionGraphDetails.bind(walletController))
 
 doctorRouter.get('/get-doctor-dashboarddetails',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),getDoctorDashBoardDetails(doctorServices))
+
+doctorRouter.get('/get-reviews-doctor/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),getDoctorReviews(doctorServices))
 
 
 export default doctorRouter;

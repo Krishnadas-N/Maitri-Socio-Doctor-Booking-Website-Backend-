@@ -25,6 +25,21 @@ export class UserController{
             next(err);
         }
     }
+    async socialLogin(req: Request, res: Response, next: NextFunction) {
+        try {
+            console.log("req.body from social login ",req.body.credential);
+            const { email } = req.body.credential;
+            const userData = await this.userUseCase.socialLogin(email);
+            console.log("login social form User",userData);
+            if (!userData) {
+                throw new CustomError("Email or Password is incorrect", 401);
+            }
+            return sendSuccessResponse(res, userData, "Login successful");
+        } catch (err) {
+            
+            next(err);
+        }
+    }
 
     async signupUser(req: Request, res: Response, next: NextFunction) {
         try {
@@ -36,6 +51,17 @@ export class UserController{
             next(err);
         }
     }
+    async socialRegisteUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            console.log("Log from Controllers (1)");
+            const token = await this.userUseCase.socalSignUp(req.body);
+            return sendSuccessResponse(res, token, "User created successful");
+        } catch (err) {
+            console.log("Error passing yyy")
+            next(err);
+        }
+    }
+
 
     async getUserProfile(req: Request, res: Response, next: NextFunction){
         try{
@@ -71,19 +97,6 @@ export class UserController{
        }
    }
 
-   async getAllUsers(req: Request, res: Response,next:NextFunction){
-        try {
-            const page = parseInt(req.query.page as string) || 1;
-            const pageSize = parseInt(req.query.pageSize as string) || 10;
-            const searchQuery = req.query.searchQuery as string || '';
-            const users = await this.userUseCase.getAllUsers(page, pageSize, searchQuery);
-            console.log("use data");
-            return sendSuccessResponse(res, users, 'Message sent Successfully');
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            next(error); // Pass the error to your error handling middleware
-        }
-    }
 
     async BlockOrUnBlokUser(req: Request, res: Response,next:NextFunction){
         try {
@@ -217,4 +230,15 @@ export class UserController{
         }
     }
 
+    async surveyAnalizing(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const surveyData = req.body;
+            const result = await this.userUseCase.calculateRecommendedCategories(surveyData)
+            return sendSuccessResponse(res,result,"Surevey result are sended successfully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
 }

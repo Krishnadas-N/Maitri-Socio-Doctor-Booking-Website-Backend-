@@ -12,6 +12,7 @@ export class Address {
 
 export class Review {
     constructor(
+      public appointmentId:string | objectId,
       public doctor :string | objectId,
       public patientName: string | objectId,
       public comment: string,

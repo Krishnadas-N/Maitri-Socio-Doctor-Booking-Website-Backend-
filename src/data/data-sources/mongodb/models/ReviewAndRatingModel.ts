@@ -3,14 +3,19 @@ import { Review } from "../../../../domain/entities/Doctor";
 
 const ReviewSchema: Schema<Review> = new Schema<Review>(
     {
+        appointmentId:{
+            type: Schema.Types.ObjectId,
+            ref: 'Appointment', 
+            required: true
+        }, 
         doctor:{
             type: Schema.Types.ObjectId,
-            ref: 'Doctor', // Reference to the User model
+            ref: 'Doctor', 
             required: true
         },
         patientName: {
             type: Schema.Types.ObjectId,
-            ref: 'User', // Reference to the User model
+            ref: 'User', 
             required: true
         },
         rating: {

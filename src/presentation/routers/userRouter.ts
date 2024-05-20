@@ -53,7 +53,14 @@ const walletRepo = new WalletRepository(new WalletDataSource());
 const walletUsecase = new walletUseCase(walletRepo);
 const walletController = new WalletController(walletUsecase);
 
-userRouter.post('/login',loginValidateUser,userController.loginUser.bind(userController));
+userRouter.post('/login',userController.loginUser.bind(userController));
+
+
+userRouter.post('/social-login',userController.socialLogin.bind(userController));
+
+
+userRouter.post('/social-register',userController.socialRegisteUser.bind(userController));
+
 
 userRouter.post('/register',SignupValidateUser,userController.signupUser.bind(userController));
 
@@ -62,8 +69,6 @@ userRouter.get('/profile',authMiddleWare.isAuthenticated.bind(authMiddleWare),ch
 userRouter.post('/forgot-password', userController.forgotPassword.bind(userController)); 
 
 userRouter.post('/reset-password/:token', userController.resetPassword.bind(userController)); 
-
-userRouter.get('/get-Users',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Admin','User'], 'READ'),userController.getAllUsers.bind(userController))
 
 userRouter.patch('/change-status/:userId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions([ 'Admin'], 'READ'),userController.BlockOrUnBlokUser.bind(userController));
 
@@ -115,6 +120,9 @@ userRouter.delete('/delete-medical-record/:recordId',authMiddleWare.isAuthentica
 
 userRouter.get('/get-userPrescriptions',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),consultationController.getPrescriptionsOfUser.bind(consultationController))
 
+userRouter.post('/submit-survey',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),userController.surveyAnalizing.bind(userController))
 
+
+userRouter.get('/get-wallet-balance',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),walletController.getWalletBalanceOfUser.bind(walletController))
 
 export default userRouter;

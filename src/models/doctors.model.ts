@@ -1,3 +1,5 @@
+import Doctor from "../domain/entities/Doctor";
+
 export interface DashboardData {
     [key: string]: {
         totalAppointments: number;
@@ -15,3 +17,10 @@ export interface DashBoardDataResponse {
     typeOfAppointments: Record<string, number>;
   }
   
+export interface DoctorResponse {
+    doctors: Doctor[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+}

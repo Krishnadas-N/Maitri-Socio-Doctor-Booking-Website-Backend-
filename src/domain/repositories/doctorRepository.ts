@@ -149,9 +149,7 @@ export class IDoctorRepositoryImpl  implements IDoctorRepository {
       return  await this.doctorDataSource.findDoctors(page,searchQuery,itemsPerPage)
     }
 
-    async changeStatusofDoctor(id: string): Promise<Doctor> {
-        return  await this.doctorDataSource.changeStatusofDoctor(id)
-    }
+  
 
     async changeProfilePic(doctorId:string,image:string):Promise<void>{
         try {
@@ -193,11 +191,15 @@ export class IDoctorRepositoryImpl  implements IDoctorRepository {
         return this.doctorDataSource.followOrUnfollowDoctors(doctorId,userId,userType)
     }
 
-    async addReview(doctorId: string, userId: string, rating: number, comment: string): Promise<Review> {
-        return this.doctorDataSource.addReview(doctorId,userId,rating,comment)
+    async addReview(appoinmentId: string, userId: string, rating: number, comment: string): Promise<Review> {
+        return this.doctorDataSource.addReview(appoinmentId,userId,rating,comment)
     }
 
    async getDoctorDashboardDetails(doctorId: string): Promise<DashBoardDataResponse> {
         return this.doctorDataSource.getDoctorDashboardDetails(doctorId)
+    }
+
+    getReviewsOfDoctor(doctorId: string): Promise<Review[]> {
+        return this.doctorDataSource.getReviewsOfDoctor(doctorId)
     }
 }

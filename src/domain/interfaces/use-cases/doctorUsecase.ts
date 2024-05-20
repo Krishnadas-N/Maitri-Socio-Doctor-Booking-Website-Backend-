@@ -11,12 +11,13 @@ export interface IDoctorUsecase{
     setResetPassword(token:string,password:string):Promise<void>;
     AcceptDoctorProfile(id:string):Promise<Doctor>;
     GetDoctors(page:number,searchQuery:string,itemsPerPage: number):Promise<Doctor[]>;
-    changeDoctorStatus(id: string): Promise<Doctor> ;
+   
     getDoctorById(id:string):Promise<Doctor | null> ;
     changeProfilePic(doctorId:string,image:string):Promise<void>;
     saveSelectedSlots(doctorId: string, selectedSlots: { date: Date, slots: string[] }[]): Promise<Doctor>;
     getSimilarProfiles(specializationId:string):Promise<Doctor[]>;
     followOrUnfollowDoctors(doctorId: string, userId: string,userType:'Doctor'|'User'): Promise<Follower[]>;
-    addReviewAndRating(doctorId: string, userId: string, rating: number, comment: string): Promise<Review>;
-    getDoctorDashboardDetails(doctorId: string):Promise<DashBoardDataResponse> 
+    addReviewAndRating(appoinmentId: string, userId: string, rating: number, comment: string): Promise<Review>;
+    getDoctorDashboardDetails(doctorId: string):Promise<DashBoardDataResponse> ;
+    getReviewsOfDoctor(doctorId: string): Promise<Review[]>
 }

@@ -2,6 +2,7 @@ import { CustomError } from "../../../utils/customError";
 import { Transaction, Wallet } from "../../../domain/entities/Wallet";
 import {walletModel} from "./models/walletModel";
 import { TransactionDetailsByWeek } from "../../../models/common.models";
+import { Types } from "mongoose";
 
 
 export class WalletDataSource {
@@ -190,7 +191,20 @@ export class WalletDataSource {
     }
     
     
-    
+    async getBalanceOfWallet(userId: string): Promise<number> {
+        try {
+            const wallet = await walletModel.findOne({ owner:userId }).select('balance');
+      
+          if (wallet) {
+            return wallet.balance;
+          } else {
+            return 0; 
+          }
+        } catch (error) {
+            console.error("Error while fetching balance wallet:", error);
+            throw error;
+        }
+    }
     
 
 }

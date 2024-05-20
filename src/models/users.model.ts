@@ -13,7 +13,15 @@ export interface UserLoginResponse{
     token:string
     revokeAcessToken:string;
 }
-
+export interface UserSocialRegister{
+    firstName:string,
+    lastName:string,
+    username:string,
+    email:string,
+    gender:string,
+    dateOfBirth:string,
+    profilePic?:string
+  }
 
 export interface EditProfileDto {
     firstName?: string;

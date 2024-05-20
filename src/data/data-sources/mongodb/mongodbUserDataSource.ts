@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { CustomError } from "../../../utils/customError"; 
 import { RoleDetails } from "../../../domain/entities/Admin";
 import { IMedicalRecord, User } from "../../../domain/entities/User";
-import { EditProfileDto, UsersWithTotalCount } from "../../../models/users.model";
+import { EditProfileDto, UserSocialRegister, UsersWithTotalCount } from "../../../models/users.model";
 import { userModelIDataSource } from "../../interfaces/data-sources/userIDataSource";
 import { medicalRecordModel  } from "./models/userMedicalRecordModel";
 import { roleModel} from "./models/roleModel";
@@ -33,7 +33,36 @@ export class MongoDbUserDataSource implements userModelIDataSource {
             throw new Error(`Error creating user: ${error}`);
         }
     }
-
+    async socialRegister(user: UserSocialRegister): Promise<User> {
+        try {
+          console.log("Log from user create data source");
+      
+          const createdUser = await userModel.create({ ...user, isVerified: true });
+      
+          if (createdUser) {
+            const user = User.fromJSON(createdUser);
+            const domainUser = this.convertToDomain(user);
+            
+            if (!domainUser) {
+              throw new CustomError("Failed to convert created user to domain user", 500);
+            }
+            
+            console.log(domainUser, "Log from user");
+            return domainUser as unknown as User;
+          }
+      
+          throw new CustomError("Failed to create user", 500);
+        } catch (error: unknown) {
+          console.error("Error creating user:", error);
+          if (error instanceof CustomError) {
+            throw error;
+          } else {
+            throw new CustomError(`Error creating user: ${(error as Error).message}`, 500);
+          }
+        }
+      }
+      
+      
     async getAll(skip?: number, limit?: number): Promise<User[]> {
         try {
             let query = userModel.find();
@@ -50,9 +79,9 @@ export class MongoDbUserDataSource implements userModelIDataSource {
         try {
             const userDocument = await userModel.findOne({ email })
             if (userDocument) {
-                console.log(userDocument,"Log from Amdin");
+                console.log(userDocument,"Log from user");
                 const user = User.fromJSON(userDocument);
-                console.log(user,"Log from Amdin");
+                console.log(user,"Log from user");
                 return this.convertToDomain(user);
             } else {
                 return null;
@@ -142,32 +171,7 @@ export class MongoDbUserDataSource implements userModelIDataSource {
         }
         
     }
-    async getAllUsers(searchQuery: string, page: number, pageSize: number): Promise<UsersWithTotalCount> {
-        try {
-            const regex = new RegExp(searchQuery, 'i');
-            const offset = (page - 1) * pageSize;
-            const users =await userModel.find({
-                $or: [
-                    { firstName: { $regex: regex } },
-                    { lastName: { $regex: regex } },
-                    { username: { $regex: regex } }
-                ]
-            }).skip(offset).limit(pageSize)
-           const totalCount = await userModel.countDocuments({
-                $or: [
-                    { firstname: { $regex: regex } },
-                    { lastname: { $regex: regex } },
-                    { username: { $regex: regex } }
-                ]
-            });
-            return {
-                users: users.map(user => user.toObject() as User),
-                totalCount
-            };
-        } catch (error) {
-            throw new Error(`Error getting users: ${error}`);
-        }
-    }
+   
     async toggleBlockUser(id:string): Promise<User>{
         const user = await userModel.findById(id);
         if (!user) {

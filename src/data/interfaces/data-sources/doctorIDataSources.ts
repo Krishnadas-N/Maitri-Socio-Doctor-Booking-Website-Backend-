@@ -12,11 +12,12 @@ export interface IDoctorModelIDataSource{
     findResetTokenAndSavePassword(token:string,password:string):Promise<void>;
     AcceptprofileComplete(id:string):Promise<Doctor>;
     findDoctors(page?:number,searchQuery?:string,itemsPerPage?: number): Promise<Doctor[]>;
-    changeStatusofDoctor(id:string):Promise<Doctor>;
+   
     changeProfilePic(doctorId:string,image:string):Promise<void>;
     saveSelectedSlots(doctorId: string, selectedSlots: { date: Date, slots: string[] }[]): Promise<Doctor>;
     getSimilarProfiles(specializationId:string):Promise<Doctor[]>;
     followOrUnfollowDoctors(doctorId: string, userId: string,userType:'Doctor'|'User'): Promise<Follower[]>;
-    addReview(doctorId: string, userId: string, rating: number, comment: string): Promise<Review>;
-    getDoctorDashboardDetails(doctorId: string):Promise<DashBoardDataResponse> 
+    addReview(appoinmentId: string, userId: string, rating: number, comment: string): Promise<Review>;
+    getDoctorDashboardDetails(doctorId: string):Promise<DashBoardDataResponse> ;
+    getReviewsOfDoctor(doctorId: string): Promise<Review[]>
 }

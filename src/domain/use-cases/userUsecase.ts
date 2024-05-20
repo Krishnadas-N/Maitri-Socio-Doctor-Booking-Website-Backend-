@@ -2,6 +2,7 @@ import { CustomError } from "../../utils/customError";
 import {
   EditProfileDto,
   UserLoginResponse,
+  UserSocialRegister,
   UsersWithTotalCount,
 } from "../../models/users.model";
 import { IMedicalRecord, User } from "../entities/User";
@@ -105,23 +106,6 @@ export class UserUseCase implements IUserUseCase {
   }
   }
 
-  async getAllUsers(
-    page: number,
-    pageSize: number,
-    searchQuery: string
-  ): Promise<UsersWithTotalCount> {
-    try {
-      return await this.userRepository.getAllUsers(page, pageSize, searchQuery);
-    } catch (error:unknown) {
-      if (error instanceof CustomError) {
-          throw error;
-      } else {
-          const castedError = error as Error
-    console.error('Unexpected error:', error);
-    throw new CustomError(castedError.message || 'Internal server error',500);
-      }
-  }
-  }
   async BlockOrUnblockUser(id: string): Promise<User> {
     try {
       return await this.userRepository.toggleBlockUser(id);
@@ -169,6 +153,82 @@ export class UserUseCase implements IUserUseCase {
       }
   }
   }
+  async socalSignUp(user: UserSocialRegister): Promise<UserLoginResponse> {
+    try {
+      console.log("Social Signup ", user);
+  
+      if (!user) {
+        throw new CustomError("Invalid User Details", 403);
+      }
+  
+      const userIsExist = await this.userRepository.findByEmail(user.email);
+  
+      if (userIsExist) {
+        if (userIsExist.isVerified) {
+          if (userIsExist._id) {
+            const refreshToken = refreshAccessToken({ _id: userIsExist._id.toString(), roles: userIsExist.roles || [] });
+            const tokenData = issueJWT({ _id: userIsExist._id.toString(), roles: userIsExist.roles || [] });
+            console.log(tokenData, refreshToken);
+            await this.userRepository.saveRefreshToken(userIsExist.email, refreshToken);
+            return { user: userIsExist, token: tokenData.token, revokeAcessToken: refreshToken };
+          }
+          throw new CustomError("User ID is missing", 404);
+        }
+      } else {
+        const userData = await this.userRepository.socialRegister(user);
+  
+        if (userData && userData._id) {
+          const refreshToken = refreshAccessToken({ _id: userData._id.toString(), roles: userData.roles || [] });
+          const tokenData = issueJWT({ _id: userData._id.toString(), roles: userData.roles || [] });
+          console.log(tokenData, refreshToken);
+          await this.userRepository.saveRefreshToken(userData.email, refreshToken);
+          return { user: userData, token: tokenData.token, revokeAcessToken: refreshToken };
+        }
+        throw new CustomError("Failed to create user", 500);
+      }
+  
+      throw new CustomError("User is not verified", 403);
+    } catch (error: unknown) {
+      console.error('Unexpected error:', error);
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        const castedError = error as Error;
+        throw new CustomError(castedError.message || 'Internal server error', 500);
+      }
+    }
+  }
+  
+  async socialLogin(email: string): Promise<UserLoginResponse | null> {
+    try {
+      const user = await this.userRepository.findByEmail(email);
+  
+      if (!user) {
+        throw new CustomError("User Not found please Login", 404);
+      }
+      if (!user.isVerified) {
+        throw new CustomError("User is not verified", 403);
+      }
+  
+      if (user && user._id) {
+        const refreshToken = refreshAccessToken({ _id: user._id.toString(), roles: user.roles || [] });
+        const tokenData = issueJWT({ _id: user._id.toString(), roles: user.roles || [] });
+        await this.userRepository.saveRefreshToken(email, refreshToken);
+  
+        return { user, token: tokenData.token, revokeAcessToken: refreshToken };
+      }
+      return null;
+    } catch (error: unknown) {
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        const castedError = error as Error;
+        console.error('Unexpected error:', castedError);
+        throw new CustomError(castedError.message || 'Internal server error', 500);
+      }
+    }
+  }
+  
 
   async changeUserPassword(userId: string): Promise<void> {
     try {
@@ -282,4 +342,59 @@ export class UserUseCase implements IUserUseCase {
   }
     }
 
+     async calculateRecommendedCategories(surveyData: any): Promise<{ recommendedCategories: string[], npsScore: number }> {
+      const {
+        sleepQuality,
+        mood,
+        anxietyLevel,
+        crisis,
+        supportSystem,
+        physicalSymptoms,
+        substanceUse
+      } = surveyData;
+    
+      let npsScore = 0;
+      
+      // Scoring based on mood
+      switch (mood) {
+        case 'Nearly every day':
+          npsScore += 10;
+          break;
+        case 'More than half the days':
+          npsScore += 7;
+          break;
+        case 'Several days':
+          npsScore += 5;
+          break;
+        case 'Not at all':
+          npsScore += 2;
+          break;
+      }
+    
+      if (crisis === 'Yes') {
+        npsScore = Math.max(npsScore, 10);
+      }
+    
+    
+      const recommendedCategories: string[] = [];
+    
+      if (sleepQuality === 'Very Poor' || mood === 'Nearly every day' || crisis === 'Yes') {
+        recommendedCategories.push('Psychiatrist');
+      }
+    
+      if (mood === 'More than half the days' || anxietyLevel === 'More than half the days') {
+        recommendedCategories.push('Psychologist');
+      }
+    
+      if (supportSystem === 'No' || physicalSymptoms === 'Nearly every day') {
+        recommendedCategories.push('Counselor');
+      }
+    
+      if (substanceUse === 'Daily') {
+        recommendedCategories.push('Addiction Specialist');
+      }
+    
+      return { recommendedCategories, npsScore };
+    }
+    
 }

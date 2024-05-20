@@ -363,6 +363,14 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
             patient: new mongoose.Types.ObjectId(userId),
           },
         },
+          {
+            $lookup: {
+                from: "reviews",
+                localField: "_id",
+                foreignField: "appointmentId",
+                as: "reviews"
+            }
+        },
         {
           $lookup: {
             from: "doctors",

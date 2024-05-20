@@ -233,36 +233,7 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
         }
         }
     
-   async changeStatusofDoctor(id: string): Promise<Doctor> {
-    try{
-        if(!mongoose.Types.ObjectId.isValid(id)) {
-            throw new CustomError("Invalid id format", 400);
-        }
-        const doctor = await doctorModel.findById(id).populate({
-            path: 'specialization',
-            select: 'name', // Select the name field from DoctorCategory
-            model: 'DoctorCategory',
-            options: { // Specify a custom alias for the field
-            as: 'psycharitst'
-            }
-        }).exec();
-        
-        if (!doctor) {
-            throw new CustomError("Doctor not found", 404);
-        }
-        doctor.isBlocked = !doctor.isBlocked;
-        await doctor.save();
-         return  doctor
-    }catch (error:unknown) {
-        if (error instanceof CustomError) {
-            throw error;
-        } else {
-            const castedError = error as Error
-      console.error('Unexpected error:', error);
-      throw new CustomError(castedError.message || 'Internal server error',500);
-        }
-    }
-    }
+ 
     async changeProfilePic(doctorId:string,image:string):Promise<void>{
         await doctorModel.updateOne({_id:doctorId}, {$set:{profilePic:image}}); 
       }
@@ -399,19 +370,17 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
         }
     }
     
-    async addReview(doctorId: string, userId: string, rating: number, comment: string): Promise<Review> {
+    async addReview(appoinmentId: string, userId: string, rating: number, comment: string): Promise<Review> {
         try {
-            const doctor = await doctorModel.findById(doctorId);
-            if (!doctor) {
-                throw new CustomError("Doctor not found",404);
-            }
-            const appointment = await appointmentModel.findOne({ doctor: doctorId, patient: userId,status:'Completed' });
+            console.log(appoinmentId,userId,rating,comment);
+            const appointment = await appointmentModel.findOne({ _id: appoinmentId, patient: userId,status:'Completed' });
             if (!appointment) {
                 throw new CustomError("No appointment found for this user with the doctor", 400);
             }
-    
+                console.log(appointment)
             const review = new ReviewModel({
-                doctor: doctorId,
+                appointmentId:appoinmentId,
+                doctor: appointment.doctor,
                 patientName: userId,
                 rating,
                 comment
@@ -430,6 +399,32 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
             }
         }
     }
+
+    async getReviewsOfDoctor(doctorId: string): Promise<Review[]> {
+        try {
+            if (!doctorId) {
+                throw new CustomError("No doctorId found for this user with the doctor", 400);
+            }
+    
+            const doctorReviews = await ReviewModel.find({ doctor: doctorId })
+            .populate('appointmentId')
+            .populate('patientName')
+            .exec();
+
+             console.log('😊🤣😊🤣', doctorReviews);
+
+            return doctorReviews;
+        } catch (error: unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+                console.error("Error in followOrUnfollowDoctors:", castedError);
+                throw new CustomError(castedError.message || "Error adding review: ", 500);
+            }
+        }
+    }
+    
 
     async  getDoctorDashboardDetails(doctorId: string):Promise<DashBoardDataResponse> {
         try {

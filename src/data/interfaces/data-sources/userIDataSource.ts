@@ -1,5 +1,5 @@
 import { IMedicalRecord, User } from "../../../domain/entities/User";
-import { EditProfileDto, UsersWithTotalCount } from "../../../models/users.model";
+import { EditProfileDto, UserSocialRegister, UsersWithTotalCount } from "../../../models/users.model";
 
 export interface userModelIDataSource{
     create(user:Omit<User,'_id'>):Promise<User>;
@@ -11,7 +11,6 @@ export interface userModelIDataSource{
     verifyUser(email:string):Promise<void>;
     saveResetToken(email:string,token:string,):Promise<void>;
     findResetTokenAndSavePassword(token:string,password:string):Promise<void>;
-    getAllUsers(searchQuery:string, page:number, pageSize:number):Promise<UsersWithTotalCount>;
     toggleBlockUser(id:string):Promise<User>;
     editProfile(userId: string, data: EditProfileDto):Promise<User>;
     changeProfilePic(userId:string,image:string):Promise<void>;
@@ -19,5 +18,6 @@ export interface userModelIDataSource{
     getMedicalRecords(userId: string): Promise<IMedicalRecord>;
     saveRefreshToken(email:string,refreshToken:string):Promise<void>;
     getUserByRefreshToken( refreshToken: string): Promise<User> ;
-    deleteMedicalRecord(recordId: string, userId: string): Promise<void> 
+    deleteMedicalRecord(recordId: string, userId: string): Promise<void>;
+    socialRegister(user:UserSocialRegister): Promise<User>
 }

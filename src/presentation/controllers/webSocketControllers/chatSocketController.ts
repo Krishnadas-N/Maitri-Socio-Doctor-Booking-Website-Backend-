@@ -26,15 +26,7 @@ export class ChatSocketController {
             });
       
 
-      socket.on("getChats", async () => {
-        try {
-          console.log('"get chats" event received');
-          const userId = 123; // Assuming user ID is attached to the socket
-          this.chatNamespace.emit("chats", userId);
-        } catch (error) {
-          console.error("Error retrieving chats:", error);
-        }
-      });
+ 
 
       socket.on("close chat", async (chatId: string, doctorId: string) => {
         try {
@@ -79,10 +71,8 @@ export class ChatSocketController {
 
         socket.on("getMessages", async (conversationId: string) => {
           try {
-              // Retrieve messages for the specified conversationId
+           console.log("messages Event called",);
               const messages = await this.chatUseCase.getIndividualMessages(conversationId);
-              console.log("messages",messages);
-              // Emit the messages to the client
               this.chatNamespace.emit("get-messages", messages);
           } catch (error) {
               console.error("Error retrieving messages:", error);
@@ -96,13 +86,6 @@ export class ChatSocketController {
         socket.broadcast.emit("typingResponse", data)
       );
 
-        socket.on("joining msg", (username) => {
-          this.name = username;
-          this.chatNamespace.emit(
-            "chat message",
-            `---${this.name} joined the chat---`
-          );
-        });
 
         socket.on("connect_error", (error) => {
           console.log("////////////////////////////////////////////////////////////=====>",error.message);
@@ -116,6 +99,24 @@ export class ChatSocketController {
           socket.to(`private room ${roomId}`).emit('user-disconnected',userId)
         })
       })
+
+      socket.on('open_rating_modal', (data) => {
+        console.log("connectedUsers",connectedUsers);
+        const recipientSocketId = connectedUsers.find(user => user.userId === data.userId)?.socketId;
+        console.log(data.appointmentId,data.userId,recipientSocketId);
+        if(recipientSocketId){
+        this.chatNamespace.to(recipientSocketId).emit('open_rating_modal',data.appointmentId);
+        }
+      });
+
+      socket.on('toggle consultation', (data) => {
+        console.log("connectedUsers",connectedUsers);
+        const recipientSocketId = connectedUsers.find(user => user.userId === data.userId)?.socketId;
+        console.log(data,data.appointmentId,data.userId,recipientSocketId);
+        if(recipientSocketId){
+        this.chatNamespace.to(recipientSocketId).emit('toggle consultation',data);
+        }
+      });
 
       socket.on("disconnect", () => {
         console.log("A user disconnected from the chat namespace");

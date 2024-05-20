@@ -6,7 +6,7 @@ import { userModelIDataSource } from "../../data/interfaces/data-sources/userIDa
 import { IMedicalRecord, User } from "../entities/User";
 import { IUserRepository } from "../interfaces/repositoryInterfaces/userIRepository";
 import dotenv from "dotenv";
-import { EditProfileDto, UsersWithTotalCount } from "../../models/users.model";
+import { EditProfileDto, UserSocialRegister, UsersWithTotalCount } from "../../models/users.model";
 import resetPasswordLink from "../../templates/changePasswordTemplate";
 dotenv.config();
 
@@ -48,6 +48,12 @@ export class UserRepository implements IUserRepository {
     }
     return user;
   }
+ 
+ async socialRegister(user: UserSocialRegister): Promise<User> {
+      return this.dataSource.socialRegister(user)
+  }
+  
+
 
   async save(user: User): Promise<User> {
     console.log("Log from UserAuth Repo save");
@@ -75,13 +81,6 @@ export class UserRepository implements IUserRepository {
     await this.dataSource.findResetTokenAndSavePassword(token, password);
   }
 
-  async getAllUsers(
-    page: number,
-    pageSize: number,
-    searchQuery: string
-  ): Promise<UsersWithTotalCount> {
-    return await this.dataSource.getAllUsers(searchQuery, page, pageSize);
-  }
 
   async toggleBlockUser(id: string): Promise<User> {
     if (!mongoose.Types.ObjectId.isValid(id)) {

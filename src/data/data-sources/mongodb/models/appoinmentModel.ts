@@ -62,9 +62,9 @@ const appointmentSchema = new mongoose.Schema<Appointment>({
     title:String
    },
    cancellationRequests: {
-    status: { type: String, enum: ['Pending', 'Accepted', 'Rejected'], default: 'Pending' },
+    status: { type: String, enum: ['Pending', 'Accepted', 'Rejected'] },
     reason: { type: String },
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date }
   }
 },
 {
