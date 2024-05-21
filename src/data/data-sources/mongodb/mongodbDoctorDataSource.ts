@@ -255,6 +255,24 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
             }
         }
     }
+
+    async getDoctorCurrentStatus(doctorId:string): Promise<Doctor> {
+        try {
+            const doctor = await doctorModel.findById(doctorId);
+            if (!doctor) {
+                throw new CustomError('Doctor not found', 403);
+            }
+            return doctor;
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          console.error('Unexpected error:', error);
+          throw new CustomError(castedError.message || 'Internal server error',500);
+            }
+        }
+    }
     private async fetchRoleDetails(roleIds: string[]): Promise<RoleDetails[]> {
         try {
             const roles = await roleModel.find({ _id: { $in: roleIds } });
@@ -491,7 +509,7 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
                 }
             });
                         console.log("statistics",statistics)
-            const  totalPatients = statistics[0].totalPatients || 0;
+            const  totalPatients = statistics[0]?.totalPatients || 0;
             const dashboardData: DashboardData = {};
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

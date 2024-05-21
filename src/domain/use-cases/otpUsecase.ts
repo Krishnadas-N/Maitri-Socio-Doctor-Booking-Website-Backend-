@@ -37,13 +37,13 @@ export class OTPServiceImpl implements IOtpUsecase {
     }
     let token:string;
     switch (section) {
-      case "user":
+      case "User":
         await this.userRepository.markAsVerified(otp.email);
         break;
       // case 'admin':
       //     await this.adminRepository.markAsVerified(email);
       //     break;
-      case "doctor":
+      case "Doctor":
         await this.doctorRepostory.markAsVerified(otp.email);
         token = await generateToken(otp.email); // Generate token for doctor
         await this.otpRepository.markAsUsed(otp.email);
