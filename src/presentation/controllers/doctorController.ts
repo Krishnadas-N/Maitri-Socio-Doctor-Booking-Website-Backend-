@@ -213,8 +213,8 @@ export function updateDoctorProfilePic(doctorService:IDoctorUsecase){
             if(!doctorId){
                 throw new CustomError('Doctor Id is not Defined',403)
             }
-              const doctor =await doctorService.getDoctorById(doctorId as string)
-              return sendSuccessResponse(res,doctor,"Doctor Fetched Success Fully",)
+             await doctorService.changeProfilePic(doctorId as string,imageUrl)
+              return sendSuccessResponse(res,imageUrl,"Doctor Profile Imagge Success Fully",)
            }catch(error){
             next(error)
            }

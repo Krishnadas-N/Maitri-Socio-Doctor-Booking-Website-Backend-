@@ -7,6 +7,9 @@ import { userModelIDataSource } from "../../interfaces/data-sources/userIDataSou
 import { medicalRecordModel  } from "./models/userMedicalRecordModel";
 import { roleModel} from "./models/roleModel";
 import { userModel } from "./models/userModel"; 
+import { doctorModel } from "./models/doctorModel";
+import { ReviewModel } from "./models/ReviewAndRatingModel";
+import { CategorizedDoctorsResult } from "../../../models/common.models";
 
 
 export class MongoDbUserDataSource implements userModelIDataSource {
@@ -336,4 +339,98 @@ export class MongoDbUserDataSource implements userModelIDataSource {
                 }
             }
         }
+
+        async getCategorizedDoctors():Promise<CategorizedDoctorsResult>{
+            try {
+                const averageRatings = await ReviewModel.aggregate([
+                    {
+                        $group: {
+                            _id: "$doctor",
+                            averageRating: { $avg: "$rating" }
+                        }
+                    }
+                ]);
+        
+                const averageRatingsMap = new Map<string, number>();
+                averageRatings.forEach((rating: any) => {
+                    averageRatingsMap.set(String(rating._id), rating.averageRating);
+                });
+        
+                const categorizedDoctors = await doctorModel.aggregate([
+                    {
+                        $group: {
+                            _id: "$specialization",
+                            doctors: {
+                                $push: {
+                                    _id: "$_id",
+                                    profilePic: "$profilePic",
+                                    fullName: { $concat: ["$firstName", " ", "$lastName"] },
+                                    specialty: "$specialization",
+                                    rating: { $ifNull: [{ $arrayElemAt: [averageRatingsMap.get(String('$_id')), 0] }, 0] }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "doctorcategories",
+                            localField: "_id",
+                            foreignField: "_id",
+                            as: "category"
+                        }
+                    },
+                    {
+                        $unwind: "$category" // Unwind to access fields inside the category array
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            category: "$category.name", // Get the name of the specialization
+                            doctors: 1
+                        }
+                    }
+                ]);
+        
+                // Aggregate most rated doctors separately
+                const mostRatedDoctors = await doctorModel.aggregate([
+                    { $sort: { averageRating: -1 } },
+                    { $limit: 10 },
+                    {
+                        $lookup: {
+                            from: "doctorcategories",
+                            localField: "specialization",
+                            foreignField: "_id",
+                            as: "specialization"
+                        }
+                    },
+                    {
+                        $unwind: "$specialization" // Unwind to access fields inside the specialization array
+                    },
+                    {
+                        $project: {
+                            _id: "$_id",
+                            profilePic: "$profilePic",
+                            fullName: { $concat: ["$firstName", " ", "$lastName"] },
+                            specialty: "$specialization.name", 
+                            rating: "$averageRating"
+                        }
+                    }
+                ]);
+                
+        
+            console.log("categorizedDoctors.concat",categorizedDoctors)
+            const result = categorizedDoctors.concat({ category: "Most Rated", doctors: mostRatedDoctors });
+    
+           console.log("Results fetched from Categorizd doctors",result)
+                return result; 
+            } catch (error:unknown) {
+                if (error instanceof CustomError) {
+                    throw error;
+                } else {
+                    const castedError = error as Error
+                    console.error("Error in getDoctorDashboardDetails:", error);
+                    throw new CustomError(castedError.message || "Error fetching doctor dashboard details", 500);
+                }
+            }
+            }
 }

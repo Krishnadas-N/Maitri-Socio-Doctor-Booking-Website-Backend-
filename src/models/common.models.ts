@@ -26,3 +26,19 @@ export interface TransactionDetailsByWeek {
     credit: number;
     debit: number;
 }
+
+
+type DoctorModel = {
+  _id: string;
+  profilePic:string,
+  fullName: string;
+  specialty: string;
+  rating: number;
+};
+
+type Category = {
+  category: string;
+  doctors: DoctorModel[];
+};
+
+export type CategorizedDoctorsResult = Category[];

@@ -1,3 +1,4 @@
+import { CategorizedDoctorsResult } from "../../../models/common.models";
 import { EditProfileDto, UserLoginResponse, UserSocialRegister, UsersWithTotalCount } from "../../../models/users.model";
 import { IMedicalRecord, User } from "../../entities/User";
 
@@ -17,5 +18,6 @@ export interface IUserUseCase{
     getUserMedicalRecords(userId: string): Promise<IMedicalRecord>;
     getUserByRefreshToken( refreshToken: string): Promise<string>;
     deleteMedicalRecord(recordId: string, userId: string): Promise<void> ;
-    calculateRecommendedCategories(surveyData: any): Promise<{ recommendedCategories: string[], npsScore: number }>
+    calculateRecommendedCategories(surveyData: any): Promise<{ recommendedCategories: string[], npsScore: number }>;
+    getCategorizedDoctors():Promise<CategorizedDoctorsResult>
 }

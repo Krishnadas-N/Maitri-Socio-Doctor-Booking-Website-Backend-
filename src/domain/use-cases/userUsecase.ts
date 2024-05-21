@@ -12,6 +12,7 @@ import { PasswordUtil } from "../../utils/passwordUtils";
 import { issueJWT, refreshAccessToken } from "../../utils/passportUtils";
 import { OtpRepository } from "../interfaces/repositoryInterfaces/otpIRepository";
 import { generateToken } from "../../utils/tokenizeDataHelper";
+import { CategorizedDoctorsResult } from "../../models/common.models";
 
 export class UserUseCase implements IUserUseCase {
   constructor(
@@ -395,6 +396,21 @@ export class UserUseCase implements IUserUseCase {
       }
     
       return { recommendedCategories, npsScore };
+    }
+
+   async getCategorizedDoctors(): Promise<CategorizedDoctorsResult> {
+    try {
+      return await this.userRepository.getCategorizedDoctors( )
+        } catch (error) {
+          if (error instanceof CustomError) {
+              throw error;
+          }
+          const castedError = error as Error;
+          throw new CustomError(
+              castedError.message || "Error while retrieving user by refresh token",
+              500
+          );
+      }
     }
     
 }

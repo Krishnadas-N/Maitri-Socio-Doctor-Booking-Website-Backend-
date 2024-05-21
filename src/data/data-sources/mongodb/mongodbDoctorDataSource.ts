@@ -8,6 +8,7 @@ import { RoleDetails } from "../../../domain/entities/Admin";
 import { ReviewModel } from "./models/ReviewAndRatingModel";
 import { appointmentModel } from "./models/appoinmentModel";
 import { DashBoardDataResponse, DashboardData, TypeOfAppointmentData } from "../../../models/doctors.model";
+import { CategorizedDoctorsResult } from "../../../models/common.models";
 
 
 export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
@@ -88,7 +89,7 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
         }
         console.log(doctor.consultationFee, "Consultation Fee");
         console.log(doctor.availability);
-        const { consultationFee, typesOfConsultation, availability, maxPatientsPerDay } = doctor;
+        const { consultationFee, typesOfConsultation, availability, maxPatientsPerDay,bio } = doctor;
         
         if(consultationFee){
         existingDoctor.consultationFee = consultationFee;
@@ -100,7 +101,9 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
         if(availability){
             existingDoctor.availability = availability;
         }
-      
+        if(bio){
+            existingDoctor.bio = bio;
+        }
         if(maxPatientsPerDay){
         existingDoctor.maxPatientsPerDay = maxPatientsPerDay;
         }
@@ -233,11 +236,11 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
         }
         }
     
- 
-    async changeProfilePic(doctorId:string,image:string):Promise<void>{
-        await doctorModel.updateOne({_id:doctorId}, {$set:{profilePic:image}}); 
-      }
-      
+        async changeProfilePic(doctorId:string,image:string):Promise<void>{
+            await doctorModel.updateOne({_id:doctorId}, {$set:{profilePic:image}}); 
+          }
+          
+   
       async saveSelectedSlots(doctorId: string, selectedSlots: { date: Date; slots: string[]; }[]): Promise<Doctor> {
         try {
             const doctor = await doctorModel.findOneAndUpdate({_id:doctorId},{selectedSlots:selectedSlots},{new:true});
@@ -537,5 +540,7 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
             }
         }
     }
+
+   
    
 }

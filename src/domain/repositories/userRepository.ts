@@ -8,6 +8,7 @@ import { IUserRepository } from "../interfaces/repositoryInterfaces/userIReposit
 import dotenv from "dotenv";
 import { EditProfileDto, UserSocialRegister, UsersWithTotalCount } from "../../models/users.model";
 import resetPasswordLink from "../../templates/changePasswordTemplate";
+import { CategorizedDoctorsResult } from "../../models/common.models";
 dotenv.config();
 
 export class UserRepository implements IUserRepository {
@@ -181,5 +182,9 @@ export class UserRepository implements IUserRepository {
 
      async deleteMedicalRecord(recordId: string, userId: string): Promise<void> {
           return this.dataSource.deleteMedicalRecord(recordId,userId)
+      }
+
+     async getCategorizedDoctors(): Promise<CategorizedDoctorsResult> {
+          return this.dataSource.getCategorizedDoctors()
       }
 }

@@ -241,4 +241,15 @@ export class UserController{
            next(error)
         }
     }
+
+    async getDoctorsByCategories(req: Request, res: Response,next:NextFunction){
+        try {
+            assertHasUser(req);
+            const result = await this.userUseCase.getCategorizedDoctors()
+            return sendSuccessResponse(res,result,"Doctors by categories result are retrieved  successfully");
+        } catch (error) {
+            console.error('Error fetching While Editing the  User:', error);
+           next(error)
+        }
+    }
 }

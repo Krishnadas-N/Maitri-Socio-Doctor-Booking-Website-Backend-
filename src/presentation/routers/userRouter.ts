@@ -125,4 +125,6 @@ userRouter.post('/submit-survey',authMiddleWare.isAuthenticated.bind(authMiddleW
 
 userRouter.get('/get-wallet-balance',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),walletController.getWalletBalanceOfUser.bind(walletController))
 
+userRouter.get('/get-category-doctors',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),userController.getDoctorsByCategories.bind(userController));
+
 export default userRouter;

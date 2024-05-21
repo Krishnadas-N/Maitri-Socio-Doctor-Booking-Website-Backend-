@@ -112,7 +112,10 @@ const DoctorSchema = new mongoose.Schema<Doctor>({
     }
   ],
   availability: [AvailabilitySchema],
-  profilePic: String,
+  profilePic:{
+    type:String,
+    default:'https://banner2.cleanpng.com/20180327/ssq/kisspng-computer-icons-user-profile-avatar-profile-5ab9e3b05772c0.6947928615221318883582.jpg'
+  },
   bio: String,
   createdAt: {
     type: Date,

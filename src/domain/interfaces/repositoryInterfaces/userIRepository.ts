@@ -1,3 +1,4 @@
+import { CategorizedDoctorsResult } from "../../../models/common.models";
 import { makeAppoinmentReqModel } from "../../../models/consultation.model";
 import { EditProfileDto, UserSocialRegister, UsersWithTotalCount } from "../../../models/users.model";
 import { IMedicalRecord, User } from "../../entities/User";
@@ -19,5 +20,6 @@ export interface IUserRepository {
     saveRefreshToken(email:string,refreshToken:string):Promise<void>;
     getUserByRefreshToken( refreshToken: string): Promise<User> ;
     deleteMedicalRecord(recordId: string, userId: string): Promise<void> ;
-    socialRegister(user:UserSocialRegister): Promise<User>
+    socialRegister(user:UserSocialRegister): Promise<User>;
+    getCategorizedDoctors():Promise<CategorizedDoctorsResult>
 }

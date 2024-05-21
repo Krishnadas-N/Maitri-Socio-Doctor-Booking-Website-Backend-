@@ -1,4 +1,5 @@
 import { IMedicalRecord, User } from "../../../domain/entities/User";
+import { CategorizedDoctorsResult } from "../../../models/common.models";
 import { EditProfileDto, UserSocialRegister, UsersWithTotalCount } from "../../../models/users.model";
 
 export interface userModelIDataSource{
@@ -19,5 +20,7 @@ export interface userModelIDataSource{
     saveRefreshToken(email:string,refreshToken:string):Promise<void>;
     getUserByRefreshToken( refreshToken: string): Promise<User> ;
     deleteMedicalRecord(recordId: string, userId: string): Promise<void>;
-    socialRegister(user:UserSocialRegister): Promise<User>
+    socialRegister(user:UserSocialRegister): Promise<User>;
+    getCategorizedDoctors():Promise<CategorizedDoctorsResult>;
+
 }
