@@ -4,11 +4,15 @@ WORKDIR /app
 
 COPY package*.json ./
 
+COPY tsconfig.json ./
+
 RUN npm install
 
 COPY . .
 
-RUN npx tsc
+RUN ls -R /app/src
+
+RUN npx tsc 
 
 EXPOSE 3000
 
