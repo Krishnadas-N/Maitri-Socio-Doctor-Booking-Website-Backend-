@@ -2,17 +2,17 @@
 
 import { Appointment } from "../domain/entities/APPOINMENT";
 
-export interface makeAppoinmentReqModel{
+interface makeAppoinmentReqModel{
     typeofConsultaion:'video'|'chat'|'clinic',
     bookingDate:Date,
     slotTime:string
 }
 
-export type PaymentModel='Credit Card' | 'Debit Card' | 'PayPal' | 'Stripe' | 'Razorpay'
+type PaymentModel='Credit Card' | 'Debit Card' | 'PayPal' | 'Stripe' | 'Razorpay'
 
-export const allowedStatuses = ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Rejected'];
+const allowedStatuses = ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Rejected'];
 
-export interface userAppoinmentsResponseModel {
+interface userAppoinmentsResponseModel {
     appointments:Appointment[],
     page:number,
     pageSize:number,
@@ -20,7 +20,7 @@ export interface userAppoinmentsResponseModel {
     totalPages:number,
 }
 
-export interface doctorAppoinmentsResponseModel {
+interface doctorAppoinmentsResponseModel {
     appointments:Appointment[],
     page:number,
     pageSize:number,
@@ -29,7 +29,7 @@ export interface doctorAppoinmentsResponseModel {
 }
 
 
-export interface findDoctorsQueryParams {
+interface findDoctorsQueryParams {
     searchQuery: string;
     currentPage: string;
     pageSize: string;
@@ -43,3 +43,5 @@ export interface findDoctorsQueryParams {
     languages: string;
   }
   
+
+export {findDoctorsQueryParams,doctorAppoinmentsResponseModel,userAppoinmentsResponseModel,PaymentModel,makeAppoinmentReqModel,allowedStatuses}

@@ -1,6 +1,5 @@
 import { CategorizedDoctorsResult } from "../../../models/common.models";
-import { makeAppoinmentReqModel } from "../../../models/consultation.model";
-import { EditProfileDto, UserSocialRegister, UsersWithTotalCount } from "../../../models/users.model";
+import { EditProfileDto, UserSocialRegister } from "../../../models/users.model";
 import { IMedicalRecord, User } from "../../entities/User";
 
 export interface IUserRepository {

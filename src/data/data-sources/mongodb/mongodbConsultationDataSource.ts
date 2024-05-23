@@ -596,7 +596,7 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       }
     
       // Construct slots array based on availabilityArray and slotRanges
-      const slots = availabilityArray.reduce((acc:any, slot) => {
+      const slots = availabilityArray.reduce((acc:string[], slot) => {
         const matchingRange = slotRanges.find(range => range.name === slot);
         if (matchingRange) {
           for (let i = matchingRange.start; i <= matchingRange.end; i++) {
