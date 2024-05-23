@@ -1,6 +1,6 @@
 import mongoose, { FilterQuery, Types } from "mongoose";
 import { CustomError } from "../../../utils/customError"; 
-import { doctorAppoinmentsResponseModel, findDoctorsQueryParams, makeAppoinmentReqModel, userAppoinmentsResponseModel } from "../../../models/consultation.model";
+import { doctorAppoinmentsResponseModel, findDoctorsQueryParams, makeAppoinmentReqModel, userAppoinmentsResponseModel  } from "../../../models/consultation.model";
 import { appointmentModel } from "./models/appoinmentModel";
 import {doctorModel} from "./models/doctorModel";
 import { IConsultationModelIDataSource } from "../../interfaces/data-sources/consultationIDataSources";
@@ -226,6 +226,7 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
             message: `An amount of ${adminAmount} has been credited to your account as payment for an appointment scheduled by ${appoinment.patient} on ${appoinment.date.toDateString()} at ${appoinment.slot}.`,
         }))
     ]);
+    console.log(notification, adminNotification, doctorNotification);
       return {appoinmentId:appoinment._id,notificationId:notification._id.toString()};
     }catch (err: unknown) {
       if (err instanceof CustomError) {

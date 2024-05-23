@@ -1,11 +1,7 @@
-// this.appointmentForm = this.fb.group({
-//     typeofConsultaion: [this.appoinMentDetail.typeofConsultaion, Validators.required],
-//     bookingDate: [this.appoinMentDetail.bookingDate, Validators.required],
-//     slotTime: [this.appoinMentDetail.slotTime, Validators.required]
+
 
 import { Appointment } from "../domain/entities/APPOINMENT";
 
-//   });
 export interface makeAppoinmentReqModel{
     typeofConsultaion:'video'|'chat'|'clinic',
     bookingDate:Date,
