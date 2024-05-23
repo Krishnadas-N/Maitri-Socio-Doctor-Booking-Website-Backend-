@@ -3,6 +3,7 @@ import {  UploadApiResponse,
 import cloudinary from './cloudinary';
 import { NextFunction, Request, Response } from 'express';
 import multer, { Multer } from 'multer';
+
 const storage = multer.memoryStorage();
 export const upload: Multer = multer({ storage: storage });
 interface CloudinaryFile extends Express.Multer.File {
