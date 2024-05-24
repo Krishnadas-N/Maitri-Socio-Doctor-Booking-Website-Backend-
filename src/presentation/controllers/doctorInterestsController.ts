@@ -47,7 +47,6 @@ import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
             try{
                 assertHasUser(req)
                 const userId = req.user.id
-                
                 if(!userId){
                     throw new CustomError('Unauthorized User',403);
                 }
