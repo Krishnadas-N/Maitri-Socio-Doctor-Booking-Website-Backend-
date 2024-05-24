@@ -1,0 +1,11 @@
+node_modules/
+npm-debug.log
+
+# Dist directory
+dist
+
+# Environment files
+.env
+
+# VSCode settings
+.vscode

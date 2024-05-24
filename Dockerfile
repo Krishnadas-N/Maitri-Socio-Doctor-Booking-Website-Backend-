@@ -4,13 +4,9 @@ WORKDIR /app
 
 COPY package*.json ./
 
-COPY tsconfig.json ./
-
 RUN npm install
 
 COPY . .
-
-RUN ls -R /app/src
 
 RUN npx tsc 
 
