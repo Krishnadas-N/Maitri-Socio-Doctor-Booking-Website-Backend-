@@ -11,6 +11,7 @@ COPY . .
 RUN ls -la src/models
 RUN ls -la src/data/data-sources/mongodb
 RUN ls -la src/domain/interfaces/repositoryInterfaces
+RUN ls -la src/presentation/controllers
 
 RUN npx tsc
 
