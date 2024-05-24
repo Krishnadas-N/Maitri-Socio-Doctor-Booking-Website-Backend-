@@ -53,7 +53,7 @@ import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
                 }
                 const interests= await InterestedDoctorsUsecase.getUserInterestsForUser(userId as string);
                 console.log(interests)
-                return sendSuccessResponse(res,interests,"User Interests")
+                return sendSuccessResponse(res,interests,"user interests retrieved successfully")
             }catch(err){
                 next(err)
             }
