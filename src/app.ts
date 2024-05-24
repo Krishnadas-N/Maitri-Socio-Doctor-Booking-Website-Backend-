@@ -55,25 +55,10 @@ app.use('/api/chat',chatRouter)
 
 initializeSocketConnection(io)
 
-// app.get(
-//   "/auth/google",
-//   passport.authenticate("google", {  scope: ["email", "profile"] })
-// );
-
-// app.get(
-//   "/auth/google/callback",
-//   passport.authenticate("google", { failureRedirect: "/", session: false }),
-//   (req, res) => {
-//     const token = (req.user as any).token; // Assuming user object contains token
-//     res.redirect(`http://localhost:3000?token=${token}`);
-//   }
-// );
 
 
 
-
-
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, req: Request, res: Response) => {
   console.log("Error Handler Comes In");
   if (err instanceof CustomError) {
     console.log("Custom Error:");
