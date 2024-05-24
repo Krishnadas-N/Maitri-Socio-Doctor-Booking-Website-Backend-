@@ -8,6 +8,10 @@ RUN npm install
 
 COPY . .
 
+RUN ls -la src/models
+RUN ls -la src/data/data-sources/mongodb
+RUN ls -la src/domain/interfaces/repositoryInterfaces
+
 RUN npx tsc
 
 FROM node:20-alpine
