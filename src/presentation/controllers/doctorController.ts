@@ -327,3 +327,19 @@ export function getDoctorReviews(doctorService: IDoctorUsecase) {
         }
     };
 }
+
+
+
+export function editDoctorDetails(doctorService: IDoctorUsecase) {
+    return async function (req: Request, res: Response, next: NextFunction) {
+        console.log(" editDoctorDetails  ",req.params);
+        try {
+            assertHasUser(req);
+            const doctorId = req.user.id as string;
+            const result = await doctorService.editDoctorData(doctorId,req.body)
+            return sendSuccessResponse(res, result, "Doctor Profile edited successfully");
+        } catch (error) {
+            next(error);
+        }
+    };
+}

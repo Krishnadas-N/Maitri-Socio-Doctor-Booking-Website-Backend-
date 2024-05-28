@@ -193,12 +193,18 @@ export class WalletDataSource {
     
     async getBalanceOfWallet(userId: string): Promise<number> {
         try {
-            const wallet = await walletModel.findOne({ owner:userId }).select('balance');
-      
+            const wallet = await walletModel.findOne({ owner:userId })
+            console.log("Wallllllllllllllllllet Details ",wallet)
           if (wallet) {
             return wallet.balance;
           } else {
-            return 0; 
+            const newWallet = new walletModel({
+                owner: userId,
+                balance: 0,
+                transactions: []
+            });
+            await newWallet.save();
+            return 0;
           }
         } catch (error) {
             console.error("Error while fetching balance wallet:", error);

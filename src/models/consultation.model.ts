@@ -1,6 +1,8 @@
 
 
 import { Appointment } from "../domain/entities/APPOINMENT";
+import Doctor from "../domain/entities/Doctor";
+import { User } from "../domain/entities/User";
 
 interface makeAppoinmentReqModel{
     typeofConsultaion:'video'|'chat'|'clinic',
@@ -8,7 +10,7 @@ interface makeAppoinmentReqModel{
     slotTime:string
 }
 
-type PaymentModel='Credit Card' | 'Debit Card' | 'PayPal' | 'Stripe' | 'Razorpay'
+type PaymentModel='Credit Card' | 'Debit Card' | 'PayPal' | 'Stripe' | 'Razorpay' |'Wallet'
 
 const allowedStatuses = ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Rejected'];
 
@@ -41,6 +43,11 @@ interface findDoctorsQueryParams {
     consultation: string;
     rating: string;
     languages: string;
+  }
+  
+  export interface AggregatedAppointmentChangeStatus extends Appointment {
+    patientDetails: User;
+    doctorDetails: Doctor;
   }
   
 

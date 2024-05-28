@@ -184,22 +184,26 @@ export class IDoctorRepositoryImpl  implements IDoctorRepository {
 
  
     async getSimilarProfiles(specializationId: string): Promise<Doctor[]> {
-        return this.doctorDataSource.getSimilarProfiles(specializationId);
+        return await this.doctorDataSource.getSimilarProfiles(specializationId);
     }
 
    async followOrUnfollowDoctors(doctorId: string, userId: string, userType: "Doctor" | "User"): Promise<Follower[]> {
-        return this.doctorDataSource.followOrUnfollowDoctors(doctorId,userId,userType)
+        return await this.doctorDataSource.followOrUnfollowDoctors(doctorId,userId,userType)
     }
 
     async addReview(appoinmentId: string, userId: string, rating: number, comment: string): Promise<Review> {
-        return this.doctorDataSource.addReview(appoinmentId,userId,rating,comment)
+        return await this.doctorDataSource.addReview(appoinmentId,userId,rating,comment)
     }
 
    async getDoctorDashboardDetails(doctorId: string): Promise<DashBoardDataResponse> {
-        return this.doctorDataSource.getDoctorDashboardDetails(doctorId)
+        return await this.doctorDataSource.getDoctorDashboardDetails(doctorId)
     }
 
-    getReviewsOfDoctor(doctorId: string): Promise<Review[]> {
-        return this.doctorDataSource.getReviewsOfDoctor(doctorId)
+   async getReviewsOfDoctor(doctorId: string): Promise<Review[]> {
+        return await this.doctorDataSource.getReviewsOfDoctor(doctorId)
+    }
+
+    async editDoctorData(doctorId: string, doctor: Partial<Doctor>): Promise<Doctor> {
+        return await this.doctorDataSource.editDoctorData(doctorId,doctor)
     }
 }

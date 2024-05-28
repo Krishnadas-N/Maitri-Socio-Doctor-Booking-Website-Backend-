@@ -1,6 +1,6 @@
 import mongoose, { FilterQuery, Types } from "mongoose";
 import { CustomError } from "../../../utils/customError"; 
-import { doctorAppoinmentsResponseModel, findDoctorsQueryParams, makeAppoinmentReqModel, userAppoinmentsResponseModel  } from "../../../models/consultation.model";
+import { AggregatedAppointmentChangeStatus, doctorAppoinmentsResponseModel, findDoctorsQueryParams, makeAppoinmentReqModel, userAppoinmentsResponseModel  } from "../../../models/consultation.model";
 import { appointmentModel } from "./models/appoinmentModel";
 import {doctorModel} from "./models/doctorModel";
 import { IConsultationModelIDataSource } from "../../interfaces/data-sources/consultationIDataSources";
@@ -12,7 +12,7 @@ import { WalletDataSource } from "./mongodbWalletDataSource";
 import notificationModel from "./models/notificationModel";
 import { User } from "../../../domain/entities/User";
 dotenv.config();
-
+import {walletModel} from "./models/walletModel";
 
 export class ConsultaionModel implements IConsultationModelIDataSource {
   constructor(private readonly walletModel: WalletDataSource) {}
@@ -43,7 +43,7 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       if (!consultationFee) {
         throw new CustomError("Consultation type fee not found.", 404);
       }
-
+      const reservationExpiry = new Date(Date.now() + 5 * 60 * 1000); 
       const appointment = new appointmentModel({
         patient: userId,
         doctor: doctorDetails._id,
@@ -51,6 +51,8 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
         date: appoinmentData.bookingDate,
         slot: appoinmentData.slotTime,
         amount: consultationFee.fee,
+        reserved: true,
+         reservationExpiry: reservationExpiry
       });
 
       await appointment.save();
@@ -150,7 +152,8 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       | "Debit Card"
       | "PayPal"
       | "Stripe"
-      | "Razorpay",
+      | "Razorpay"
+      |   "Wallet",
     responseId: string
   ): Promise<void> {
     try {
@@ -160,7 +163,31 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       if (!appointment) {
         throw new CustomError("No Appointment found with the given ID", 404);
       }
-
+      if (paymentMethod === "Wallet") {
+        const wallet = await walletModel.findOne({
+          owner: appointment.patient,
+        });
+  
+        if (!wallet) {
+          throw new CustomError("No Wallet found for the given patient", 404);
+        }
+  
+        if (wallet.balance < appoinmentAmount) {
+          throw new CustomError("Insufficient wallet balance", 400);
+        }
+  
+        // Deduct the amount from the wallet
+        wallet.balance -= appoinmentAmount;
+        wallet.transactions.push({
+          type: 'debit',
+          amount: appoinmentAmount,
+          description: `Payment for appointment ${appointmentId}`,
+          date:new Date(Date.now())
+        });
+  
+        await wallet.save();
+      }
+  
       appointment.payment = {
         amount: appoinmentAmount,
         method: paymentMethod,
@@ -185,7 +212,7 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
     try {
       const appoinment = await appointmentModel.findOneAndUpdate(
         { "payment.transactionId": orderId },
-        { $set: { paymentStatus: "Paid" } },
+        { $set: { paymentStatus: "Paid",reserved :false,reservationExpiry :null } },
         { new: true }
       );
       if (!appoinment) {
@@ -435,19 +462,50 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
     status: string,
     userId:string,
     userType:string
-  ): Promise<{appointment:Appointment,notificationId:string}> {
+  ): Promise<{appointment:AggregatedAppointmentChangeStatus,notificationId:string}> {
     try {
       console.log(userType);
-      const appointment = (await appointmentModel.findOneAndUpdate(
+      const updatedAppointment = await appointmentModel.findOneAndUpdate(
         { _id: appoinmentId },
         { $set: { status: status } },
         { new: true }
-      )) as Appointment;
+      );
 
-      if (!appointment) {
-        throw new CustomError("Appoinment Not Found Caused an error ", 422);
+      if (!updatedAppointment) {
+        throw new CustomError('Appointment Not Found Caused an error', 422);
       }
 
+      const appointmentDetails = await appointmentModel.aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(appoinmentId) } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'patient',
+            foreignField: '_id',
+            as: 'patientDetails',
+          },
+        },
+        {
+          $lookup: {
+            from: 'doctors',
+            localField: 'doctor',
+            foreignField: '_id',
+            as: 'doctorDetails',
+          },
+        },
+        {
+          $unwind: '$patientDetails',
+        },
+        {
+          $unwind: '$doctorDetails',
+        },
+      ]);
+
+      if (!appointmentDetails || appointmentDetails.length === 0) {
+        throw new CustomError('Appointment details not found after update', 422);
+      }
+
+      const appointment = appointmentDetails[0];
    // Create notification data
       const receiverModel = 'User';
       const receiverId = appointment.patient ;
@@ -461,7 +519,6 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
           readBy: [],
       };
 
-      // Save the notification
       const notification = await notificationModel.create(notificationData);
 
 
@@ -533,11 +590,14 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
       const startOfDay = new Date(Date.UTC(newDate.getUTCFullYear(), newDate.getUTCMonth(), newDate.getUTCDate()));
       const endOfDay = new Date(Date.UTC(newDate.getUTCFullYear(), newDate.getUTCMonth(), newDate.getUTCDate(), 23, 59, 59, 999));
 
-
+      const currentTime = new Date();
       const appointments = await appointmentModel.find({
         doctor: doctorId,
         date: { $gte: startOfDay, $lte: endOfDay },
-        paymentStatus: { $eq: "Paid" }
+        $or: [
+          { paymentStatus: { $eq: "Paid" } },
+          { reserved: true, reservationExpiry: { $gt: currentTime } }
+        ]
     });
 
 

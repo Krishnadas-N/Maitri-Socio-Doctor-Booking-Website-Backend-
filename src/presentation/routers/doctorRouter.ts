@@ -5,7 +5,7 @@ import { MongoDbDoctorDataSourceImpl } from "../../data/data-sources/mongodb/mon
 import { IDoctorRepositoryImpl } from "../../domain/repositories/doctorRepository";
 import { MongoDbOtpDataSource } from "../../data/data-sources/mongodb/mongodbOtpDataSource";
 import { OTPRepsositoryImpl } from "../../domain/repositories/otpRepository";
-import { VerifyProfile, addReviewAndRatingOfDoctors, followOrUnfollowDoctors, forgotPassword, getCurrentDoctor, getDoctorById, getDoctorDashBoardDetails, getDoctorReviews, getDoctors, getSimilarProfilesOfDoctors, login, registerAdditionalInfo, registerBasicInfo, registerProfessionalInfo, resetPassword, saveSelectedSlots, updateDoctorProfilePic } from "../controllers/doctorController";
+import { VerifyProfile, addReviewAndRatingOfDoctors, editDoctorDetails, followOrUnfollowDoctors, forgotPassword, getCurrentDoctor, getDoctorById, getDoctorDashBoardDetails, getDoctorReviews, getDoctors, getSimilarProfilesOfDoctors, login, registerAdditionalInfo, registerBasicInfo, registerProfessionalInfo, resetPassword, saveSelectedSlots, updateDoctorProfilePic } from "../controllers/doctorController";
 import { upload, uploadToCloudinary } from "../../config/uploadMiddleWare";
 import { DoctorUseCaseImpl } from "../../domain/use-cases/doctorUsecase";
 import { authMiddleWare } from "./authRouterSetup";
@@ -95,5 +95,6 @@ doctorRouter.get('/get-doctor-dashboarddetails',authMiddleWare.isAuthenticated.b
 
 doctorRouter.get('/get-reviews-doctor/:doctorId',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['User'], 'READ'),getDoctorReviews(doctorServices))
 
+doctorRouter.put('/edit-doctor-profile',authMiddleWare.isAuthenticated.bind(authMiddleWare),checkRolesAndPermissions(['Doctor'], 'READ'),editDoctorDetails(doctorServices))
 
 export default doctorRouter;

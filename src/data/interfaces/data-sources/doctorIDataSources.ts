@@ -12,7 +12,7 @@ export interface IDoctorModelIDataSource{
     findResetTokenAndSavePassword(token:string,password:string):Promise<void>;
     AcceptprofileComplete(id:string):Promise<Doctor>;
     findDoctors(page?:number,searchQuery?:string,itemsPerPage?: number): Promise<Doctor[]>;
-   
+    editDoctorData(doctorId:string,doctor: Partial<Doctor>): Promise<Doctor>;
     changeProfilePic(doctorId:string,image:string):Promise<void>;
     saveSelectedSlots(doctorId: string, selectedSlots: { date: Date, slots: string[] }[]): Promise<Doctor>;
     getSimilarProfiles(specializationId:string):Promise<Doctor[]>;

@@ -25,6 +25,8 @@ export class Appointment {
     title:string
   };
 cancellationRequests?: CancellationRequest; 
+reserved:boolean;
+reservationExpiry:Date | null
 
   constructor(
     patient: objectId,
@@ -38,13 +40,16 @@ cancellationRequests?: CancellationRequest;
     createdAt: Date,
     paymentStatus: 'Pending' | 'Paid' | 'Refunded',
     payment: Payment,
+    reserved:boolean,
+    reservationExpiry:Date,
     _id?:string,
     consultationLink?:string,
     prescription?:{
       file:string,
       title:string
     },
-    cancellationRequests?: CancellationRequest
+    cancellationRequests?: CancellationRequest,
+    
   ) {
     this.patient = patient;
     this.doctor = doctor;
@@ -60,7 +65,9 @@ cancellationRequests?: CancellationRequest;
     this._id =  _id;
     this.consultationLink =consultationLink;
     this.prescription = prescription,
-    this.cancellationRequests =cancellationRequests
+    this.cancellationRequests =cancellationRequests,
+    this.reserved = reserved,
+    this.reservationExpiry=reservationExpiry
   }
 }
 

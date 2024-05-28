@@ -6,6 +6,7 @@ import { IConsultationRepository } from "../interfaces/repositoryInterfaces/cons
 import { IConsultationUsecase } from "../interfaces/use-cases/consultationIUsecase";
 import { INotificationRepository } from "../interfaces/repositoryInterfaces/notificationRepository";
 import dotenv from 'dotenv';
+import { pulse } from "../../config/cron-pulse-config";
 dotenv.config();
 
 export class ConsultationUseCaseImpl implements IConsultationUsecase {
@@ -202,18 +203,37 @@ export class ConsultationUseCaseImpl implements IConsultationUsecase {
     userType: string
   ): Promise<{ appointment: Appointment; notificationId: string }> {
     try {
+      await pulse.start();
       if (!appoinmentId) {
         throw new CustomError("Appoinment Id is Not Provided", 400);
       }
       if (!allowedStatuses.includes(status)) {
         throw new CustomError("Invalid appointment status", 400);
       }
-      return this.consultationRepo.changeAppoinmentStatus(
+      const result =await  this.consultationRepo.changeAppoinmentStatus(
         appoinmentId,
         status,
         userId,
         userType
       );
+      const appointmentDetails = result.appointment;
+      const jobData = {
+            to: appointmentDetails.patientDetails.email,
+            subject: 'Appointment Status Update',
+            text: `Hello ${appointmentDetails.patientDetails.firstName}  ${appointmentDetails.patientDetails.lastName}, your appointment status is updated.`,
+            patientName: appointmentDetails.patientDetails.firstName,
+            status: appointmentDetails.status,
+            doctorName: appointmentDetails.doctorDetails.firstName,
+            date: appointmentDetails.date,
+            slot: appointmentDetails.slot,
+          };
+
+     const job =  await pulse.create('send email', jobData).save();
+     const slotTime = new Date();
+     const fiveMinutesLater = new Date(slotTime.getTime() + 5 * 60 * 1000);
+      await job.schedule(new Date(fiveMinutesLater)).save();
+
+      return result;
     } catch (error: unknown) {
       if (error instanceof CustomError) {
         throw error;

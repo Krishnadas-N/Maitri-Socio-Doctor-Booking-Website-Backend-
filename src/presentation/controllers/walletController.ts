@@ -36,8 +36,10 @@ export class WalletController{
     async getWalletBalanceOfUser(req: Request, res: Response,next:NextFunction){
         try {
             assertHasUser(req);
+            console.log("Wallet Balanace ====>")
             const userId = req.user.id as string;
             const data = await this.walletUsecase.getBalanceOfWallet(userId)
+            console.log("Wallet is Reveivec",data)
             return  sendSuccessResponse(res, data,"Wallet reterived successFully");
         } catch (error) {
             console.error('Error fetching While Editing the  User:', error);

@@ -20,7 +20,7 @@ interface Appointment extends Document {
   paymentStatus: 'Pending' | 'Paid' | 'Refunded';
   payment:  {
     amount: number,
-    method:'Credit Card' | 'Debit Card' | 'PayPal' | 'Stripe' | 'Razorpay';
+    method:'Credit Card' | 'Debit Card' | 'PayPal' | 'Stripe' | 'Razorpay'|'Wallet';
     transactionId:string;
     status: 'Success'| 'Failed';
     };
@@ -30,6 +30,8 @@ interface Appointment extends Document {
     title:string
   },
   cancellationRequests?: CancellationRequest; 
+  reserved:boolean,
+  reservationExpiry:Date | null
 }
 
 const appointmentSchema = new mongoose.Schema<Appointment>({
@@ -48,7 +50,7 @@ const appointmentSchema = new mongoose.Schema<Appointment>({
   paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Refunded'], default: 'Pending' }, 
   payment: {
       amount: { type: Number },
-      method: { type: String, enum: ['Credit Card', 'Debit Card', 'PayPal', 'Stripe','Razorpay'],},
+      method: { type: String, enum: ['Credit Card', 'Debit Card', 'PayPal', 'Stripe','Razorpay','Wallet'],},
       transactionId: { type: String },
       status: { type: String, enum: ['Success', 'Failed'], default: 'Success' },
   },
@@ -65,7 +67,9 @@ const appointmentSchema = new mongoose.Schema<Appointment>({
     status: { type: String, enum: ['Pending', 'Accepted', 'Rejected'] },
     reason: { type: String },
     createdAt: { type: Date }
-  }
+  },
+  reserved: { type: Boolean, default: false },
+  reservationExpiry: { type: Date },
 },
 {
   timestamps:true

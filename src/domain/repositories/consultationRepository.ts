@@ -1,6 +1,6 @@
 import { CustomError } from "../../utils/customError"; 
 import { IConsultationModelIDataSource } from "../../data/interfaces/data-sources/consultationIDataSources"; 
-import { PaymentModel, doctorAppoinmentsResponseModel, findDoctorsQueryParams, makeAppoinmentReqModel, userAppoinmentsResponseModel } from "../../models/consultation.model";
+import { AggregatedAppointmentChangeStatus, PaymentModel, doctorAppoinmentsResponseModel, findDoctorsQueryParams, makeAppoinmentReqModel, userAppoinmentsResponseModel } from "../../models/consultation.model";
 import { Appointment } from "../entities/APPOINMENT";
 import { IConsultationRepository } from "../interfaces/repositoryInterfaces/consultationIRepository"; 
 import dotenv from 'dotenv';
@@ -21,6 +21,7 @@ export class ConsultationRepoImpl implements IConsultationRepository{
           key_id: process.env.RAZORPAY_KEY_ID as string,
           key_secret: process.env.RAZORPAY_KEY_SECRET
         });
+        console.log(instance,"instance")
         return instance;
       }
   
@@ -119,7 +120,7 @@ export class ConsultationRepoImpl implements IConsultationRepository{
    async  getAppoinmentsOfUsers(userId: string,page:number,pageSize:number): Promise<userAppoinmentsResponseModel> {
     return this.consultationDataSource.getAppoinmentsOfUsers(userId,page,pageSize);
     }
-    async changeAppoinmentStatus(appoinmentId: string, status: string,userId:string,userType:string): Promise<{appointment:Appointment,notificationId:string}> {
+    async changeAppoinmentStatus(appoinmentId: string, status: string,userId:string,userType:string): Promise<{appointment:AggregatedAppointmentChangeStatus,notificationId:string}> {
         return  await this.consultationDataSource.changeAppoinmentStatus(appoinmentId,status,userId,userType);
     }
 

@@ -12,7 +12,7 @@ export interface  IDoctorRepository {
     findResetTokenAndSavePassword(token: string, password: string): Promise<void>;
     AcceptDoctorProfile(id:string):Promise<Doctor>;
     GetDoctors(page?:number,searchQuery?:string,itemsPerPage?: number):Promise<Doctor[]>;
-  
+    editDoctorData(doctorId:string,doctor: Partial<Doctor>): Promise<Doctor>
     changeProfilePic(doctorId:string,image:string):Promise<void>;
     saveSelectedSlots(doctorId: string, selectedSlots: { date: Date, slots: string[] }[]): Promise<Doctor>;
     getSimilarProfiles(specializationId:string):Promise<Doctor[]>;

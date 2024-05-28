@@ -329,6 +329,24 @@ export class DoctorUseCaseImpl implements IDoctorUsecase{
           }
       }
 
+      async editDoctorData(doctorId: string, doctor: Partial<Doctor>): Promise<Doctor> {
+        try {
+            if (!doctorId) {
+              throw new CustomError("Doctor Id  is not Found", 400);
+            }
+          
+            return await this.doctorRepository.editDoctorData(doctorId,doctor)
+          } catch (error:unknown) {
+              if (error instanceof CustomError) {
+                  throw error;
+              } else {
+                  const castedError = error as Error
+            console.error('Unexpected error:', error);
+            throw new CustomError(castedError.message || 'Internal server error',500);
+              }
+          }
+      }
+
     //   async getDoctorBookedSlots(date: Date): Promise<string[]> {
     //   try{
     //     if (!(date instanceof Date) || isNaN(date.getTime())) {

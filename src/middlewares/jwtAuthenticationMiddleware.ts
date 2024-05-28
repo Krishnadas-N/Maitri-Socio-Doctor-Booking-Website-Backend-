@@ -1,12 +1,11 @@
-import passport from 'passport';
-import { NextFunction, Request, Response } from 'express';
-import { CustomError } from '../utils/customError'; 
+import passport from "passport";
+import { NextFunction, Request, Response } from "express";
+import { CustomError } from "../utils/customError";
 
-import { Payload } from '../models/payload.model';
-import { IUserRepository } from '../domain/interfaces/repositoryInterfaces/userIRepository'; 
-import { IDoctorRepository } from '../domain/interfaces/repositoryInterfaces/doctorIRepository'; 
-import { IAdminRepository } from '../domain/interfaces/repositoryInterfaces/adminIRepository'; 
-
+import { Payload } from "../models/payload.model";
+import { IUserRepository } from "../domain/interfaces/repositoryInterfaces/userIRepository";
+import { IDoctorRepository } from "../domain/interfaces/repositoryInterfaces/doctorIRepository";
+import { IAdminRepository } from "../domain/interfaces/repositoryInterfaces/adminIRepository";
 
 export class AuthMiddleware {
   constructor(
@@ -31,16 +30,21 @@ export class AuthMiddleware {
               throw new CustomError("Token has expired", 401);
             }
             let user;
+            enum UserType {
+              User = "User",
+              Doctor = "Doctor",
+              Admin = "Admin",
+            }
             switch (payload.roles[0].roleName) {
-              case "User":
+              case UserType.User:
                 user = await this.userRepo.findById(payload.id as string);
                 break;
-              case "Doctor":
+              case UserType.Doctor:
                 user = await this.doctorRepo.findDoctorById(
                   payload.id as string
                 );
                 break;
-              case "Admin":
+              case UserType.Admin:
                 user = await this.adminRepo.findById(payload.id as string);
                 break;
               default:

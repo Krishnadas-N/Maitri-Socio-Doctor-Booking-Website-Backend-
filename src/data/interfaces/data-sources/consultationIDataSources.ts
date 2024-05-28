@@ -1,5 +1,5 @@
 import { Appointment } from '../../../domain/entities/APPOINMENT';
-import {doctorAppoinmentsResponseModel, findDoctorsQueryParams, makeAppoinmentReqModel, userAppoinmentsResponseModel} from '../../../models/consultation.model'
+import {AggregatedAppointmentChangeStatus, doctorAppoinmentsResponseModel, findDoctorsQueryParams, makeAppoinmentReqModel, userAppoinmentsResponseModel} from '../../../models/consultation.model'
 import { doctorsResponseModel } from '../../../models/common.models';
 import Doctor from '../../../domain/entities/Doctor';
 
@@ -11,7 +11,7 @@ export interface IConsultationModelIDataSource{
     updatePaymentToSuccess(orderId:string):Promise<{appoinmentId:string,notificationId:string}>;
     getAppoinmentsOfUsers(userId:string,page:number,pageSize:number):Promise<userAppoinmentsResponseModel>;
     getAppoinmentsOfDoctors(doctorId:string,page:number,pageSize:number):Promise<doctorAppoinmentsResponseModel>;
-    changeAppoinmentStatus(appoinmentId:string,status:string,userId:string,userType:string):Promise<{appointment:Appointment,notificationId:string}>;
+    changeAppoinmentStatus(appoinmentId:string,status:string,userId:string,userType:string):Promise<{appointment:AggregatedAppointmentChangeStatus,notificationId:string}>;
     getAvailableSlots(doctorId:string, date:Date):Promise<string[]>;
     getAllDoctors(filters:findDoctorsQueryParams):Promise<doctorsResponseModel>;
     appoinmentCancellation(appoinmentId:string,status:string,userId:string):Promise<Appointment>;

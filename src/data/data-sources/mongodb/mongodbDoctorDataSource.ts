@@ -7,9 +7,8 @@ import {roleModel} from "./models/roleModel";
 import { RoleDetails } from "../../../domain/entities/Admin";
 import { ReviewModel } from "./models/ReviewAndRatingModel";
 import { appointmentModel } from "./models/appoinmentModel";
-import { DashBoardDataResponse, DashboardData, TypeOfAppointmentData } from "../../../models/doctors.model";
+import { DashBoardDataResponse, DashboardData, LatestAppointment, LatestReview, TypeOfAppointmentData } from "../../../models/doctors.model";
 import { CategorizedDoctorsResult } from "../../../models/common.models";
-
 
 export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
     constructor(){}
@@ -511,6 +510,26 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
                     typeOfAppointments[appointmentType] = 0; 
                 }
             });
+
+             // Fetching latest 7 appointments
+        const latestAppointments = await appointmentModel.find({
+            doctor: doctorId
+        })
+        .sort({ date: -1 })
+        .limit(7)
+        .populate('patient', 'fullName profilePic')
+        .select('patient typeOfAppointment date slot');
+
+        // Fetching latest 7 reviews
+        const latestReviews = await ReviewModel.find({
+            doctor: doctorId
+        })
+        .sort({ createdAt: -1 })
+        .limit(7)
+        .populate('patientName', 'fullName profilePic')
+        .select('patientName rating comment createdAt');
+
+        console.log("latestReviews",latestReviews,"latestAppointments",latestAppointments)
                         console.log("statistics",statistics)
             const  totalPatients = statistics[0]?.totalPatients || 0;
             const dashboardData: DashboardData = {};
@@ -529,7 +548,11 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
             };
             }
             console.log("dashboardData",dashboardData,"totalPatients",totalPatients)
-            return {dashboardData:dashboardData,totalPatients, typeOfAppointments: typeOfAppointments };
+            return {dashboardData:dashboardData,
+                totalPatients, 
+                typeOfAppointments: typeOfAppointments,
+                latestAppointments: latestAppointments as unknown as LatestAppointment[],
+                latestReviews: latestReviews as unknown as LatestReview[] };
         } catch (error:unknown) {
             if (error instanceof CustomError) {
                 throw error;
@@ -540,6 +563,28 @@ export class MongoDbDoctorDataSourceImpl implements IDoctorModelIDataSource{
             }
         }
     }
+
+
+    async editDoctorData(doctorId:string,doctor: Partial<Doctor>): Promise<Doctor> {
+        try {
+          const savedDoctor = await doctorModel.findByIdAndUpdate(doctorId,doctor)
+          console.log(savedDoctor)
+      
+          if (!savedDoctor) {
+            throw new CustomError('Unauthorized Doctor or Please Try again Later',404);
+          }
+      
+          return savedDoctor;
+        } catch (error:unknown) {
+            if (error instanceof CustomError) {
+                throw error;
+            } else {
+                const castedError = error as Error
+          throw new CustomError(castedError.message || 'Error on saving Doctor basic info to database', 500);
+        }
+       }
+      }
+      
 
    
    
