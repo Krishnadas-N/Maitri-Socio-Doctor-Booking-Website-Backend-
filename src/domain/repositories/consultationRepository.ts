@@ -55,26 +55,14 @@ export class ConsultationRepoImpl implements IConsultationRepository{
             return {responseId:response.id,keyId:process.env.RAZORPAY_KEY_ID as string,amount:appoinment.amount};
        
              }else if(paymentMethod==='Stripe'){
-                if(!token){
-                    throw new CustomError("Token is Missing",400)
-                }
-
-                const customer = await stripeClient.customers.create({
-                    email: "test@email.com",
-                    source: token.id
+                const paymentIntent = await stripeClient.paymentIntents.create({
+                    amount: appoinment.amount * 100,
+                    currency: "usd",
+                    payment_method_types: ["card"],
                   });
-                  console.log("customer===>",customer);
-                  const charge = await stripeClient.charges.create({
-                    amount: appoinment.amount, // Amount in cents
-                    description: "Test Purchase using express and Node",
-                    currency: "INR",
-                    customer: customer.id,
-                  });
+                  await this.consultationDataSource.savePaymentDetails(appointmentId, appoinment.amount, paymentMethod,  paymentIntent.id);
 
-                  console.log("charge====>",charge)
-                  await this.consultationDataSource.savePaymentDetails(appointmentId, appoinment.amount, paymentMethod, charge.id);
-
-                  return {responseId:charge.id,keyId:process.env.RAZORPAY_KEY_ID as string,amount:appoinment.amount};
+                  return {responseId:paymentIntent.id,keyId:process.env.RAZORPAY_KEY_ID as string,amount:appoinment.amount};
              }
              throw new Error('Method not implemented')
         }catch (error:unknown) {

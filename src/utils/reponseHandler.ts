@@ -28,7 +28,7 @@ export  const sendSuccessResponse = <T>(res:Response ,data?: T ,message ?: strin
 }
 
 export const sendErrorResponse =(res:Response,errorMessage:string,errorCode ?:number): void =>{
-    console.log("Log from Error Response",errorMessage)
+    console.warn(" 😒😒😒😒😒😒😒Log from Error Response ",errorMessage,"😒😒😒😒😒😒😒")
     const errorResponse:ErrorResponse={
     success:false,
     error: {

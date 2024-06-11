@@ -58,7 +58,7 @@ initializeSocketConnection(io)
 
 
 
-app.use((err: Error, req: Request, res: Response) => {
+app.use((err: Error, req: Request, res: Response,next:NextFunction) => {
   console.log("Error Handler Comes In");
   if (err instanceof CustomError) {
     console.log("Custom Error:");

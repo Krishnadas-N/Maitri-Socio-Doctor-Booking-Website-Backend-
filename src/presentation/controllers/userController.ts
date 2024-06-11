@@ -47,7 +47,6 @@ export class UserController{
             const token = await this.userUseCase.signUp(req.body);
             return sendSuccessResponse(res, {token}, "User created successful");
         } catch (err) {
-            console.log("Error passing yyy")
             next(err);
         }
     }

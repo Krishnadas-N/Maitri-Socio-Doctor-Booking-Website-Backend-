@@ -17,8 +17,8 @@ export function initializeSocketConnection(io: Server) {
     const notificationUsecase = new NotificationUsecase(notificationRepository)
 
 
-    const chatNamespace = io.of('/chat');
-    const notificationNameSpace = io.of('/notification');
+    const chatNamespace = io.of('/api/chats');
+    const notificationNameSpace = io.of('/api/notifications');
     const notificationController = new NotificationController(notificationNameSpace,notificationUsecase);
     const chatSocketController = new ChatSocketController(chatUseImpl, chatNamespace);
 
