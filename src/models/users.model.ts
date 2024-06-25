@@ -13,13 +13,45 @@ export interface UserLoginResponse{
     token:string
     revokeAcessToken:string;
 }
+
+export interface GoogleCredentials {
+  uid: string
+  email: string
+  emailVerified: boolean
+  displayName: string
+  isAnonymous: boolean
+  photoURL: string
+  providerData: ProviderDaum[]
+  stsTokenManager: StsTokenManager
+  createdAt: string
+  lastLoginAt: string
+  apiKey: string
+  appName: string
+}
+
+export interface ProviderDaum {
+  providerId: string
+  uid: string
+  displayName: string
+  email: string
+  phoneNumber: any
+  photoURL: string
+}
+
+export interface StsTokenManager {
+  refreshToken: string
+  accessToken: string
+  expirationTime: number
+}
+
+
 export interface UserSocialRegister{
     firstName:string,
     lastName:string,
     username:string,
     email:string,
-    gender:string,
-    dateOfBirth:string,
+    gender?:string,
+    dateOfBirth?:string,
     profilePic?:string
   }
 

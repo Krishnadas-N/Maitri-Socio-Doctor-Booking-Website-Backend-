@@ -3,8 +3,8 @@ import { CustomError } from "../../utils/customError";
 import { sendSuccessResponse } from "../../utils/reponseHandler"; 
 import { IUserUseCase } from "../../domain/interfaces/use-cases/userIUsecase";
 import { assertHasUser } from "../../middlewares/requestValidationMiddleware";
-import { EditProfileDto } from "../../models/users.model";
-
+import { EditProfileDto ,GoogleCredentials} from "../../models/users.model";
+import admin from "firebase-admin";
 
 export class UserController{
     constructor(
@@ -27,14 +27,26 @@ export class UserController{
     }
     async socialLogin(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log("req.body from social login ",req.body.credential);
-            const { email } = req.body.credential;
-            const userData = await this.userUseCase.socialLogin(email);
-            console.log("login social form User",userData);
-            if (!userData) {
-                throw new CustomError("Email or Password is incorrect", 401);
+            const headers = req.headers['x-social-login'];
+            if (headers !== 'google') {
+                throw new CustomError('Invalid social login provider', 400);
             }
-            return sendSuccessResponse(res, userData, "Login successful");
+            const userData: GoogleCredentials = req.body;
+             const token = userData.stsTokenManager.accessToken;
+            const ticket = await admin.auth().verifyIdToken(token);
+            console.log(ticket);
+            const data = await this.userUseCase.socalSignUp({
+                firstName:req.body.displayName.split(' ')[0],
+                lastName:req.body.displayName.split(' ').slice(1).join(' '),
+                email:req.body.email,
+                profilePic:req.body.photoURL,
+                username:req.body.displayName
+            });
+            console.log("login social form User",userData,data);
+            if (!data) {
+                throw new CustomError("Failed to sign up user", 401);
+              }
+            return sendSuccessResponse(res, data, "Login successful");
         } catch (err) {
             
             next(err);
@@ -47,16 +59,6 @@ export class UserController{
             const token = await this.userUseCase.signUp(req.body);
             return sendSuccessResponse(res, {token}, "User created successful");
         } catch (err) {
-            next(err);
-        }
-    }
-    async socialRegisteUser(req: Request, res: Response, next: NextFunction) {
-        try {
-            console.log("Log from Controllers (1)");
-            const token = await this.userUseCase.socalSignUp(req.body);
-            return sendSuccessResponse(res, token, "User created successful");
-        } catch (err) {
-            console.log("Error passing yyy")
             next(err);
         }
     }

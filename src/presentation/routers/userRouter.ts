@@ -59,7 +59,6 @@ userRouter.post('/login',userController.loginUser.bind(userController));
 userRouter.post('/social-login',userController.socialLogin.bind(userController));
 
 
-userRouter.post('/social-register',userController.socialRegisteUser.bind(userController));
 
 
 userRouter.post('/register',SignupValidateUser,userController.signupUser.bind(userController));

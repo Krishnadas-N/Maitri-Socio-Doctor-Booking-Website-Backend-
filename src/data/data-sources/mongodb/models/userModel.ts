@@ -1,6 +1,12 @@
 import mongoose, { Schema } from 'mongoose';
 import { PasswordUtil } from '../../../../utils/passwordUtils'; 
 
+const twentyYearsAgo = () => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - 20);
+  return date;
+};
+
 const userSchema = new mongoose.Schema({
   profilePic:{
     type:String,
@@ -24,7 +30,8 @@ const userSchema = new mongoose.Schema({
   },
   gender:{
     type:String,
-    enum:['male', 'female','other']
+    enum:['male', 'female','other'],
+    default:'male'
   },
   email: {
      type: String,
@@ -47,6 +54,7 @@ const userSchema = new mongoose.Schema({
 },
 dateOfBirth: {
   type: Date,
+  default: twentyYearsAgo
 },
 isVerified:{
   type:Boolean,

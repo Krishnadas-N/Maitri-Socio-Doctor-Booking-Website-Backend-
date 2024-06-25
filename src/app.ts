@@ -20,6 +20,7 @@ import { Websocket } from './presentation/webSocket/webSocket';
 import http from 'http';
 import { initializeSocketConnection } from './presentation/webSocket/socketService';
 import chatRouter from './presentation/routers/chatRouter';
+import admin from "firebase-admin";
 // import "../config/passport";
 // const passport = require('passport');
 dotenv.config();
@@ -28,6 +29,14 @@ mongoose.connect(process.env.MONGODB_URL as string)
   .catch((error) => console.error(error));
 
 const app: Application = express();
+const serviceAccountJson = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
+if (!serviceAccountJson) {
+  throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is not set');
+}
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccountJson),
+});
+
 const server = http.createServer(app); 
 const io = Websocket.getInstance(server);
 const port = process.env.PORT || 3000;
