@@ -5,7 +5,7 @@ import Doctor, { Follower, Review } from "../../entities/Doctor";
 export interface IDoctorUsecase{
     registerBasicInfoUseCase(doctor:Partial<Doctor>):Promise<string>;
     registerProfessionalInfoUseCase(doctor:Partial<Doctor>,doctorId:string):Promise<Partial<Doctor> | null>;
-    RegisterAdditionalInfoUseCase(doctor:Partial<Doctor>,doctorId:string):Promise<Partial<Doctor> | null>;  
+    RegisterAdditionalInfoUseCase(doctor:Partial<Doctor>,doctorId:string):Promise<Partial<Doctor> | null>;
     login(email:string,password:string):Promise<LoginResponse | null>;
     forgotPassword(email:string):Promise<void>;
     setResetPassword(token:string,password:string):Promise<void>;

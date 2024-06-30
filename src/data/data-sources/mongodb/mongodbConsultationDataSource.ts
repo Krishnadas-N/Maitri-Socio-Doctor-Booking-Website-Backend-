@@ -268,17 +268,28 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
     }
   }
 
-  async getAppoinmentsOfDoctors(doctorId: string,page:number,pageSize:number): Promise<doctorAppoinmentsResponseModel> {
+  async getAppoinmentsOfDoctors(doctorId: string, page: number, pageSize: number, searchQuery: string): Promise<doctorAppoinmentsResponseModel> {
     try {
       const offset = (page - 1) * pageSize;
       if (!Types.ObjectId.isValid(doctorId)) {
         throw new CustomError("Invalid Doctor ID", 400);
       }
+  
+      const matchStage: any = {
+        doctor: new mongoose.Types.ObjectId(doctorId),
+      };
+  
+      if (searchQuery) {
+        matchStage.$or = [
+          { 'user.firstName': { $regex: searchQuery, $options: 'i' } },
+          { 'user.email': { $regex: searchQuery, $options: 'i' } },
+          { 'doctorInfo.firstName': { $regex: searchQuery, $options: 'i' } },
+        ];
+      }
+  
       const [appointments] = await appointmentModel.aggregate([
         {
-          $match: {
-            doctor: new mongoose.Types.ObjectId(doctorId),
-          },
+          $match: matchStage,
         },
         {
           $lookup: {
@@ -303,15 +314,14 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
             foreignField: "_id",
             as: "user",
           },
-        },   
+        },
         {
           $facet: {
             appointments: [
-              {$sort:{ createdAt: -1 }},
+              { $sort: { createdAt: -1 } },
               { $skip: offset },
               { $limit: pageSize },
-             
-             ], // retrieve all appointments
+            ],
             counts: [
               {
                 $group: {
@@ -355,28 +365,31 @@ export class ConsultaionModel implements IConsultationModelIDataSource {
           },
         },
       ]);
+  
       const totalCount = await appointmentModel.countDocuments({ doctor: doctorId });
       const totalPages = Math.ceil(totalCount / pageSize);
-      console.log("Docotr Appoinments", appointments);
+      console.log("Doctor Appointments", appointments);
+  
       return {
-        appointments:appointments,
+        appointments,
         page,
         pageSize,
         totalCount,
         totalPages,
       };
-    } catch (error:unknown) {
+    } catch (error: unknown) {
       if (error instanceof CustomError) {
-          throw error;
+        throw error;
       } else {
-          const castedError = error as Error
-      throw new CustomError(
-        castedError.message || "Error while making an appointment",
-        500
-      );
+        const castedError = error as Error;
+        throw new CustomError(
+          castedError.message || "Error while retrieving appointments",
+          500
+        );
+      }
     }
   }
-  }
+  
 
   async getAppoinmentsOfUsers(userId: string,page:number,pageSize:number): Promise<userAppoinmentsResponseModel> {
     try {

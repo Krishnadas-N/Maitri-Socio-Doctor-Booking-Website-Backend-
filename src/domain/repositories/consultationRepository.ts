@@ -62,7 +62,7 @@ export class ConsultationRepoImpl implements IConsultationRepository{
                   });
                   await this.consultationDataSource.savePaymentDetails(appointmentId, appoinment.amount, paymentMethod,  paymentIntent.id);
 
-                  return {responseId:paymentIntent.id,keyId:process.env.RAZORPAY_KEY_ID as string,amount:appoinment.amount};
+                  return {responseId:paymentIntent.id,keyId:process.env.STRIPE_SECRET_KEY as string,amount:appoinment.amount};
              }
              throw new Error('Method not implemented')
         }catch (error:unknown) {
@@ -101,8 +101,8 @@ export class ConsultationRepoImpl implements IConsultationRepository{
         }
     }
 
-   async  getAppoinmentsOfDoctors(doctorId: string,page:number,pageSize:number): Promise<doctorAppoinmentsResponseModel> {
-      return this.consultationDataSource.getAppoinmentsOfDoctors(doctorId,page,pageSize);
+   async  getAppoinmentsOfDoctors(doctorId: string,page:number,pageSize:number,searchQuery:string): Promise<doctorAppoinmentsResponseModel> {
+      return this.consultationDataSource.getAppoinmentsOfDoctors(doctorId,page,pageSize,searchQuery);
     }
     
    async  getAppoinmentsOfUsers(userId: string,page:number,pageSize:number): Promise<userAppoinmentsResponseModel> {

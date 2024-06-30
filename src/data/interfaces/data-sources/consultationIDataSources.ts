@@ -10,7 +10,7 @@ export interface IConsultationModelIDataSource{
     savePaymentDetails(appointmentId:string,appoinmentAmount:number,paymentMethod:'Credit Card' | 'Debit Card' | 'PayPal' | 'Stripe' | 'Razorpay',responseId:string): Promise<void>;
     updatePaymentToSuccess(orderId:string):Promise<{appoinmentId:string,notificationId:string}>;
     getAppoinmentsOfUsers(userId:string,page:number,pageSize:number):Promise<userAppoinmentsResponseModel>;
-    getAppoinmentsOfDoctors(doctorId:string,page:number,pageSize:number):Promise<doctorAppoinmentsResponseModel>;
+    getAppoinmentsOfDoctors(doctorId:string,page:number,pageSize:number,searchQuery:string):Promise<doctorAppoinmentsResponseModel>;
     changeAppoinmentStatus(appoinmentId:string,status:string,userId:string,userType:string):Promise<{appointment:AggregatedAppointmentChangeStatus,notificationId:string}>;
     getAvailableSlots(doctorId:string, date:Date):Promise<string[]>;
     getAllDoctors(filters:findDoctorsQueryParams):Promise<doctorsResponseModel>;

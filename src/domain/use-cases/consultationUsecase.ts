@@ -171,7 +171,8 @@ export class ConsultationUseCaseImpl implements IConsultationUsecase {
   async getDoctorsAppoinments(
     doctorId: string,
     page: number,
-    pageSize: number
+    pageSize: number,
+    searchQuery:string
   ): Promise<doctorAppoinmentsResponseModel> {
     try {
       if (!doctorId) {
@@ -180,7 +181,8 @@ export class ConsultationUseCaseImpl implements IConsultationUsecase {
       return this.consultationRepo.getAppoinmentsOfDoctors(
         doctorId,
         page,
-        pageSize
+        pageSize,
+        searchQuery
       );
     } catch (error: unknown) {
       if (error instanceof CustomError) {

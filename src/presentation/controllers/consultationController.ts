@@ -81,9 +81,10 @@ export class ConsultationController{
             assertHasUser(req);
             const page = parseInt(req.query.page as string) || 1;
             const pageSize = parseInt(req.query.pageSize as string) || 6;
+            const searchQuery = req.query.searchQuery || '';
             const doctorId = req.user.id;
             console.log(doctorId);
-            const data = await this.consultationUseCase.getDoctorsAppoinments(doctorId as string,page,pageSize);
+            const data = await this.consultationUseCase.getDoctorsAppoinments(doctorId as string,page,pageSize,searchQuery as string);
             return  sendSuccessResponse(res, data,"Appoinment Successfully saved");
         } catch (error) {
             console.error('Error fetching While Editing the  User:', error);
