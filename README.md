@@ -98,5 +98,5 @@ FIREBASE_SERVICE_ACCOUNT='{
 
 ### Frontend Repository
 
-The frontend of this project is built using Angular. You can find the frontend repository [here](https://github.com/yourusername/maitri-frontend).
+The frontend of this project is built using Angular. You can find the frontend repository [here](https://github.com/Krishnadas-N/Maitri-Socio-Doctor-Booking-Website-Frontend.git).
 
