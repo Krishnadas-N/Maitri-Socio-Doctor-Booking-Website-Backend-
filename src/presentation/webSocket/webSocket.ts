@@ -20,18 +20,5 @@ export class Websocket extends Server {
         return Websocket.io;
     }
 
-    public initializeHandlers(socketHandlers: Array<{ path: string, handler: { handleConnection: (socket: Socket) => void, middlewareImplementation?: (socket: Socket, next: (err?: any) => void) => void } }>) {
-        socketHandlers.forEach(element => {
-            const namespace = Websocket.io.of(element.path);
-            namespace.on('connection', (socket: Socket) => {
-                element.handler.handleConnection(socket);
-            });
-
-            if (element.handler.middlewareImplementation) {
-                namespace.use((socket: Socket, next: (err?: any) => void) => {
-                    element.handler.middlewareImplementation!(socket, next);
-                });
-            }
-        });
-    }
+    
 }

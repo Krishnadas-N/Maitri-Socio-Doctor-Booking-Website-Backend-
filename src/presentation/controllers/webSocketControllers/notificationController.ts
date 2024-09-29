@@ -1,19 +1,14 @@
-import { Namespace, Socket } from "socket.io";
+import { Server, Socket } from "socket.io";
 import authenticateSocket from "../../../middlewares/socketAuthentication";
 import { INotificationUseCase } from "../../../domain/interfaces/use-cases/notificationIUsecase";
 
-interface notifyRecieverMode{ 
-    receiverId: string,
-     receiverModel: string 
-}
-
 export class NotificationController{
     constructor(
-        private readonly chatNamespace: Namespace,
+        private readonly chatNamespace: Server,
         private notificationUseCase:INotificationUseCase
     ){}
 
-    public handleChatEvents() {
+    public handleNotificationEvents() {
         const connectedUsers:{userId:string,socketId:string}[] = []; 
 
         this.chatNamespace.on("connection", (socket: Socket) => {
