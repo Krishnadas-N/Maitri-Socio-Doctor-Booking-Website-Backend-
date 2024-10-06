@@ -60,6 +60,9 @@ app.use('/api/posts',postRouter);
 app.use('/api/admin',adminRouter);
 app.use('/api/role',roleRouter);
 app.use('/api/chat',chatRouter)
+app.get('/keep-alive', (_req: Request, res: Response) => {
+    res.status(200).send('Server is alive!');
+});
 /* GET Google Authentication API. */
 
 initializeSocketConnection(io)
