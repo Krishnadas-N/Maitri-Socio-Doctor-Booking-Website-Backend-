@@ -21,6 +21,7 @@ import http from 'http';
 import { initializeSocketConnection } from './presentation/webSocket/socketService';
 import chatRouter from './presentation/routers/chatRouter';
 import admin from "firebase-admin";
+import axios from 'axios';
 // import "../config/passport";
 // const passport = require('passport');
 dotenv.config();
@@ -63,8 +64,22 @@ app.use('/api/chat',chatRouter)
 app.get('/keep-alive', (_req: Request, res: Response) => {
     res.status(200).send('Server is alive!');
 });
-/* GET Google Authentication API. */
+/* For Keep Alive: By continuously pinging the server, it remains active, preventing it from spinning down. */
+const url = `https://maitri-socio-doctor-booking-website.onrender.com/keep-alive`; 
+const interval = 30000; // Interval in milliseconds (30 seconds)
 
+function reloadWebsite() {
+  axios.get(url)
+    .then(response => {
+      console.log(`Reloaded at ${new Date().toISOString()}: Status Code ${response.status}`);
+    })
+    .catch(error => {
+      console.error(`Error reloading at ${new Date().toISOString()}:`, error.message);
+    });
+}
+
+
+setInterval(reloadWebsite, interval);
 initializeSocketConnection(io)
 
 
